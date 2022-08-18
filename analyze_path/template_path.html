@@ -13,7 +13,7 @@
 
     {% for path_info in stats %}
     <hr>
-    <h2>Path Name: {{ path_info.target_path_name }}</h2>
+    <h2 id="{{ path_info.target_path_name }}">Path Name: {{ path_info.target_path_name }}</h2>
 
     <h4>Node list in the path</h4>
     <ul>

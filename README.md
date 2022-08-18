@@ -24,11 +24,11 @@ Please refer to [sample_autoware](./sample_autoware) to find quick usage
         - It is useful for each package developers, also to investigate a problem
         - Link to sample : todo
     - `check_callback_sub` : Check gap between publishment and subscription callback frequency
-        - This report shows subscription callback functions which doesn't wake up appropreately
+        - This report shows subscription callback functions which doesn't wake up appropriately
         - It is useful to find out nodes which may have a problem. Please use this result as subsidiary data
         - Link to sample : todo
     - `check_callback_timer` : Check gap between timer frequency and timer callback frequency
-        - This report shows timer callback functions which doesn't wake up appropreately
+        - This report shows timer callback functions which doesn't wake up appropriately
         - It is useful to find out nodes which may have a problem. Please use this result as subsidiary data
         - Link to sample : todo
 - Path analysis
