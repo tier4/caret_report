@@ -46,14 +46,18 @@
           <label class="form-check-label" for="checkbox_hist_{{ ns.cnt }}">Histogram</label>
         </div>
 
-        <iframe src="{{ node_info['filename_timeseries'][metrics] }}.html" width="1300" height="440" frameborder="0"></iframe><br>
+        <a href="{{ node_info['filename_timeseries'][metrics] }}.html" target="_blank">
+          <img src="{{ node_info['filename_timeseries'][metrics] }}.png">
+        </a>
 
         <div class="collapse collapse_hist" id="colllapse_hist_{{ ns.cnt }}">
           <div class="row">
             {% for callback_name, callback_stats in node_info['callbacks'].items() %}
               {% if callback_stats[metrics] and callback_stats[metrics]['filename_hist'] != '' %}
               <div class="col">
-                <iframe src="{{ callback_stats[metrics]['filename_hist'] }}.html" width="620" height="440" frameborder="0"></iframe><br>
+                <a href="{{ callback_stats[metrics]['filename_hist'] }}.html" target="_blank">
+                  <img src="{{ callback_stats[metrics]['filename_hist'] }}.png">
+                </a>
               </div>
               {% endif %}
             {% endfor %}

@@ -16,7 +16,9 @@
       <hr>
       <h3 id="{{ info['callback_name'] }}">{{ info["callback_name"] }} ( {{ info["callback_displayname"] }} )</h3>
 
-      <iframe src="{{ info['graph_filename'] }}.html" width="1080" height="360" frameborder="0"></iframe><br>
+      <a href="{{ info['graph_filename'] }}.html" target="_blank">
+        <img src="{{ info['graph_filename'] }}.png"><br>
+      </a>
 
       <table class="table table-hover">
         <tr>

@@ -16,7 +16,9 @@
       <hr>
       <h3 id="{{ info['title'] }}">{{ info["title"] }}</h3>
 
-      <iframe src="{{ info['graph_filename'] }}.html" width="1020" height="320" frameborder="0"></iframe><br>
+      <a href="{{ info['graph_filename'] }}.html" target="_blank">
+        <img src="{{ info['graph_filename'] }}.png"><br>
+      </a>
 
       <table class="table table-hover">
         <tr>

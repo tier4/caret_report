@@ -53,11 +53,6 @@ def make_report(stats_path: str, index_filename: str='index'):
     template_path = f'{Path(__file__).resolve().parent}/template_report_timer.html'
     render_page(stats, report_name, destination_path, template_path)
 
-    # report using graph as image
-    destination_path = f'{stats_dir}/{index_filename}_image.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_report_timer_image.html'
-    render_page(stats, report_name, destination_path, template_path)
-
 
 def parse_arg():
     """Parse arguments"""
