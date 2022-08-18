@@ -1,0 +1,250 @@
+# Copyright 2022 Tier IV, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+Script to analyze node callback functions
+"""
+from __future__ import annotations
+import sys
+import os
+from pathlib import Path
+import argparse
+import logging
+import re
+import math
+import json
+import yaml
+import numpy as np
+import pandas as pd
+from bokeh.plotting import Figure, figure
+from caret_analyze import Lttng
+from caret_analyze import Architecture, Application
+from caret_analyze.runtime.node import Node
+from caret_analyze.plot import Plot
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+from common import utils
+
+_logger: logging.Logger = None
+
+
+def calcualte_stats(data: pd.DataFrame) -> dict:
+    """Calculate stats"""
+    stats = {
+        'avg': '-',
+        'min': '-',
+        'max': '-',
+        'std': '-',
+    }
+    if len(data) > 1:
+        stats['avg'] = float(data.mean())
+        stats['std'] = float(data.std())
+    if len(data) > 0:
+        stats['min'] = float(data.min())
+        stats['max'] = float(data.max())
+    return stats
+
+
+def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
+    """Draw histogram graph"""
+    def _to_histogram(data: pd.DataFrame, binsize: int, density: bool):
+        binsize = max(1, binsize)
+        range_min = math.floor(min(data) / binsize) * binsize
+        range_max = math.ceil(max(data) / binsize) * binsize + binsize
+        bin_num = math.ceil((range_max - range_min) / binsize)
+        return np.histogram(
+            data, bins=bin_num, range=(range_min, range_max), density=density)
+
+    if len(data) == 0:
+        _logger.warning(f'len = 0: {title}')
+        return None
+    hist, bin_edges = _to_histogram(data, (max(data) - min(data)) / 30, False)
+    figure_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom', title=title,
+                         x_axis_label=metrics_str, y_axis_label='Count')
+    figure_hist.quad(top=hist, bottom=0, left=bin_edges[:-1], right=bin_edges[1:],
+                     line_color='white', alpha=0.5)
+    return figure_hist
+
+
+def analyze_callback(callback_name: str, callback_displayname: str, metrics_str: str,
+                     data: pd.DataFrame, metrics: str, dest_dir_path: str):
+    """Analyze a callback"""
+    callack_stats = calcualte_stats(data)
+    figure_hist = draw_histogram(data, callback_displayname, metrics_str)
+    if figure_hist:
+        filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
+        utils.export_graph(figure_hist, dest_dir_path, filename_hist)
+        callack_stats['filename_hist'] = filename_hist
+    else:
+        callack_stats['filename_hist'] = ''
+    return callack_stats
+
+
+def analyze_node(node: Node, dest_dir: str) -> dict:
+    """Analyze a node"""
+    all_metrics_dict = {'Frequency': Plot.create_callback_frequency_plot,
+                        'Period': Plot.create_callback_period_plot,
+                        'Latency': Plot.create_callback_latency_plot}
+    node_stats = {}
+    node_stats['filename_timeseries'] = {}
+    node_stats['callbacks'] = {}
+
+    for metrics, method in all_metrics_dict.items():
+        p_timeseries = method(node)
+        filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
+        try:
+            measurement = p_timeseries.to_dataframe()
+            p_timeseries = p_timeseries.show(export_path='dummy.html')
+            p_timeseries.frame_width = 1000
+            p_timeseries.frame_height = 350
+            p_timeseries.y_range.start = 0
+            utils.export_graph(p_timeseries, dest_dir, filename_timeseries)
+            node_stats['filename_timeseries'][metrics] = filename_timeseries
+        except:
+            _logger.warning(f'This node is not called: {node.node_name}')
+            return None
+
+        for callback_info in measurement.iteritems():
+            callback_name = callback_info[0][0]
+            metrics_str = callback_info[0][1]
+            if 'callback_start_timestamp' in metrics_str:
+                continue
+            callback_displayname = callback_name.split('/')[-1] + ': '
+            callback_displayname += utils.make_callback_displayname(node.get_callback(callback_name))
+            data = callback_info[1].dropna()
+            data = data[:-2]    # remove the last data because freq becomes small
+            callack_stats = analyze_callback(callback_name, callback_displayname,
+                                             metrics_str, data, metrics, dest_dir)
+            node_stats['callbacks'].setdefault(callback_name, {})
+            node_stats['callbacks'][callback_name][metrics] = callack_stats
+            node_stats['callbacks'][callback_name]['displayname'] = callback_displayname
+
+    return node_stats
+
+
+def analyze_package(node_list: list[Node], dest_dir: str):
+    """Analyze a package"""
+    utils.make_destination_dir(dest_dir, False, _logger)
+
+    stats = {}
+    for node in node_list:
+        node_stats = analyze_node(node, dest_dir)
+        if node_stats:
+            stats[node.node_name] = node_stats
+
+    stat_file_path = f"{dest_dir}/stats_node.yaml"
+    with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
+        yaml.safe_dump(stats, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
+
+
+def make_package_list(package_list_json_path: str) -> tuple(dict, list):
+    """make package list"""
+    package_dict = {}   # pairs of package name and regular_exp
+    ignore_list = []
+
+    package_list_json = ''
+    if package_list_json_path != '':
+        try:
+            with open(package_list_json_path, encoding='UTF-8') as f_json:
+                package_list_json = json.load(f_json)
+        except:
+            _logger.error(f'Unable to read {package_list_json_path}')
+
+    if package_list_json == '':
+        package_dict = {
+            'package': r'.*'
+        }
+    else:
+        package_dict =package_list_json['package_dict']
+        ignore_list =package_list_json['ignore_list']
+
+    _logger.debug(f'package_dict = {package_dict}')
+    _logger.debug(f'ignore_list = {ignore_list}')
+
+    return package_dict, ignore_list
+
+
+def get_node_list(lttng: Lttng, app: Application,
+                  prefix_regexp: dict, ignore_list: list[str]) -> list[Node]:
+    """Get node list"""
+    target_node_name_list = []
+    for node in lttng.get_nodes():
+        node_name = node.node_name
+        if re.search(prefix_regexp, node_name):
+            is_match = True
+            for ignore in ignore_list:
+                if re.search(ignore, node_name):
+                    is_match = False
+                    break
+            if is_match:
+                target_node_name_list.append(node_name)
+    target_node_name_list.sort()
+    node_list = []
+    for node_name in target_node_name_list:
+        node_list.append(app.get_node(node_name))
+
+    return node_list
+
+
+def analyze(args, dest_dir):
+    """Analyze All"""
+    utils.make_destination_dir(dest_dir, args.force, _logger)
+    package_dict, ignore_list = make_package_list(args.package_list_json)
+    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    arch = Architecture('lttng', str(args.trace_data[0]))
+    arch.export('architecture.yaml', force=True)
+    app = Application(arch, lttng)
+
+    for package_name, regexp in package_dict.items():
+        node_list = get_node_list(lttng, app, regexp, ignore_list)
+        analyze_package(node_list, f'{dest_dir}/{package_name}')
+
+
+def parse_arg():
+    """Parse arguments"""
+    parser = argparse.ArgumentParser(
+                description='Script to analyze node callback functions')
+    parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('--package_list_json', type=str, default='')
+    parser.add_argument('-s', '--start_point', type=float, default=0.0,
+                        help='Start point[sec] to load trace data')
+    parser.add_argument('-d', '--duration', type=float, default=0.0,
+                        help='Duration[sec] to load trace data')
+    parser.add_argument('-f', '--force', action='store_true', default=False,
+                        help='Overwrite report directory')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False)
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    """Main function"""
+    args = parse_arg()
+
+    global _logger
+    if args.verbose:
+        _logger = utils.create_logger(__name__, logging.DEBUG)
+    else:
+        _logger = utils.create_logger(__name__, logging.INFO)
+
+    _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'package_list_json: {args.package_list_json}')
+    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
+    dest_dir = f'report_{Path(args.trace_data[0]).stem}/node'
+    _logger.debug(f'dest_dir: {dest_dir}')
+
+    analyze(args, dest_dir)
+    _logger.info('<<< OK. All nodes are analyzed >>>')
+
+
+if __name__ == '__main__':
+    main()
