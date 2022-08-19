@@ -50,6 +50,36 @@
           <img src="{{ node_info['filename_timeseries'][metrics] }}.png">
         </a>
 
+        <div class="collapse collapse_stats" id="collapse_stats_{{ ns.cnt }}">
+          <table class="table table-hover table-bordered ">
+            <tr class="table-primary text-center">
+              <th width="60%">Callback Name</th>
+              <th width="10%">Avg {{ metrics_unit[loop.index0] }}</th>
+              <th width="10%">Min {{ metrics_unit[loop.index0] }}</th>
+              <th width="10%">Max {{ metrics_unit[loop.index0] }}</th>
+              <th width="10%">Std {{ metrics_unit[loop.index0] }}</th>
+            </tr>
+            {% for callback_name, callback_stats in node_info['callbacks'].items() %}
+              {% if callback_stats[metrics] %}
+              <tr>
+                <td>{{ callback_stats['displayname'] }}</td>
+                {% if callback_stats[metrics] and callback_stats[metrics]['filename_hist'] != '' %}
+                  <td class="text-end">{{ '%.1f' % callback_stats[metrics]['avg']|float }}</td>
+                  <td class="text-end">{{ '%.1f' % callback_stats[metrics]['min']|float }}</td>
+                  <td class="text-end">{{ '%.1f' % callback_stats[metrics]['max']|float }}</td>
+                  <td class="text-end">{{ '%.1f' % callback_stats[metrics]['std']|float }}</td>
+                {% else %}
+                  <td>---</td>
+                  <td>---</td>
+                  <td>---</td>
+                  <td>---</td>
+                {% endif %}
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </table>
+        </div>
+
         <div class="collapse collapse_hist" id="colllapse_hist_{{ ns.cnt }}">
           <div class="row">
             {% for callback_name, callback_stats in node_info['callbacks'].items() %}
@@ -62,36 +92,6 @@
               {% endif %}
             {% endfor %}
           </div>
-        </div>
-
-        <div class="collapse collapse_stats" id="collapse_stats_{{ ns.cnt }}">
-          <table class="table table-hover">
-            <tr>
-              <th width="60%">Callback Name</th>
-              <th width="10%">Avg {{ metrics_unit[loop.index0] }}</th>
-              <th width="10%">Min {{ metrics_unit[loop.index0] }}</th>
-              <th width="10%">Max {{ metrics_unit[loop.index0] }}</th>
-              <th width="10%">Std {{ metrics_unit[loop.index0] }}</th>
-            </tr>
-            {% for callback_name, callback_stats in node_info['callbacks'].items() %}
-              {% if callback_stats[metrics] %}
-              <tr>
-                <td>{{ callback_stats['displayname'] }}</td>
-                {% if callback_stats[metrics] and callback_stats[metrics]['filename_hist'] != '' %}
-                  <td>{{ '%.1f' % callback_stats[metrics]['avg']|float }}</td>
-                  <td>{{ '%.1f' % callback_stats[metrics]['min']|float }}</td>
-                  <td>{{ '%.1f' % callback_stats[metrics]['max']|float }}</td>
-                  <td>{{ '%.1f' % callback_stats[metrics]['std']|float }}</td>
-                {% else %}
-                  <td>---</td>
-                  <td>---</td>
-                  <td>---</td>
-                  <td>---</td>
-                {% endif %}
-              </tr>
-              {% endif %}
-            {% endfor %}
-          </table>
         </div>
 
         {% endfor %}
@@ -136,7 +136,10 @@
       $(target).collapse("hide");
     }
   });
-  $(".form-check-input ").prop("checked", false);
+  $(function(){
+    $(".form-check-input").prop("checked", false);
+    $("#checkbox_stats_all").click();
+  });
   </script>
   </body>
 </html>

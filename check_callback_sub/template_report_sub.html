@@ -14,22 +14,26 @@
 
     {% for info in stats %}
       <hr>
-      <h3 id="{{ info['title'] }}">{{ info["title"] }}</h3>
-
+      <h3 id="{{ info['callback_name'] }}">{{ info["callback_name"] }}</h3>
+      <ul>
+        <li>Topic: {{ info["topic_name"] }}</li>
+        <li>Publisher: {{ info["publisher_name"] }}</li>
+        <li><a href="todo">Jump to detail</a></li>
+      </ul>
       <a href="{{ info['graph_filename'] }}.html" target="_blank">
         <img src="{{ info['graph_filename'] }}.png"><br>
       </a>
 
-      <table class="table table-hover">
-        <tr>
+      <table class="table table-hover table-bordered ">
+        <tr class="table-primary text-center">
           <th>Publishment Frequency (avg) [Hz]</th>
           <th>Subscription Frequency (avg) [Hz]</th>
           <th>The number of times freq_sub &lt; freq_pub</th>
         </tr>
         <tr>
-          <td>{{ '%.1f' % info['publishment_freq']|float }}</td>
-          <td>{{ '%.1f' % info['subscription_freq']|float }}</td>
-          <td>{{ '%d' % info['num_huge_gap']|int }}</td>
+          <td class="text-end">{{ '%.1f' % info['publishment_freq']|float }}</td>
+          <td class="text-end">{{ '%.1f' % info['subscription_freq']|float }}</td>
+          <td class="text-end">{{ '%d' % info['num_huge_gap']|int }}</td>
         </tr>
       </table>
     {% endfor %}

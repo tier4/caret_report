@@ -15,21 +15,21 @@
     {% for info in stats %}
       <hr>
       <h3 id="{{ info['callback_name'] }}">{{ info["callback_name"] }} ( {{ info["callback_displayname"] }} )</h3>
-
+      <p><a href="todo">Jump to detail</a></p>
       <a href="{{ info['graph_filename'] }}.html" target="_blank">
         <img src="{{ info['graph_filename'] }}.png"><br>
       </a>
 
-      <table class="table table-hover">
-        <tr>
+      <table class="table table-hover table-bordered ">
+        <tr class="table-primary text-center">
           <th>Timer Frequency [Hz]</th>
           <th>Callback Frequency (avg) [Hz]</th>
           <th>The number of times freq_cb &lt; freq_timer</th>
         </tr>
         <tr>
-          <td>{{ '%.1f' % info['freq_timer']|float }}</td>
-          <td>{{ '%.1f' % info['freq_callback']|float }}</td>
-          <td>{{ '%d' % info['num_huge_gap']|int }}</td>
+          <td class="text-end">{{ '%.1f' % info['freq_timer']|float }}</td>
+          <td class="text-end">{{ '%.1f' % info['freq_callback']|float }}</td>
+          <td class="text-end">{{ '%d' % info['num_huge_gap']|int }}</td>
         </tr>
       </table>
     {% endfor %}

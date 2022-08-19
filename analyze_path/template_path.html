@@ -30,9 +30,9 @@
 
     <h4>Response Time</h4>
     <div class="w-75">
-      <table  class="table table-hover">
+      <table class="table table-hover table-bordered ">
         <thead>
-          <tr>
+          <tr class="table-primary text-center">
             <th>Response Time</th>
             <th>Avg [ms]</th>
             <th>Min [ms]</th>
@@ -42,9 +42,9 @@
         <tbody>
           <tr>
             <td>{{ path_info.target_path_name}} </td>
-            <td>{{ '%0.3f' % path_info.best_avg|float }}</td>
-            <td>{{ '%0.3f' % path_info.best_min|float }}</td>
-            <td>{{ '%0.3f' % path_info.best_max|float }}</td>
+            <td class="text-end">{{ '%0.3f' % path_info.best_avg|float }}</td>
+            <td class="text-end">{{ '%0.3f' % path_info.best_min|float }}</td>
+            <td class="text-end">{{ '%0.3f' % path_info.best_max|float }}</td>
           </tr>
         </tbody>
       </table>
