@@ -31,12 +31,14 @@ from common import utils
 _logger: logging.Logger = None
 
 
-def create_stats(callback_name, callback_displayname, freq_timer,
-                freq_callback, num_huge_gap, graph_filename) -> dict:
+def create_stats(callback: CallbackBase, package_dict:dict, freq_timer,
+                 freq_callback, num_huge_gap, graph_filename) -> dict:
     """Create stats"""
     stats = {
-        'callback_name': callback_name,
-        'callback_displayname': callback_displayname,
+        'node_name': callback.node_name,
+        'package_name': utils.nodename2packagename(package_dict, callback.node_name),
+        'callback_name': callback.callback_name,
+        'callback_displayname': utils.make_callback_displayname(callback),
         'freq_timer': freq_timer,
         'freq_callback': freq_callback,
         'num_huge_gap': num_huge_gap,
@@ -45,7 +47,7 @@ def create_stats(callback_name, callback_displayname, freq_timer,
     return stats
 
 
-def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool):
+def analyze_callback(args, dest_dir, package_dict: dict, callback: CallbackBase) -> tuple(dict, bool):
     """Analyze a timer callback function"""
     _logger.debug(f'Processing: {callback.callback_name}')
     freq_timer = 1e9 / float(callback.timer.period_ns)
@@ -69,8 +71,7 @@ def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool
     freq_callback_avg = statistics.mean(freq_callback_list)
     num_huge_gap = sum(freq_callback <= freq_threshold for freq_callback in freq_callback_list)
 
-    stats = create_stats(callback.callback_name, utils.make_callback_displayname(callback),
-                         freq_timer, freq_callback_avg, num_huge_gap, graph_filename)
+    stats = create_stats(callback, package_dict, freq_timer, freq_callback_avg, num_huge_gap, graph_filename)
 
     is_warning = False
     if num_huge_gap >= args.count_threshold:
@@ -85,13 +86,17 @@ def analyze(args, dest_dir):
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
+    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
+
     stats_all_list = []
     stats_warning_list = []
 
     callbacks = app.callbacks
     for callback in callbacks:
+        if utils.check_if_ignore(package_dict, ignore_list, callback.callback_name):
+            continue
         if 'timer_callback' == callback.callback_type.type_name:
-            stats, is_warning = analyze_callback(args, dest_dir, callback)
+            stats, is_warning = analyze_callback(args, dest_dir, package_dict, callback)
             if stats:
                 stats_all_list.append(stats)
             if is_warning:

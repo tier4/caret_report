@@ -138,14 +138,17 @@ def make_graph(pub_freq: tuple[list[float], list[int]],
     return graph
 
 
-def create_stats(title, graph_filename, topic_name, node_name, callback_name, callback_displayname,
-                publishment_freq, subscription_freq, num_huge_gap) -> dict:
+def create_stats(title, package_dict,  graph_filename, topic_name, publisher_name,
+                 node_name, callback_name, callback_displayname,
+                 publishment_freq, subscription_freq, num_huge_gap) -> dict:
     """Create stats"""
     stats = {
         'title': title,
         'graph_filename': graph_filename,
         'topic_name': topic_name,
+        'publisher_name': publisher_name,
         'node_name': node_name,
+        'package_name': utils.nodename2packagename(package_dict, node_name),
         'callback_name': callback_name,
         'callback_displayname': callback_displayname,
         'publishment_freq': publishment_freq,
@@ -155,7 +158,7 @@ def create_stats(title, graph_filename, topic_name, node_name, callback_name, ca
     return stats
 
 
-def analyze_communication(args, dest_dir, communication: Communication) -> tuple(dict, bool):
+def analyze_communication(args, dest_dir, package_dict, communication: Communication) -> tuple(dict, bool):
     """Analyze a subscription callback function"""
     title = f'{communication.topic_name} : {communication.publish_node_name} -> {communication.subscribe_node_name}'
     graph_filename = communication.topic_name.replace('/', '_')[1:] + communication.subscribe_node_name.replace('/', '_')
@@ -196,7 +199,8 @@ def analyze_communication(args, dest_dir, communication: Communication) -> tuple
     freq_threshold = mean_pub_freq * (1 - args.gap_threshold_ratio)
     num_huge_gap = sum(freq_callback <= freq_threshold for freq_callback in matched_pubsub_freq[2])
 
-    stats = create_stats(title, graph_filename, communication.topic_name, communication.subscribe_node_name,
+    stats = create_stats(title, package_dict, graph_filename, communication.topic_name,
+                         communication.publish_node_name, communication.subscribe_node_name,
                          callback_name, display_name, mean_pub_freq, mean_sub_freq, num_huge_gap)
 
     is_warning = False
@@ -211,6 +215,8 @@ def analyze(args, dest_dir):
     lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
+
+    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
 
     stats_all_list = []
     stats_warning_list = []
@@ -227,7 +233,9 @@ def analyze(args, dest_dir):
             continue
 
         for communication in communication_list:
-            stats, is_warning = analyze_communication(args, dest_dir, communication)
+            if utils.check_if_ignore(package_dict, ignore_list, communication.callback_subscription.callback_name):
+                continue
+            stats, is_warning = analyze_communication(args, dest_dir, package_dict, communication)
             if stats:
                 stats_all_list.append(stats)
             if is_warning:

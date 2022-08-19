@@ -22,7 +22,6 @@ import argparse
 import logging
 import re
 import math
-import json
 import yaml
 import numpy as np
 import pandas as pd
@@ -146,31 +145,7 @@ def analyze_package(node_list: list[Node], dest_dir: str):
         yaml.safe_dump(stats, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
-def make_package_list(package_list_json_path: str) -> tuple(dict, list):
-    """make package list"""
-    package_dict = {}   # pairs of package name and regular_exp
-    ignore_list = []
 
-    package_list_json = ''
-    if package_list_json_path != '':
-        try:
-            with open(package_list_json_path, encoding='UTF-8') as f_json:
-                package_list_json = json.load(f_json)
-        except:
-            _logger.error(f'Unable to read {package_list_json_path}')
-
-    if package_list_json == '':
-        package_dict = {
-            'package': r'.*'
-        }
-    else:
-        package_dict =package_list_json['package_dict']
-        ignore_list =package_list_json['ignore_list']
-
-    _logger.debug(f'package_dict = {package_dict}')
-    _logger.debug(f'ignore_list = {ignore_list}')
-
-    return package_dict, ignore_list
 
 
 def get_node_list(lttng: Lttng, app: Application,
@@ -198,7 +173,7 @@ def get_node_list(lttng: Lttng, app: Application,
 def analyze(args, dest_dir):
     """Analyze All"""
     utils.make_destination_dir(dest_dir, args.force, _logger)
-    package_dict, ignore_list = make_package_list(args.package_list_json)
+    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
     lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     arch.export('architecture.yaml', force=True)
