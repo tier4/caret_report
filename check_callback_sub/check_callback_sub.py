@@ -138,7 +138,7 @@ def make_graph(pub_freq: tuple[list[float], list[int]],
     return graph
 
 
-def create_stats(title, graph_filename, topic_name, node_name, callback_name, display_name,
+def create_stats(title, graph_filename, topic_name, node_name, callback_name, callback_displayname,
                 publishment_freq, subscription_freq, num_huge_gap) -> dict:
     """Create stats"""
     stats = {
@@ -147,7 +147,7 @@ def create_stats(title, graph_filename, topic_name, node_name, callback_name, di
         'topic_name': topic_name,
         'node_name': node_name,
         'callback_name': callback_name,
-        'display_name': display_name,
+        'callback_displayname': callback_displayname,
         'publishment_freq': publishment_freq,
         'subscription_freq': subscription_freq,
         'num_huge_gap': num_huge_gap,
