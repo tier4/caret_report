@@ -14,10 +14,13 @@
 """
 Utility functions
 """
+from __future__ import annotations
 import os
 import sys
 import shutil
 import logging
+import re
+import json
 from caret_analyze import Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase
 from bokeh.plotting import Figure, save
@@ -94,3 +97,52 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
     except:
         if logger:
             logger.warning('Unable to export png')
+
+
+def make_package_list(package_list_json_path: str, logger: logging.Logger = None) -> tuple[dict, list]:
+    """make package list"""
+    package_dict = {}   # pairs of package name and regular_exp
+    ignore_list = []
+
+    package_list_json = ''
+    if package_list_json_path != '':
+        try:
+            with open(package_list_json_path, encoding='UTF-8') as f_json:
+                package_list_json = json.load(f_json)
+        except:
+            if logger:
+                logger.error(f'Unable to read {package_list_json_path}')
+            else:
+                print(f'Unable to read {package_list_json_path}')
+
+    if package_list_json == '':
+        package_dict = {
+            'package': r'.*'
+        }
+    else:
+        package_dict =package_list_json['package_dict']
+        ignore_list =package_list_json['ignore_list']
+
+    if logger:
+        logger.debug(f'package_dict = {package_dict}')
+        logger.debug(f'ignore_list = {ignore_list}')
+
+    return package_dict, ignore_list
+
+
+def nodename2packagename(package_dict: dict, node_name: str) -> str:
+    """Convert node name to package name"""
+    for package_name, regexp in package_dict.items():
+        if re.search(regexp, node_name):
+            return package_name
+    return ''
+
+
+def check_if_ignore(package_dict: dict, ignore_list: list[str], callback_name: str) -> bool:
+    """Check if the callback should be ignored"""
+    # if nodename2packagename(package_dict, callback_name) == '':
+    #     return True
+    for ignore in ignore_list:
+        if re.search(ignore, callback_name):
+            return True
+    return False

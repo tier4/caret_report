@@ -52,10 +52,6 @@ def make_report(stats_path: str):
     template_path = f'{Path(__file__).resolve().parent}/template_path.html'
     render_page(stats, report_name, destination_path, template_path)
 
-    destination_path = f'{stats_dir}/index_image.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_path_image.html'
-    render_page(stats, report_name, destination_path, template_path)
-
 
 def parse_arg():
     """Parse arguments"""
