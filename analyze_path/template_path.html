@@ -15,6 +15,11 @@
     <hr>
     <h2 id="{{ path_info.target_path_name }}">Path Name: {{ path_info.target_path_name }}</h2>
 
+    {% if path_info.best_avg == "---" %}
+    <div class="alert alert-danger" role="alert">There are no-traffic communications !!</div>
+    {% endif %}
+
+
     <h4>Node list in the path</h4>
     <ul>
     {% for names in path_info.node_names %}
@@ -23,7 +28,9 @@
     </ul>
 
     <h4>Message Flow (参考のため一部を抜粋)</h4>
-    <a href={{ path_info.filename_messageflow }}.html target="_blank">message flow (full)</a><br>
+    {% if path_info.filename_messageflow != "" %}
+      <a href={{ path_info.filename_messageflow }}.html target="_blank">message flow (full)</a><br>
+    {% endif %}
     <a href={{ path_info.filename_messageflow_short }}.html target="_blank">
       <img src={{ path_info.filename_messageflow_short }}.png>
     </a>

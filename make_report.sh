@@ -16,7 +16,7 @@ python3 ${script_path}/check_callback_timer/make_report_timer.py ${report_dir_na
 
 # Path analysis
 python3 ${script_path}/analyze_path/add_path_to_architecture.py ${target_path_json} --trace_data=${trace_data} --max_node_depth=${max_node_depth} -v
-python3 ${script_path}/analyze_path/analyze_path.py ${trace_data} architecture_path.yaml -s ${start_time} -d ${duration_time} -f -v
+python3 ${script_path}/analyze_path/analyze_path.py ${trace_data} architecture_path.yaml -s ${start_time} -d ${duration_time} -f -v -m ${draw_all_message_flow}
 python3 ${script_path}/analyze_path/make_report_path.py ${report_dir_name}
 
 # Make top page

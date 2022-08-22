@@ -176,7 +176,7 @@ def analyze(args, dest_dir):
     package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
     lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
-    arch.export('architecture.yaml', force=True)
+    arch.export(dest_dir + '/architecture.yaml', force=True)
     app = Application(arch, lttng)
 
     for package_name, regexp in package_dict.items():
