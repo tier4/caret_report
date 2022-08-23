@@ -95,17 +95,18 @@
     {% endif %}
 
     <h3>Callback Latency</h3>
-    <p>List of callback function latency time (Top5)</p>
+    <p>List of callback function latency time (Top k)</p>
     {% for package_name in package_list %}
       <h4>{{ package_name }}</h4>
-      <table class="table table-hover table-bordered ">
+      <div style="height: calc(50vh); overflow: scroll">
+      <table class="table table-hover table-bordered height">
         <tr class="table-primary text-center">
           <th width="60%">Callback Name</th>
           <th width="10%">Avg [ms]</th>
           <th width="10%">Min [ms]</th>
           <th width="10%">Max [ms]</th>
         </tr>
-        {% for info in stats_node_dict[package_name]['latency_top5'] %}
+        {% for info in stats_node_dict[package_name]['latency_topk'] %}
           <tr>
             <td><a href="{{ info['link'] }}">{{ info['displayname'] }}</a></td>
             <td class="text-end">{{ '%.3f' % info['avg']|float }}</td>
@@ -114,6 +115,7 @@
           </tr>
         {% endfor %}
       </table>
+      </div>
     {% endfor %}
 
   </div>  <!-- container -->

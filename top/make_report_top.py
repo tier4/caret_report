@@ -47,6 +47,7 @@ def render_page(destination_path, template_path, report_name, package_list, stat
 def get_package_list(report_dir: str) -> list[str]:
     """Create package name list in node analysis"""
     package_list = os.listdir(report_dir + '/node')
+    package_list = [f for f in package_list if os.path.isdir(os.path.join(report_dir + '/node', f))]
     package_list.sort()
     return package_list
 
@@ -54,11 +55,9 @@ def get_package_list(report_dir: str) -> list[str]:
 def get_stats_node(report_dir: str) -> dict:
     """Read stats"""
     stats_dict = {}
-    node_dir = report_dir + '/node/'
-    package_list = os.listdir(node_dir)
-    package_list.sort()
+    package_list = get_package_list(report_dir)
     for package_name in package_list:
-        with open(node_dir + package_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
+        with open(report_dir + '/node/' + package_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
             stats = yaml.safe_load(f_yaml)
             stats_dict[package_name] = stats
     return stats_dict
@@ -89,7 +88,7 @@ def get_stats_callback_timer(report_dir: str):
     return stats, stats_warn
 
 
-def find_latency_top5(package_name, stats_node) -> None:
+def find_latency_topk(package_name, stats_node, numk=20) -> None:
     """Find callback functions whose latency time is the longest(top5), and add this information into stats"""
     callback_latency_list = []
     for node_name, node_info in stats_node.items():
@@ -104,8 +103,8 @@ def find_latency_top5(package_name, stats_node) -> None:
             })
 
     callback_latency_list = sorted(callback_latency_list, reverse=True, key=lambda x: x['avg'])
-    callback_latency_list = callback_latency_list[:5]
-    stats_node['latency_top5'] = callback_latency_list
+    callback_latency_list = callback_latency_list[:numk]
+    stats_node['latency_topk'] = callback_latency_list
 
 
 def make_report(report_dir: str, index_filename: str='index'):
@@ -115,7 +114,7 @@ def make_report(report_dir: str, index_filename: str='index'):
     package_list = get_package_list(report_dir)
     stats_node_dict = get_stats_node(report_dir)
     for package_name in package_list:
-        find_latency_top5(package_name, stats_node_dict[package_name])
+        find_latency_topk(package_name, stats_node_dict[package_name])
 
     stats_path = get_stats_path(report_dir)
     _, stats_cb_sub_warn = get_stats_callback_subscription(report_dir)
