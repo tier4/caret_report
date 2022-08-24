@@ -81,7 +81,7 @@ def analyze_callback(callback_name: str, callback_displayname: str, metrics_str:
     figure_hist = draw_histogram(data, callback_displayname, metrics_str)
     if figure_hist:
         filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
-        utils.export_graph(figure_hist, dest_dir_path, filename_hist)
+        utils.export_graph(figure_hist, dest_dir_path, filename_hist, _logger)
         callack_stats['filename_hist'] = filename_hist
     else:
         callack_stats['filename_hist'] = ''
@@ -106,7 +106,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             p_timeseries.frame_width = 1000
             p_timeseries.frame_height = 350
             p_timeseries.y_range.start = 0
-            utils.export_graph(p_timeseries, dest_dir, filename_timeseries)
+            utils.export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
             node_stats['filename_timeseries'][metrics] = filename_timeseries
         except:
             _logger.warning(f'This node is not called: {node.node_name}')
