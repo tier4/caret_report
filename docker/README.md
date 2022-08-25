@@ -1,5 +1,5 @@
 # Use in Docker
-## General Setup Process for Docker
+## General setup process for Docker
 - https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
 ```sh
@@ -21,14 +21,15 @@ sudo chgrp docker /var/run/docker.sock
 sudo reboot yes
 ```
 
-## Create CARET_report Docker Image
+## Create CARET_report Docker image
 ```sh
 cd CARET_report
 docker image build -t caret/caret_report ./docker
 ```
 
-## Run Scripts in Docker to Create Report
+## Run scripts to create report in Docker
 ```
+cd CARET_report
 # Settings: modify for your usage and environment
 export script_path=`pwd`
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss

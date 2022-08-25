@@ -1,105 +1,91 @@
 # Scripts to create analysis reports using CARET trace data
 
+<b>Open a [sample report page](todo)</b>
+
+## What is created with this repo?
+
+- Input:
+    - CARET trace data (CTF file)
+- Output (html pages):
+    - [Top page (index.html)](./top):
+        - Links to each report page
+        - Summary
+    - [Node analysis report](analyze_node):
+        - Detailed information of each callback function
+        - Verification results whether each timer/subscription callback function runs appropriately
+    - [Path analysis report](analyze_path):
+        - Message flow graph and response time of each target path
+
 ## Requirements
 
-todo
+- Ubuntu 20.04
+- ROS2 Galactic
+- [CARET](https://github.com/tier4/caret)
+- The followings
 
 ```sh
-pip install Flask==2.1.0
-chronium to save as png
+# Flask 2.1.0 (need to specify version) is required to create html report pages
+pip3 install Flask==2.1.0
+
+# firefox, selenium and geckodriver are required to generate graph image files
+sudo apt install -y firefox
+pip3 install selenium
+wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz
+tar xzvf geckodriver-v0.31.0-linux64.tar.gz
+mv geckodriver /usr/local/bin/.
 ```
+
+### Note
+- It uses lots of memory
+    - 64GB or more is recommended
+    - In case crash happens due to memory shortage, increase swap space
 
 ## Sample
 
-todo
-
 Please refer to [sample_autoware](./sample_autoware) to find quick usage
 
+## How to use
 
-## Script description
-
-- Node analysis
-    - `analyze_node` : Create timeseries and histogram graph for callabck functions
-        - This report shows detailed information
-        - It is useful for each package developers, also to investigate a problem
-        - Link to sample : todo
-    - `check_callback_sub` : Check gap between publishment and subscription callback frequency
-        - This report shows subscription callback functions which doesn't wake up appropriately
-        - It is useful to find out nodes which may have a problem. Please use this result as subsidiary data
-        - Link to sample : todo
-    - `check_callback_timer` : Check gap between timer frequency and timer callback frequency
-        - This report shows timer callback functions which doesn't wake up appropriately
-        - It is useful to find out nodes which may have a problem. Please use this result as subsidiary data
-        - Link to sample : todo
-- Path analysis
-    - `analyze_path` : Create message_flow graph and calculate response time for target paths
-        - This report shows a message flow graph and a response time for each target path
-        - It is useful to check if the response time meets constraints
-        - In case you find a problem, you can see the message flow graph and the node analysis report to investigate more details
-        - Link to sample : todo
-
-## Commands to run scripts
+- Run the following commands
+    - Make sure to modify settings for your usage and environment
+    - Make sure to prepare JSON files
+- `report_{dir_name_of_trace_data}` is created
+- Open `index.html` to see a report
 
 ```sh
-# Settings
-export script_path=./CARET_report
-export package_list_json=./package_list.json
-export target_path_json=./target_path.json
-export trace_data=~/.ros/tracing/caret_sample/
-export start_time=0
-export duration_time=10
-export max_node_depth=20
-export draw_all_message_flow=false
+# Settings: modify for your usage and environment
+export script_path=./CARET_report                   # Path to this repo cloned
+export package_list_json=./package_list.json        # Path to setting file you prepare
+export target_path_json=./target_path.json          # Path to setting file you prepare
+export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
+export start_time=0                                 # start time[sec] for analysis
+export duration_time=9999                           # duration time[sec] for analysis
+export max_node_depth=20                            # The number of depth to search path
+export draw_all_message_flow=false                  # Flag to a create message flow graph for a whole time period (this will increase report creation time)
 
-trace_data_name=`basename ${trace_data}`
-report_dir_name=report_${trace_data_name}
-
-# Node analysis
-python3 ${script_path}/analyze_node/analyze_node.py ${trace_data} --package_list_json=${package_list_json} -s ${start_time} -d ${duration_time} -f -v
-python3 ${script_path}/analyze_node/make_report_node.py ${report_dir_name}
-
-python3 ${script_path}/check_callback_sub/check_callback_sub.py ${trace_data} --package_list_json=${package_list_json} -s ${start_time} -d ${duration_time} -f -v
-python3 ${script_path}/check_callback_sub/make_report_sub.py ${report_dir_name}
-
-python3 ${script_path}/check_callback_timer/check_callback_timer.py ${trace_data} --package_list_json=${package_list_json} -s ${start_time} -d ${duration_time} -f -v
-python3 ${script_path}/check_callback_timer/make_report_timer.py ${report_dir_name}
-
-# Path analysis
-python3 ${script_path}/analyze_path/add_path_to_architecture.py ${target_path_json} --trace_data=${trace_data} --max_node_depth=${max_node_depth} -v
-python3 ${script_path}/analyze_path/analyze_path.py ${trace_data} architecture_path.yaml -s ${start_time} -d ${duration_time} -f -v -m ${draw_all_message_flow}
-python3 ${script_path}/analyze_path/make_report_path.py ${report_dir_name}
-
-# Make top page
-python3 ${script_path}/top/make_report_top.py ${report_dir_name}
+# Run script
+sh ${script_path}/make_report.sh
 ```
 
-## Necessary files and settings
-
-### CARET trace data
-
-- `trace_data` : directory containing [CARET](https://github.com/tier4/caret) trace data
-- `start_time` , `duration_time` : time [sec] to analyze
+## Setting JSON files
 
 ### package_list.json
-
-- `package_list_json` : path to the JSON file
-- This file is used for node analysis
+- Node analysis report will be created for each `package_name`
+- Settings
+    - `package_list_json` : path to the JSON file
 - Please describe the following information
-    - Package name information
-        - Pair of "package name" and "regular expression for nodes belonging to the package"
-        - Node analysis report will be created for each "package name"
-    - Ignore node list
-        - Regular expression for nodes to be ignored
+    - Package name information (`package_dict`)
+        - Pairs of `package_name` and `regular expression for nodes belonging to the package`
+    - Ignore node list (`ignore_list`)
+        - List of `Regular expression for nodes to be ignored`
 
 ```json:package_list.json
 {
     "package_dict": {
-        # package_name : regular expression
-        "Package_A"    : "^/package_a",
-        "Package_B"    : "^/package_b",
+        "Package_A" : "^/package_a",
+        "Package_B" : "^/package_b",
     },
     "ignore_list": [
-        # ignore node list in regular expression
         "noisy_node_name_a",
         "^/annoying_package_name",
     ]
@@ -108,33 +94,54 @@ python3 ${script_path}/top/make_report_top.py ${report_dir_name}
 
 ### target_path.json
 
-- `target_path_json` : path to the JSON file
-- `max_node_depth` : In case a target path is not found, increase the number. In case the script stuck, descrease the number
-- This file is used for path analysis
+- Path analysis report will show results for pathes described in this JSON file
+- Settings
+    - `target_path_json` : path to the JSON file
+    - `max_node_depth` : In case a target path is not found, increase the number. In case the script stuck, descrease the number
 - Please describe the following information
-    - Pair of "target_path_name" and "path"
-    - "path" is a list of node name
-- Note
-    - You can also set "[node name, topic name]" instead of "node name" . It is useful when two nodes are connected via multi topics
-    - You can use [Dear RosNodeViewer](https://github.com/takeshi-iwanari/dear_ros_node_viewer) to easily create node list
-        - Click nodes in the viewer, then click `Copy` in menu bar and paste to JSON file
+    - Pair of `name` and `path`
+    - `path` is a list of `node_name` (note: `path` doean't mean path as filesystem!)
+        - Regular expression is supported
+        - You can also set `[node_name, topic_name]` instead of `node_name` . It is useful when two nodes are connected via multiple topics
+
 
 ```json:target_path.json
 [
     {
-        "name": "target_path_0",
+        "name": "path_name",
         "path": [
-            "/package_a/node_0",
-            "/package_a/node_1",
-            "/package_b/node_2_.*"    # you can use regular expression
-        ]
-    },
-    {
-        "name": "target_path_2",
-        "path": [
-            "/package_a/node_5",
-            ["/package_a/node_6", "/topic_name_x"],    # you can specify pair of node name and topic name
-            "/package_b/node_7"
+            "The first node_name in the path",
+            "The second node_name in the path",
+            ["The third node_name in the path", "The topic name published by the third node"]
+            "...",
+            "The last node_name in the path",
         ]
     }
+    {
+        "name": "sample_path",
+        "path": [
+            "/package_a/node_1",
+            "/package_a/node_2",
+            ["/package_a/node_3", "/topic_3"],
+            "/package_a/node_4_.*"
+        ]
+    },
 ]
+```
+
+## Tips
+
+### Easy way to create target_path.json
+
+- Install [Dear RosNodeViewer](https://github.com/takeshi-iwanari/dear_ros_node_viewer)
+- Open graph ( e.g.: `dear_ros_node_viewer architecture.yaml` )
+- Select nodes in the path which you want to analyze
+    - ctrl + click
+- Press C to export node name list to clip board
+- Paste the exported node name list to json file
+
+
+### Why regular expression is helpful?
+- In case a node name varies for each execution, you can write node name in JSON like the following
+    - Before: `/node_name_xyz_abc1234567_1234567_1234567891234567891`
+    - After: `/node_name_xyz.*`
