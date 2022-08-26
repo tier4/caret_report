@@ -1,5 +1,6 @@
 # report
 report*/
+architecture*.yaml
 dummy.html
 
 # colcon
