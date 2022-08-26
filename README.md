@@ -1,7 +1,5 @@
 # Scripts to create analysis reports using CARET trace data
 
-<b>Open a [sample report page](todo)</b>
-
 ## What is created with this repo?
 
 - Input:
@@ -15,6 +13,8 @@
         - Verification results whether each timer/subscription callback function runs appropriately
     - [Path analysis report](analyze_path):
         - Message flow graph and response time of each target path
+
+<b>Open a [sample report page](https://tier4.github.io/CARET_report/)</b>
 
 ## Requirements
 
@@ -42,7 +42,7 @@ sudo mv geckodriver /usr/local/bin/
 
 ## Sample
 
-Please refer to [sample_autoware](./sample_autoware) to find quick usage
+Please refer to [sample_autoware](./sample_autoware) to find sample settings and a full explanation of how to analyze Autoware with CARET
 
 ## How to use
 
@@ -58,7 +58,7 @@ export script_path=./CARET_report                   # Path to this repo cloned
 export package_list_json=./package_list.json        # Path to setting file you prepare
 export target_path_json=./target_path.json          # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
-export start_time=0                                 # start time[sec] for analysis
+export start_time=10                                # start time[sec] for analysis
 export duration_time=9999                           # duration time[sec] for analysis
 export max_node_depth=30                            # The number of depth to search path
 export draw_all_message_flow=false                  # Flag to a create message flow graph for a whole time period (this will increase report creation time)

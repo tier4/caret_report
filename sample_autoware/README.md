@@ -17,7 +17,6 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
     - We will re-build Autoware with CARET later, but it's recommended to make sure Autoware itself works appropriately in your PC
     - This explanation assumes you install Autoware to `${autoware_dir}` (e.g. `export autoware_dir=~/autoware` )
 
-
 ## 2. Install CARET
 
 - Follow [the instruction](https://tier4.github.io/CARET_doc/main/tutorials/installation/)
@@ -106,7 +105,7 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
     - Before running Autoware, some environmental settings need to be done
     - To run Autoware, `caret_autoware_launch` is used instead of `autoware_launch`
     - Please modify map_path and rosbag file for your environment
-    - Make sure that object detection works and path is created when you set a goal, so that you can analyze end-to-end path later
+    - Make sure that object detection works and path is created when you set a 2D Goal Pose, so that you can analyze end-to-end path later
     - The trace data will be created in `~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss`
 
 ```sh
@@ -142,7 +141,7 @@ export script_path=../
 export package_list_json=./package_list.json
 export target_path_json=./target_path.json
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss    # modify for your environment
-export start_time=0
+export start_time=20
 export duration_time=9999
 export max_node_depth=30
 export draw_all_message_flow=false
