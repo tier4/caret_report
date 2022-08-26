@@ -32,7 +32,7 @@ sudo apt install -y firefox
 pip3 install selenium
 wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz
 tar xzvf geckodriver-v0.31.0-linux64.tar.gz
-mv geckodriver /usr/local/bin/.
+sudo mv geckodriver /usr/local/bin/
 ```
 
 ### Note
@@ -116,7 +116,7 @@ sh ${script_path}/make_report.sh
             "...",
             "The last node_name in the path",
         ]
-    }
+    },
     {
         "name": "sample_path",
         "path": [
