@@ -40,7 +40,8 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
         - It's handy to wrap Autoware launcher to automatically start CARET trace session
 - How to modify:
     - Please refer to [this commit](https://github.com/takeshi-iwanari/autoware/commit/16fb26f365df64c4b7e279df35bdc41b72d7732b) , and make the same change
-    - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware/commit/b1e2f6ef5982ccbe9434bff49397b2783713cb98), so it may not valid in the future )
+        - Make sure you have `src/vendor/caret_autoware_launch/` by updating `src` ( `vcs import src < autoware.repos && vcs pull src` )
+    - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware/commit/b1e2f6ef5982ccbe9434bff49397b2783713cb98), so it may not be valid in the future )
 
         ```sh
         cd ${autoware_dir}
@@ -52,13 +53,13 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 ### 3.b Change code to avoid CARET restrictions
 
 - Changes, and Why the change is needed:
-    - Keep a node you want to analyze within the following CARET restrictions, otherwise CARET cannot trace data in the following cases:
-        - When a node has "two or more" timer callback functions whose timer priod are the same
-        - When a node has "two or more" subscription callback functions whose topic name are the same
+    - Keep a node you want to analyze within the following CARET restrictions:
+        - CARET cannot trace data, when a node has "two or more" timer callback functions whose timer priod are the same
+        - CARET cannot trace data, when a node has "two or more" subscription callback functions whose topic name are the same
     - Dependency on `rclcpp` needs to be written in package.xml
 - How to modify:
     - Please refer to [this commit](https://github.com/takeshi-iwanari/autoware.universe/commit/7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb) , and make the same change
-    - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware.universe/commit/2d62bdf127b8215c73be6416c57861d4a812ef0b), so it may not valid in the future )
+    - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware.universe/commit/2d62bdf127b8215c73be6416c57861d4a812ef0b), so it may not be valid in the future )
         ```sh
         cd ${autoware_dir}
         cd src/universe/autoware.universe/
@@ -72,7 +73,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 ### Build Autoware
 
 - Note:
-    - Before building Autoware, CARET needs to be enabled
+    - Before building Autoware, CARET needs to be enabled like the following commands
 
 ```sh
 cd ${autoware_dir}
@@ -102,7 +103,7 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
 
 ### Run Autoware
 - Note:
-    - Before running Autoware, some environmental settings need to be done
+    - Before running Autoware, some environmental settings need to be done like the following commands
     - To run Autoware, `caret_autoware_launch` is used instead of `autoware_launch`
     - Please modify map_path and rosbag file for your environment
     - Make sure that object detection works and path is created when you set a 2D Goal Pose, so that you can analyze end-to-end path later

@@ -8,10 +8,10 @@
     - [Top page (index.html)](./top):
         - Links to each report page
         - Summary
-    - [Node analysis report](analyze_node):
+    - [Node analysis report](./analyze_node):
         - Detailed information of each callback function
-        - Verification results whether each timer/subscription callback function runs appropriately
-    - [Path analysis report](analyze_path):
+        - Node health verification results by [subscription callback problem detector](./check_callback_sub) and [timer callback problem detector](./check_callback_timer)
+    - [Path analysis report](./analyze_path):
         - Message flow graph and response time of each target path
 
 <b>Open a [sample report page](https://tier4.github.io/CARET_report/)</b>
@@ -145,3 +145,6 @@ sh ${script_path}/make_report.sh
 - In case a node name varies for each execution, you can write node name in JSON like the following
     - Before: `/node_name_xyz_abc1234567_1234567_1234567891234567891`
     - After: `/node_name_xyz.*`
+
+### About sim_time
+The analysis scripts don't support sim_time. So, please be careful when you analyze trace data which have been created with `ros2 bag play` with `-r` option. For instance, "Frequency" will be half when you add `-r 0.5` option.

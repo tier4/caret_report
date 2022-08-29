@@ -1,4 +1,4 @@
-# Scripts to check subscription callbacks
+# Scripts to check subscription callback health
 
 ## What is created
 

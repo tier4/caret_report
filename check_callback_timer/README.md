@@ -1,4 +1,4 @@
-# Scripts to check timer callbacks
+# Scripts to check timer callback health
 
 ## What is created
 

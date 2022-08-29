@@ -29,18 +29,25 @@
       {% endfor %}
     </ul>
 
-    <h4>Subscription Callback Check</h4>
-    <p>This report shows subscription callback functions which doesn't wake up appropriately by comparing frequency of callback function and topic frequency.</p>
+    <h3>Node Problem Detection</h3>
+    <p>This report shows callback functions which don't wake up appropriately</p>
     <ul>
-      <li><a href="check_callback_sub/index_warning.html">Callbacks with warning</a></li>
-      <li><a href="check_callback_sub/index.html">(All Callbacks)</a></li>
+      <li>
+        Subscription Callback Health (Comparing frequency of callback function and topic frequency)
+        <ul>
+          <li><a href="check_callback_sub/index_warning.html">Callbacks with warning</a></li>
+          <li><a href="check_callback_sub/index.html">All Callbacks</a></li>
+        </ul>
+      </li>
+      <li>
+        Timer Callback Health (Comparing frequency of callback function and timer setting)
+        <ul>
+          <li><a href="check_callback_timer/index_warning.html">Callbacks with warning</a></li>
+          <li><a href="check_callback_timer/index.html">All Callbacks</a></li>
+        </ul>
+      </li>
     </ul>
-    <h4>Timer Callback Check</h4>
-    <p>This report shows timer callback functions which doesn't wake up appropriately by comparing frequency of callback function and timer setting.</p>
-    <ul>
-      <li><a href="check_callback_timer/index_warning.html">Callbacks with warning</a></li>
-      <li><a href="check_callback_timer/index.html">(All Callbacks)</a></li>
-    </ul>
+
 
     <hr><hr>
     <h2>Summary</h2>
@@ -97,6 +104,7 @@
     <h3>Callback Latency</h3>
     <p>List of callback function latency time (Top k)</p>
     {% for package_name in package_list %}
+      <br>
       <h4>{{ package_name }}</h4>
       <div style="height: calc(50vh); overflow: scroll">
       <table class="table table-hover table-bordered height">
