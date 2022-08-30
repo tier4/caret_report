@@ -25,7 +25,7 @@ app = flask.Flask(__name__)
 
 
 def render_page(destination_path, template_path, report_name, package_list, stats_node_dict,
-                stats_path, stats_cb_sub_warn, stats_cb_timer_warn):
+                stats_path, stats_cb_sub_warn, stats_cb_timer_warn, note_text_top, note_text_bottom):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -38,6 +38,8 @@ def render_page(destination_path, template_path, report_name, package_list, stat
                 stats_path=stats_path,
                 stats_cb_sub_warn=stats_cb_sub_warn,
                 stats_cb_timer_warn=stats_cb_timer_warn,
+                note_text_top=note_text_top,
+                note_text_bottom=note_text_bottom
             )
 
         with open(destination_path, 'w', encoding='utf-8') as f_html:
@@ -107,8 +109,21 @@ def find_latency_topk(package_name, stats_node, numk=20) -> None:
     stats_node['latency_topk'] = callback_latency_list
 
 
-def make_report(report_dir: str, index_filename: str='index'):
+def read_note_text(args) -> tuple[str, str]:
+    note_text_top = None
+    note_text_bottom = None
+    if os.path.exists(args.note_text_top):
+        with open(args.note_text_top, encoding='UTF-8') as note:
+            note_text_top = note.read()
+    if os.path.exists(args.note_text_bottom):
+        with open(args.note_text_bottom, encoding='UTF-8') as note:
+            note_text_bottom = note.read()
+    return note_text_top, note_text_bottom
+
+
+def make_report(args, index_filename: str='index'):
     """Make report page"""
+    report_dir = str(Path(args.report_directory[0]))
     report_name = report_dir.split('/')[-1]
 
     package_list = get_package_list(report_dir)
@@ -120,10 +135,12 @@ def make_report(report_dir: str, index_filename: str='index'):
     _, stats_cb_sub_warn = get_stats_callback_subscription(report_dir)
     _, stats_cb_timer_warn = get_stats_callback_timer(report_dir)
 
+    note_text_top, note_text_bottom = read_note_text(args)
+
     destination_path = f'{report_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_top.html'
     render_page(destination_path, template_path, report_name, package_list, stats_node_dict,
-                stats_path, stats_cb_sub_warn, stats_cb_timer_warn)
+                stats_path, stats_cb_sub_warn, stats_cb_timer_warn, note_text_top, note_text_bottom)
 
 
 def parse_arg():
@@ -131,6 +148,8 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to make report page')
     parser.add_argument('report_directory', nargs=1, type=str)
+    parser.add_argument('--note_text_top', type=str, default='')
+    parser.add_argument('--note_text_bottom', type=str, default='')
     args = parser.parse_args()
     return args
 
@@ -138,8 +157,7 @@ def parse_arg():
 def main():
     """Main function"""
     args = parse_arg()
-    report_dir = str(Path(args.report_directory[0]))
-    make_report(report_dir, 'index')
+    make_report(args, 'index')
     print('<<< OK. report page is created >>>')
 
 

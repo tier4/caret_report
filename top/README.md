@@ -13,7 +13,9 @@
 ### `make_report_top.py`
 
 ```sh:usage
-usage: make_report_top.py [-h] report_directory
+usage: make_report_top.py [-h] [--note_text_top NOTE_TEXT_TOP]
+                          [--note_text_bottom NOTE_TEXT_BOTTOM]
+                          report_directory
 ```
 
 - This script creates a report html page

@@ -148,3 +148,6 @@ sh ${script_path}/make_report.sh
 
 ### About sim_time
 The analysis scripts don't support sim_time. So, please be careful when you analyze trace data which have been created with `ros2 bag play` with `-r` option. For instance, "Frequency" will be half when you add `-r 0.5` option.
+
+### About Note
+Contents described in `note_text_top.txt` and `note_text_bottom.txt` are added to top page. You can freely add any comment there. e.g. you can add environment information.
