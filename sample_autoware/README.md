@@ -149,3 +149,7 @@ export draw_all_message_flow=false
 
 sh ${script_path}/make_report.sh
 ```
+
+## Note
+- In case you use LTTng 2.13+, run the following command before starting Autoware
+    - `ulimit -n 65535`
