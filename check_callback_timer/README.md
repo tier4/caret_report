@@ -3,17 +3,17 @@
 ## What is created
 
 - Verification result:
-    - This report shows gap between timer frequency and timer callback frequency
-    - This report also outputs warnings when the gap is huge, which means the callback function doesn't run appropriately
-    - It is useful to find out nodes which may have a problem. Please use this result as subsidiary data
+  - This report shows gap between timer frequency and timer callback frequency
+  - This report also outputs warnings when the gap is huge, which means the callback function doesn't run appropriately
+  - It is useful to find out nodes which may have a problem. Please use this result as subsidiary data
 - Artifacts
-    - `report_ooo/check_callback_timer/`
-        - `index.html` : report main page
-        - `index_warning.html` : report main page (callbacks with warning only)
-        - `ooo.html` : graph file as html
-        - `ooo.png` : graph file as image
-        - `stats_callback_timer.yaml` : statistics file
-        - `stats_callback_timer_warning.yaml` : statistics file (callbacks with warning only)
+  - `report_ooo/check_callback_timer/`
+    - `index.html` : report main page
+    - `index_warning.html` : report main page (callbacks with warning only)
+    - `ooo.html` : graph file as html
+    - `ooo.png` : graph file as image
+    - `stats_callback_timer.yaml` : statistics file
+    - `stats_callback_timer_warning.yaml` : statistics file (callbacks with warning only)
 
 ## Scripts
 
@@ -27,7 +27,7 @@ usage: check_callback_timer.py [-h] [--package_list_json PACKAGE_LIST_JSON] [-s 
 
 - This script checks gap between timer frequency and timer callback frequency
 - The condition of warning:
-    - `timer callback frequency` is less than `GAP_THRESHOLD_RATIO * timer_frequency` for `COUNT_THRESHOLD` times)
+  - `timer callback frequency` is less than `GAP_THRESHOLD_RATIO * timer_frequency` for `COUNT_THRESHOLD` times)
 
 ### `make_report_timer.py`
 

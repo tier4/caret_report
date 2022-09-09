@@ -1,20 +1,10 @@
 [
-    {
-        "name": "sample_path",
-        "path": [
-            "/node_src",
-            "/node_1",
-            "/node_2",
-            "/node_3",
-            "/node_dst"
-        ]
-    },
-    {
-        "name": "sample_path_2",
-        "path": [
-            "/node_1",
-            "/node_2",
-            "/node_3"
-        ]
-    }
+  {
+    "name": "sample_path",
+    "path": ["/node_src", "/node_1", "/node_2", "/node_3", "/node_dst"]
+  },
+  {
+    "name": "sample_path_2",
+    "path": ["/node_1", "/node_2", "/node_3"]
+  }
 ]

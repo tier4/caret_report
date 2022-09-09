@@ -1,83 +1,83 @@
 [
-    {
-        "name": "sensing_lidar_top-sensing_lidar_concatenate",
-        "path": [
-            "/sensing/lidar/top/velodyne_convert_node",
-            "/sensing/lidar/top/crop_box_filter_self",
-            "/sensing/lidar/top/crop_box_filter_mirror",
-            "/sensing/lidar/top/distortion_corrector_node",
-            "/sensing/lidar/top/ring_outlier_filter",
-            "/sensing/lidar/concatenate_data"
-        ]
-    },
-    {
-        "name": "sensing_lidar_top-localization_stop_filter",
-        "path": [
-            "/sensing/lidar/top/velodyne_convert_node",
-            "/sensing/lidar/top/crop_box_filter_self",
-            "/sensing/lidar/top/crop_box_filter_mirror",
-            "/sensing/lidar/top/distortion_corrector_node",
-            "/sensing/lidar/top/ring_outlier_filter",
-            "/localization/util/crop_box_filter_measurement_range",
-            "/localization/util/voxel_grid_downsample_filter",
-            "/localization/util/random_downsample_filter",
-            "/localization/pose_estimator/ndt_scan_matcher",
-            "/localization/pose_twist_fusion_filter/ekf_localizer",
-            "/localization/pose_twist_fusion_filter/stop_filter"
-        ]
-    },
-    {
-        "name": "e2e-lidar_top-obstacle_stop_planner-vehicle_cmd_gate",
-        "path": [
-            "/sensing/lidar/top/velodyne_convert_node",
-            "/sensing/lidar/top/crop_box_filter_self",
-            "/sensing/lidar/top/crop_box_filter_mirror",
-            "/sensing/lidar/top/distortion_corrector_node",
-            "/sensing/lidar/top/ring_outlier_filter",
-            "/sensing/lidar/concatenate_data",
-            "/perception/obstacle_segmentation/crop_box_filter",
-            "/perception/obstacle_segmentation/common_ground_filter",
-            "/perception/occupancy_grid_map/occupancy_grid_map_node",
-            "/perception/obstacle_segmentation/occupancy_grid_map_outlier_filter",
-            "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
-            "/planning/scenario_planning/scenario_selector",
-            "/planning/scenario_planning/motion_velocity_smoother",
-            "/control/trajectory_follower/controller_node_exe",
-            "/control/vehicle_cmd_gate"
-        ]
-    },
-    {
-        "name": "e2e-lidar_top-map_based_prediction-plannig-vehicle_cmd_gate",
-        "path": [
-            "/sensing/lidar/top/velodyne_convert_node",
-            "/sensing/lidar/top/crop_box_filter_self",
-            "/sensing/lidar/top/crop_box_filter_mirror",
-            "/sensing/lidar/top/distortion_corrector_node",
-            "/sensing/lidar/top/ring_outlier_filter",
-            "/sensing/lidar/concatenate_data",
-            "/perception/obstacle_segmentation/crop_box_filter",
-            "/perception/obstacle_segmentation/common_ground_filter",
-            "/perception/occupancy_grid_map/occupancy_grid_map_node",
-            "/perception/obstacle_segmentation/occupancy_grid_map_outlier_filter",
-            "/perception/object_recognition/detection/voxel_based_compare_map_filter",
-            "/perception/object_recognition/detection/clustering/voxel_grid_filter.*",
-            "/perception/object_recognition/detection/clustering/outlier_filter",
-            "/perception/object_recognition/detection/clustering/euclidean_cluster",
-            "/perception/object_recognition/detection/clustering/shape_estimation",
-            "/perception/object_recognition/detection/clustering/detected_object_feature_remover",
-            "/perception/object_recognition/detection/object_association_merger.*",
-            "/perception/object_recognition/detection/object_association_merger.*",
-            "/perception/object_recognition/detection/object_lanelet_filter",
-            "/perception/object_recognition/tracking/multi_object_tracker",
-            "/perception/object_recognition/prediction/map_based_prediction",
-            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
-            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
-            "/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner",
-            "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
-            "/planning/scenario_planning/scenario_selector",
-            "/planning/scenario_planning/motion_velocity_smoother",
-            "/control/trajectory_follower/controller_node_exe",
-            "/control/vehicle_cmd_gate"
-        ]
-    }
+  {
+    "name": "sensing_lidar_top-sensing_lidar_concatenate",
+    "path": [
+      "/sensing/lidar/top/velodyne_convert_node",
+      "/sensing/lidar/top/crop_box_filter_self",
+      "/sensing/lidar/top/crop_box_filter_mirror",
+      "/sensing/lidar/top/distortion_corrector_node",
+      "/sensing/lidar/top/ring_outlier_filter",
+      "/sensing/lidar/concatenate_data"
+    ]
+  },
+  {
+    "name": "sensing_lidar_top-localization_stop_filter",
+    "path": [
+      "/sensing/lidar/top/velodyne_convert_node",
+      "/sensing/lidar/top/crop_box_filter_self",
+      "/sensing/lidar/top/crop_box_filter_mirror",
+      "/sensing/lidar/top/distortion_corrector_node",
+      "/sensing/lidar/top/ring_outlier_filter",
+      "/localization/util/crop_box_filter_measurement_range",
+      "/localization/util/voxel_grid_downsample_filter",
+      "/localization/util/random_downsample_filter",
+      "/localization/pose_estimator/ndt_scan_matcher",
+      "/localization/pose_twist_fusion_filter/ekf_localizer",
+      "/localization/pose_twist_fusion_filter/stop_filter"
+    ]
+  },
+  {
+    "name": "e2e-lidar_top-obstacle_stop_planner-vehicle_cmd_gate",
+    "path": [
+      "/sensing/lidar/top/velodyne_convert_node",
+      "/sensing/lidar/top/crop_box_filter_self",
+      "/sensing/lidar/top/crop_box_filter_mirror",
+      "/sensing/lidar/top/distortion_corrector_node",
+      "/sensing/lidar/top/ring_outlier_filter",
+      "/sensing/lidar/concatenate_data",
+      "/perception/obstacle_segmentation/crop_box_filter",
+      "/perception/obstacle_segmentation/common_ground_filter",
+      "/perception/occupancy_grid_map/occupancy_grid_map_node",
+      "/perception/obstacle_segmentation/occupancy_grid_map_outlier_filter",
+      "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
+      "/planning/scenario_planning/scenario_selector",
+      "/planning/scenario_planning/motion_velocity_smoother",
+      "/control/trajectory_follower/controller_node_exe",
+      "/control/vehicle_cmd_gate"
+    ]
+  },
+  {
+    "name": "e2e-lidar_top-map_based_prediction-plannig-vehicle_cmd_gate",
+    "path": [
+      "/sensing/lidar/top/velodyne_convert_node",
+      "/sensing/lidar/top/crop_box_filter_self",
+      "/sensing/lidar/top/crop_box_filter_mirror",
+      "/sensing/lidar/top/distortion_corrector_node",
+      "/sensing/lidar/top/ring_outlier_filter",
+      "/sensing/lidar/concatenate_data",
+      "/perception/obstacle_segmentation/crop_box_filter",
+      "/perception/obstacle_segmentation/common_ground_filter",
+      "/perception/occupancy_grid_map/occupancy_grid_map_node",
+      "/perception/obstacle_segmentation/occupancy_grid_map_outlier_filter",
+      "/perception/object_recognition/detection/voxel_based_compare_map_filter",
+      "/perception/object_recognition/detection/clustering/voxel_grid_filter.*",
+      "/perception/object_recognition/detection/clustering/outlier_filter",
+      "/perception/object_recognition/detection/clustering/euclidean_cluster",
+      "/perception/object_recognition/detection/clustering/shape_estimation",
+      "/perception/object_recognition/detection/clustering/detected_object_feature_remover",
+      "/perception/object_recognition/detection/object_association_merger.*",
+      "/perception/object_recognition/detection/object_association_merger.*",
+      "/perception/object_recognition/detection/object_lanelet_filter",
+      "/perception/object_recognition/tracking/multi_object_tracker",
+      "/perception/object_recognition/prediction/map_based_prediction",
+      "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+      "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
+      "/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner",
+      "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
+      "/planning/scenario_planning/scenario_selector",
+      "/planning/scenario_planning/motion_velocity_smoother",
+      "/control/trajectory_follower/controller_node_exe",
+      "/control/vehicle_cmd_gate"
+    ]
+  }
 ]

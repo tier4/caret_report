@@ -3,10 +3,10 @@
 ## What is created
 
 - Report top page
-    - Links to each analysis report
-    - Summary
+  - Links to each analysis report
+  - Summary
 - Artifacts
-    - `report_ooo/index.html` : report main page
+  - `report_ooo/index.html` : report main page
 
 ## Scripts
 

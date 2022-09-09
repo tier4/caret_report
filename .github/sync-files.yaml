@@ -21,4 +21,3 @@
 - repository: tier4/caret_common
   files:
     - source: .cspell.json
-

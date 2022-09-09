@@ -1,6 +1,8 @@
 # Use in Docker
+
 ## General setup process for Docker
-- https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
+
+- <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker>
 
 ```sh
 # Retrieved from the above document
@@ -22,12 +24,14 @@ sudo reboot yes
 ```
 
 ## Create CARET_report Docker image
+
 ```sh
 cd CARET_report
 docker image build -t caret/caret_report ./docker
 ```
 
 ## Run scripts to create report in Docker
+
 ```
 cd CARET_report
 # Settings: modify for your usage and environment
