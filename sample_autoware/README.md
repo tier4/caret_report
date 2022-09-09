@@ -144,7 +144,7 @@ export target_path_json=./target_path.json
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss    # modify for your environment
 export start_time=20
 export duration_time=9999
-export max_node_depth=30
+export max_node_depth=2
 export draw_all_message_flow=false
 
 sh ${script_path}/make_report.sh

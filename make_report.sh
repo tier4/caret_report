@@ -21,3 +21,5 @@ python3 ${script_path}/analyze_path/make_report_path.py ${report_dir_name}
 
 # Make top page
 python3 ${script_path}/top/make_report_top.py ${report_dir_name} --note_text_top note_text_top.txt --note_text_bottom note_text_bottom.txt
+
+echo "<<< OK. All report pages are created >>>"

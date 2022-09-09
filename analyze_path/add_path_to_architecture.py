@@ -61,11 +61,14 @@ def find_path(arch: Architecture, target_path: list, max_node_depth: int):
         return can_pass
 
     # 1. Find all candidate paths which have the same start/end node as JSON
-    node_src = get_node_topic(target_path[0])[0]
-    node_dst = get_node_topic(target_path[-1])[0]
-    _logger.info(' search paths: %s to %s', node_src, node_dst)
-    path_info_list = arch.search_paths(node_src,
-                                       node_dst,
+    node_name_list = []
+    for node_topic in target_path:
+        node_name = get_node_topic(node_topic)[0]
+        if '[' not in node_name and '.' not in node_name and '*' not in node_name:
+            node_name_list.append(node_name)
+
+    _logger.info(' search paths: %s to %s', node_name_list[0], node_name_list[-1])
+    path_info_list = arch.search_paths(*node_name_list,
                                        max_node_depth=max_node_depth,
                                        node_filter=node_filter,
                                        communication_filter=comm_filter)
@@ -173,7 +176,7 @@ def parse_arg():
     parser.add_argument('--architecture_file_src', type=str, default=None)
     parser.add_argument('--architecture_file_dst', type=str, default='architecture_path.yaml')
     parser.add_argument('--use_latest_message', action='store_true', default=True)
-    parser.add_argument('--max_node_depth', type=int, default=20)
+    parser.add_argument('--max_node_depth', type=int, default=2)
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
     args = parser.parse_args()
     return args

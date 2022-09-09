@@ -58,9 +58,9 @@ export script_path=./CARET_report                   # Path to this repo cloned
 export package_list_json=./package_list.json        # Path to setting file you prepare
 export target_path_json=./target_path.json          # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
-export start_time=10                                # start time[sec] for analysis
+export start_time=20                                # start time[sec] for analysis
 export duration_time=9999                           # duration time[sec] for analysis
-export max_node_depth=30                            # The number of depth to search path
+export max_node_depth=2                             # The number of depth to search path
 export draw_all_message_flow=false                  # Flag to a create message flow graph for a whole time period (this will increase report creation time)
 
 # Run script
