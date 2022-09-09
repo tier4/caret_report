@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-trace_data_name=`basename ${trace_data}`
+trace_data_name=$(basename ${trace_data})
 report_dir_name=report_${trace_data_name}
 
 # Node analysis

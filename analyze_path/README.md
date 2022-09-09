@@ -3,15 +3,15 @@
 ## What is created
 
 - Path analysis report
-    - This report shows a message flow graph and response time for each target path
-    - It is useful to check if the response time meets constraints
-    - In case you find a problem, you can see the message flow graph and the node analysis report to investigate more details
+  - This report shows a message flow graph and response time for each target path
+  - It is useful to check if the response time meets constraints
+  - In case you find a problem, you can see the message flow graph and the node analysis report to investigate more details
 - Artifacts
-    - `report_ooo/path/`
-        - `index.html` : report main page
-        - `ooo.html` : graph file as html
-        - `ooo.png` : graph file as image
-        - `stats_path.yaml` : statistics file
+  - `report_ooo/path/`
+    - `index.html` : report main page
+    - `ooo.html` : graph file as html
+    - `ooo.png` : graph file as image
+    - `stats_path.yaml` : statistics file
 
 ## Scripts
 
@@ -27,7 +27,7 @@ usage: add_path_to_architecture.py [-h] [--trace_data TRACE_DATA]
 
 - This script creates a new `architecture_path.yaml` which contains path information
 - To get the original architecture file, you need to set either `trace_data` or `architecture_file_src`
-    - Using `architecture_file_src` saves your time
+  - Using `architecture_file_src` saves your time
 
 ### `analyze_path.py`
 

@@ -3,16 +3,16 @@
 ## What is created with this repo?
 
 - Input:
-    - CARET trace data (CTF file)
+  - CARET trace data (CTF file)
 - Output (html pages):
-    - [Top page (index.html)](./top):
-        - Links to each report page
-        - Summary
-    - [Node analysis report](./analyze_node):
-        - Detailed information of each callback function
-        - Node health verification results by [subscription callback problem detector](./check_callback_sub) and [timer callback problem detector](./check_callback_timer)
-    - [Path analysis report](./analyze_path):
-        - Message flow graph and response time of each target path
+  - [Top page (index.html)](./top):
+    - Links to each report page
+    - Summary
+  - [Node analysis report](./analyze_node):
+    - Detailed information of each callback function
+    - Node health verification results by [subscription callback problem detector](./check_callback_sub) and [timer callback problem detector](./check_callback_timer)
+  - [Path analysis report](./analyze_path):
+    - Message flow graph and response time of each target path
 
 <b>Open a [sample report page](https://tier4.github.io/CARET_report/)</b>
 
@@ -36,9 +36,10 @@ sudo mv geckodriver /usr/local/bin/
 ```
 
 ### Note
+
 - It uses lots of memory
-    - 64GB or more is recommended
-    - In case crash happens due to memory shortage, increase swap space
+  - 64GB or more is recommended
+  - In case crash happens due to memory shortage, increase swap space
 
 ## Sample
 
@@ -47,8 +48,8 @@ Please refer to [sample_autoware](./sample_autoware) to find sample settings and
 ## How to use
 
 - Run the following commands
-    - Make sure to modify settings for your usage and environment
-    - Make sure to prepare JSON files
+  - Make sure to modify settings for your usage and environment
+  - Make sure to prepare JSON files
 - `report_{dir_name_of_trace_data}` is created
 - Open `index.html` to see a report
 
@@ -70,14 +71,15 @@ sh ${script_path}/make_report.sh
 ## Setting JSON files
 
 ### package_list.json
+
 - Node analysis report will be created for each `package_name`
 - Settings
-    - `package_list_json` : path to the JSON file
+  - `package_list_json` : path to the JSON file
 - Please describe the following information
-    - Package name information (`package_dict`)
-        - Pairs of `package_name` and `regular expression for nodes belonging to the package`
-    - Ignore node list (`ignore_list`)
-        - List of `Regular expression for nodes to be ignored`
+  - Package name information (`package_dict`)
+    - Pairs of `package_name` and `regular expression for nodes belonging to the package`
+  - Ignore node list (`ignore_list`)
+    - List of `Regular expression for nodes to be ignored`
 
 ```json:package_list.json
 {
@@ -96,14 +98,13 @@ sh ${script_path}/make_report.sh
 
 - Path analysis report will show results for pathes described in this JSON file
 - Settings
-    - `target_path_json` : path to the JSON file
-    - `max_node_depth` : In case a target path is not found, increase the number. In case the script stuck, descrease the number
+  - `target_path_json` : path to the JSON file
+  - `max_node_depth` : In case a target path is not found, increase the number. In case the script stuck, descrease the number
 - Please describe the following information
-    - Pair of `name` and `path`
-    - `path` is a list of `node_name` (note: `path` doean't mean path as filesystem!)
-        - Regular expression is supported
-        - You can also set `[node_name, topic_name]` instead of `node_name` . It is useful when two nodes are connected via multiple topics
-
+  - Pair of `name` and `path`
+  - `path` is a list of `node_name` (note: `path` doean't mean path as filesystem!)
+    - Regular expression is supported
+    - You can also set `[node_name, topic_name]` instead of `node_name` . It is useful when two nodes are connected via multiple topics
 
 ```json:target_path.json
 [
@@ -136,18 +137,20 @@ sh ${script_path}/make_report.sh
 - Install [Dear RosNodeViewer](https://github.com/takeshi-iwanari/dear_ros_node_viewer)
 - Open graph ( e.g.: `dear_ros_node_viewer architecture.yaml` )
 - Select nodes in the path which you want to analyze
-    - ctrl + click
+  - ctrl + click
 - Press C to export node name list to clip board
 - Paste the exported node name list to json file
 
-
 ### Why regular expression is helpful?
+
 - In case a node name varies for each execution, you can write node name in JSON like the following
-    - Before: `/node_name_xyz_abc1234567_1234567_1234567891234567891`
-    - After: `/node_name_xyz.*`
+  - Before: `/node_name_xyz_abc1234567_1234567_1234567891234567891`
+  - After: `/node_name_xyz.*`
 
 ### About sim_time
+
 The analysis scripts don't support sim_time. So, please be careful when you analyze trace data which have been created with `ros2 bag play` with `-r` option. For instance, "Frequency" will be half when you add `-r 0.5` option.
 
 ### About Note
+
 Contents described in `note_text_top.txt` and `note_text_bottom.txt` are added to top page. You can freely add any comment there. e.g. you can add environment information.
