@@ -20,7 +20,7 @@
       {% if stats | length == 0 %}
       <p>No warnings</p>
       {% endif %}
-      <br>
+      <br />
       {% for info in stats %}
       <hr />
       <h3 id="{{ info['callback_name'] }}">{{ info["callback_name"] }}</h3>
