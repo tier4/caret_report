@@ -1,7 +1,10 @@
 #!/bin/bash
+
+# shellcheck disable=SC1090,SC1091
+
 set -e
 
-. /opt/ros/$ROS_DISTRO/setup.sh
+. /opt/ros/"$ROS_DISTRO"/setup.sh
 . /ros2_caret_ws/install/local_setup.sh
 
 cd /work

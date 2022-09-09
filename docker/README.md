@@ -32,7 +32,7 @@ docker image build -t caret/caret_report ./docker
 
 ## Run scripts to create report in Docker
 
-```
+```sh
 cd CARET_report
 # Settings: modify for your usage and environment
 export script_path=`pwd`
