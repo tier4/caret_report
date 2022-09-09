@@ -25,9 +25,9 @@
       <ul>
         {% for path_info in stats_path %}
         <li>
-          <a href="path/index.html#{{ path_info['target_path_name'] }}"
-            >{{ path_info["target_path_name"] }}</a
-          >
+          <a href="path/index.html#{{ path_info['target_path_name'] }}">
+            {{ path_info["target_path_name"] }}
+          </a>
         </li>
         {% endfor %}
       </ul>
@@ -81,9 +81,10 @@
           {% for path_info in stats_path %}
           <tr>
             <td>
-              <a href="path/index.html#{{ path_info['target_path_name'] }}"
-                >{{ path_info["target_path_name"] }}</a
-              ><br />
+              <a href="path/index.html#{{ path_info['target_path_name'] }}">
+                {{ path_info["target_path_name"] }}
+              </a>
+              <br />
               ({{ path_info["node_names"][0] }} ~ {{ path_info["node_names"][-1] }})
             </td>
             <td class="text-end">{{ '%0.3f' % path_info.best_avg|float }}</td>
@@ -102,9 +103,9 @@
       <ul>
         {% for info in stats_cb_sub_warn %}
         <li>
-          <a href="check_callback_sub/index_warning.html#{{ info.callback_name }}"
-            >{{ info.callback_name }}</a
-          >
+          <a href="check_callback_sub/index_warning.html#{{ info.callback_name }}">
+            {{ info.callback_name }}
+          </a>
           ({{ info.callback_displayname }})
         </li>
         {% endfor %}
@@ -121,9 +122,9 @@
       <ul>
         {% for info in stats_cb_timer_warn %}
         <li>
-          <a href="check_callback_timer/index_warning.html#{{ info.callback_name }}"
-            >{{ info.callback_name }}</a
-          >
+          <a href="check_callback_timer/index_warning.html#{{ info.callback_name }}">
+            {{ info.callback_name }}
+          </a>
           ({{ info.callback_displayname }})
         </li>
         {% endfor %}
@@ -155,7 +156,9 @@
           {% endfor %}
         </table>
       </div>
-      {% endfor %} {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}
+      {% endfor %}
+      <br>
+      {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}
     </div>
     <!-- container -->
     <script
