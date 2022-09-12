@@ -47,7 +47,7 @@
     ]
   },
   {
-    "name": "e2e-lidar_top-map_based_prediction-plannig-vehicle_cmd_gate",
+    "name": "e2e-lidar_top-map_based_prediction-planning-vehicle_cmd_gate",
     "path": [
       "/sensing/lidar/top/velodyne_convert_node",
       "/sensing/lidar/top/crop_box_filter_self",
