@@ -19,9 +19,11 @@
 ## Requirements
 
 - Ubuntu 20.04
-- ROS2 Galactic
+- ROS2 Galactic / Humble
 - [CARET](https://github.com/tier4/caret)
-- The followings
+  - Use main/latest for Humble
+  - Use [this branch](https://github.com/tier4/caret/tree/galactic) for Galactic
+- The following software is also needed
 
 ```sh
 # Flask 2.1.0 (need to specify version) is required to create html report pages
@@ -96,13 +98,13 @@ sh ${script_path}/make_report.sh
 
 ### target_path.json
 
-- Path analysis report will show results for pathes described in this JSON file
+- Path analysis report will show results for paths described in this JSON file
 - Settings
   - `target_path_json` : path to the JSON file
-  - `max_node_depth` : In case a target path is not found, increase the number. In case the script stuck, descrease the number
+  - `max_node_depth` : In case a target path is not found, increase the number. In case the script stuck, decrease the number
 - Please describe the following information
   - Pair of `name` and `path`
-  - `path` is a list of `node_name` (note: `path` doean't mean path as filesystem!)
+  - `path` is a list of `node_name` (note: `path` doesn't mean path as filesystem!)
     - Regular expression is supported
     - You can also set `[node_name, topic_name]` instead of `node_name` . It is useful when two nodes are connected via multiple topics
 
