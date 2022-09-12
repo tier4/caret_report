@@ -55,7 +55,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 
 - Changes, and Why the change is needed:
   - Keep a node you want to analyze within the following CARET restrictions:
-    - CARET cannot trace data, when a node has "two or more" timer callback functions whose timer priod are the same
+    - CARET cannot trace data, when a node has "two or more" timer callback functions whose timer period are the same
     - CARET cannot trace data, when a node has "two or more" subscription callback functions whose topic name are the same
   - Dependency on `rclcpp` needs to be written in package.xml
 - How to modify:
