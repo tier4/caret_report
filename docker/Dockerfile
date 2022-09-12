@@ -32,6 +32,7 @@ RUN wget -nv https://github.com/mozilla/geckodriver/releases/download/v0.31.0/ge
 # hadolint ignore=DL3003
 RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     cd ros2_caret_ws && \
+    git checkout d4b410ee4ee9c6a14d3a01fc178020b0e8d6020f && \
     mkdir src && \
     vcs import src < caret.repos && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \

@@ -37,7 +37,7 @@ cd CARET_report
 # Settings: modify for your usage and environment
 export script_path=`pwd`
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
-export work_dir='pwd'/sample_autoware
+export work_dir=`pwd`/sample_autoware
 export package_list_json=package_list.json
 export target_path_json=target_path.json
 
