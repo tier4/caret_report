@@ -1,3 +1,5 @@
+[![Test with Autoware](https://github.com/tier4/CARET_report/actions/workflows/test_autoware.yaml/badge.svg)](https://github.com/tier4/CARET_report/actions/workflows/test_autoware.yaml)
+
 # Scripts to create analysis reports using CARET trace data
 
 ## What is created with this repo?

@@ -1,4 +1,6 @@
-name: TestAutoware
+name: Test with Autoware
+
+# cspell:ignore localtime
 
 on:
   schedule:
@@ -7,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE: tier4/caert_report
+  IMAGE: tier4/caret_report
 
 jobs:
   build:
@@ -56,11 +58,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: Get reference result
-        run: |
-          git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
-
-      - name: Get reference tracedata
+      - name: Get reference trace data
         run: |
           wget -nv https://github.com/tier4/CARET_report/releases/download/20220831/autoware_launch_trace_20220826-105249_universe_rosbag.zip
           unzip autoware_launch_trace_20220826-105249_universe_rosbag.zip
@@ -78,8 +76,6 @@ jobs:
           export max_node_depth=2
           export draw_all_message_flow=false
 
-          docker images
-
           docker run --rm \
               -v ${script_path}:/CARET_report \
               -v ${trace_data}:/trace_data \
@@ -91,3 +87,16 @@ jobs:
               -e package_list_json \
               -e target_path_json \
               -v /etc/localtime:/etc/localtime:ro ${{ env.TAGS }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v2
+        with:
+          name: report_trace_data
+          path: ./sample_autoware/report_trace_data
+
+      - name: Compare report contents
+        run: |
+          git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
+          export report_dir_1=`pwd`/reference_result
+          export report_dir_2=`pwd`/sample_autoware/report_trace_data
+          sh ./compare.sh
