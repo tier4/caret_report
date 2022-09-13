@@ -41,9 +41,9 @@ export work_dir=`pwd`/sample_autoware
 export package_list_json=package_list.json
 export target_path_json=target_path.json
 
-export start_time=15
-export duration_time=600
-export max_node_depth=20
+export start_time=20
+export duration_time=9999
+export max_node_depth=2
 export draw_all_message_flow=false
 
 # Run script

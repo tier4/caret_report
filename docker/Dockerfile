@@ -39,6 +39,6 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     ./setup_caret.sh -c && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
-COPY entrypoint.sh /entrypoint.sh
+COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
