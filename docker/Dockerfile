@@ -29,6 +29,7 @@ RUN wget -nv https://github.com/mozilla/geckodriver/releases/download/v0.31.0/ge
     tar xzvf geckodriver-v0.31.0-linux64.tar.gz && \
     mv geckodriver /usr/local/bin/.
 
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
 # Build CARET (as of 2022/08/25 Galactic)
 # hadolint ignore=DL3003
 RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
@@ -38,8 +39,6 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     vcs import src < caret.repos && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \
     ./setup_caret.sh -c && \
-    cd src/CARET/CARET_analyze && git checkout 1be8fc00643bb719b79dab1db4d1deebd39dc32b && cd ../../../ && \
-    cd src/CARET/CARET_analyze_cpp_impl && git checkout c5ba610fee01b25e1150a9b6edb23d9126984c6a && cd ../../../ && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 COPY ./entrypoint.sh /entrypoint.sh
