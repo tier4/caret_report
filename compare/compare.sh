@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Compare *.yaml, *.png (exclude *.html)
+# apt install -y imagemagick
 
 # shellcheck disable=SC2016,SC2181,SC2154
 # cspell:ignore messageflow, PHASH
