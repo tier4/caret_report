@@ -31,17 +31,21 @@ RUN wget -nv https://github.com/mozilla/geckodriver/releases/download/v0.31.0/ge
 
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
 # Build CARET (Galactic)
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003
 RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     cd ros2_caret_ws && \
     git checkout d4b410ee4ee9c6a14d3a01fc178020b0e8d6020f && \
-    cat ansible/roles/lttng/tasks/main.yml | grep -v lttng-modules-dkms > ansible/roles/lttng/tasks/main_.yml && \
+    grep -v lttng-modules-dkms < ansible/roles/lttng/tasks/main.yml > ansible/roles/lttng/tasks/main_.yml && \
     mv ansible/roles/lttng/tasks/main_.yml ansible/roles/lttng/tasks/main.yml && \
     mkdir src && \
     vcs import src < caret.repos && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \
     ./setup_caret.sh -c && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+# Downgrade pandas
+RUN pip3 install --no-cache-dir pandas==1.4.4
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
