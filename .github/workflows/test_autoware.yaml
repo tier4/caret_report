@@ -1,0 +1,103 @@
+name: Test with Autoware
+
+# cspell:ignore localtime
+
+on:
+  schedule:
+    - cron: 0 16 * * * # run at 1 AM JST
+  pull_request:
+  workflow_dispatch:
+
+env:
+  IMAGE: tier4/caret_report
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ github.ref }}-${{ github.sha }}
+            ${{ github.ref }}
+            refs/head/main
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Create tag
+        run: |
+          SHA=${{ github.sha }}
+          TAG=${IMAGE}:$(TZ=UTC-9 date '+%Y%m')-${SHA:0:7}
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            LATEST=${IMAGE}:latest
+            echo "TAGS=$TAG,$LATEST" >> $GITHUB_ENV
+          else
+            echo "TAGS=$TAG" >> $GITHUB_ENV
+          fi
+          echo TAG $TAG
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: ./docker/Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: false
+          load: true
+          tags: ${{ env.TAGS }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Get reference trace data
+        run: |
+          wget -nv https://github.com/tier4/CARET_report/releases/download/20220831/autoware_launch_trace_20220826-105249_universe_rosbag.zip
+          unzip autoware_launch_trace_20220826-105249_universe_rosbag.zip
+
+      - name: Create CARET report
+        run: |
+          export script_path=`pwd`
+          export trace_data=`pwd`/autoware_launch_trace_20220826-105249_universe_rosbag
+          export work_dir=`pwd`/sample_autoware
+          export package_list_json=package_list.json
+          export target_path_json=target_path.json
+
+          export start_time=20
+          export duration_time=9999
+          export max_node_depth=2
+          export draw_all_message_flow=false
+
+          docker run --rm \
+              -v ${script_path}:/CARET_report \
+              -v ${trace_data}:/trace_data \
+              -v ${work_dir}:/work \
+              -e start_time \
+              -e duration_time \
+              -e max_node_depth \
+              -e draw_all_message_flow \
+              -e package_list_json \
+              -e target_path_json \
+              -v /etc/localtime:/etc/localtime:ro ${{ env.TAGS }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v2
+        with:
+          name: report_trace_data
+          path: ./sample_autoware/report_trace_data
+
+      - name: Compare report contents
+        run: |
+          sudo apt-get install -y imagemagick
+          git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
+          export report_dir_1=`pwd`/reference_result
+          export report_dir_2=`pwd`/sample_autoware/report_trace_data
+          sh ./compare/compare.sh

@@ -2,6 +2,7 @@
 report*/
 architecture*.yaml
 dummy.html
+verify_work/
 
 # colcon
 build/
