@@ -31,7 +31,7 @@ start_time=20
 duration_time=9999
 max_node_depth=2
 draw_all_message_flow=false
-export trace_data package_list_json target_path_json start_time duration_time max_node_depth draw_all_message_flow
+export script_path trace_data package_list_json target_path_json start_time duration_time max_node_depth draw_all_message_flow
 cd "${sample_autoware_dir}" || exit
 sh "${script_path}"/make_report.sh
 mv report_autoware_launch_trace_20220826-105249_universe_rosbag "${WORK_DIR}"/.
