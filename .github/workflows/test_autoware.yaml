@@ -15,6 +15,16 @@ jobs:
   build:
     runs-on: ubuntu-20.04
 
+    strategy:
+      matrix:
+        include:
+          - ros_version: galactic
+            dockerfile: Dockerfile_galactic.dockerfile
+            do_test: false
+          - ros_version: humble
+            dockerfile: Dockerfile
+            do_test: true
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -36,7 +46,7 @@ jobs:
       - name: Create tag
         run: |
           SHA=${{ github.sha }}
-          TAG=${IMAGE}:$(TZ=UTC-9 date '+%Y%m')-${SHA:0:7}
+          TAG=${IMAGE}_${{ matrix.ros_version }}:$(TZ=UTC-9 date '+%Y%m')-${SHA:0:7}
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             LATEST=${IMAGE}:latest
             # echo "TAGS=$TAG,$LATEST" >> $GITHUB_ENV
@@ -51,7 +61,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./docker
-          file: ./docker/Dockerfile
+          file: ./docker/${{ matrix.dockerfile }}
           builder: ${{ steps.buildx.outputs.name }}
           push: false
           load: true
@@ -60,11 +70,14 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Get reference trace data
+        if: ${{ matrix.do_test }}
+
         run: |
           wget -nv https://github.com/tier4/CARET_report/releases/download/20220831/autoware_launch_trace_20220826-105249_universe_rosbag.zip
           unzip autoware_launch_trace_20220826-105249_universe_rosbag.zip
 
       - name: Create CARET report
+        if: ${{ matrix.do_test }}
         run: |
           export script_path=`pwd`
           export trace_data=`pwd`/autoware_launch_trace_20220826-105249_universe_rosbag
@@ -90,12 +103,14 @@ jobs:
               -v /etc/localtime:/etc/localtime:ro ${{ env.TAGS }}
 
       - name: Upload report
+        if: ${{ matrix.do_test }}
         uses: actions/upload-artifact@v2
         with:
           name: report_trace_data
           path: ./sample_autoware/report_trace_data
 
       - name: Compare report contents
+        if: ${{ matrix.do_test }}
         run: |
           sudo apt-get install -y imagemagick
           git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result

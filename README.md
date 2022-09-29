@@ -175,7 +175,7 @@ sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
 sudo apt install -y libdbus-glib-1-2
 ```
 
-Also, try the following commands before running the report creation scipt
+Also, try the following commands before running the report creation script
 
 ```sh
 mkdir $HOME/tmp
