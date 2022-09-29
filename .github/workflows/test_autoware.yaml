@@ -104,7 +104,7 @@ jobs:
 
       - name: Upload report
         if: ${{ matrix.do_test }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: report_trace_data
           path: ./sample_autoware/report_trace_data
