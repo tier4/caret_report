@@ -20,11 +20,13 @@
 
 ## Requirements
 
-- Ubuntu 20.04
-- ROS2 Galactic / Humble
-- [CARET](https://github.com/tier4/caret)
-  - Use main/latest for Humble
-  - Use [this branch](https://github.com/tier4/caret/tree/galactic) for Galactic
+- Ubuntu
+  - Ubuntu 20.04
+    - ROS2 Galactic
+    - [CARET](https://github.com/tier4/caret) ( Use [this branch](https://github.com/tier4/caret/tree/galactic) )
+  - Ubuntu 22.04
+    - ROS2 Humble
+    - [CARET](https://github.com/tier4/caret) ( Use main/latest )
 - The following software is also needed
 
 ```sh
@@ -158,3 +160,25 @@ The analysis scripts don't support sim_time. So, please be careful when you anal
 ### About Note
 
 Contents described in `note_text_top.txt` and `note_text_bottom.txt` are added to top page. You can freely add any comment there. e.g. you can add environment information.
+
+## Troubleshooting
+
+### Firefox in Ubuntu 22.04
+
+In case graph files (png files) are not created with report, please make sure Firefox is installed properly. In Ubuntu 22.04, please consider to install Firefox from tar
+
+```sh
+wget --content-disposition "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+tar jxf `ls firefox*`
+sudo mv firefox /opt
+sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
+sudo apt install -y libdbus-glib-1-2
+```
+
+Also, try the following commands before running the report creation script
+
+```sh
+mkdir $HOME/tmp
+export TMPDIR=$HOME/tmp
+chmod 777 $TMPDIR
+```
