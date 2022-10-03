@@ -1,6 +1,6 @@
 # cspell:ignore geckodriver, xzvf, libdbus, dfsg
 FROM osrf/ros:humble-desktop
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
+
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         locales=2.35-0ubuntu3.1 \
