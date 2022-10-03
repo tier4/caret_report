@@ -1,6 +1,6 @@
 # cspell:ignore geckodriver, xzvf
 FROM osrf/ros:galactic-desktop
-
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         locales=2.31-0ubuntu9.9 \
