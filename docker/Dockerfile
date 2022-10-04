@@ -24,8 +24,8 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Firefox is not installed by apt in Ubuntu 22.04. installed libdbus-glib by apt above
-RUN wget --content-disposition "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" && \
-    tar jxf `ls firefox*` && \
+RUN wget -nv "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" -O firefox.tar.bz2 && \
+    tar jxf firefox.tar.bz2 && \
     mv firefox /opt && \
     ln -s /opt/firefox/firefox /usr/local/bin/firefox
 
