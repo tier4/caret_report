@@ -18,22 +18,21 @@
 ### `add_path_to_architecture.py`
 
 ```sh:usage
-usage: add_path_to_architecture.py [-h] [--trace_data TRACE_DATA]
-                                   [--architecture_file_src ARCHITECTURE_FILE_SRC]
-                                   [--architecture_file_dst ARCHITECTURE_FILE_DST] [--use_latest_message]
-                                   [--max_node_depth MAX_NODE_DEPTH] [-v]
-                                   target_path_json
+usage: add_path_to_architecture.py [-h]
+                                   [--architecture_file_path ARCHITECTURE_FILE_PATH]
+                                   [--use_latest_message]
+                                   [--max_node_depth MAX_NODE_DEPTH]
+                                   [-v]
+                                   trace_data target_path_json
 ```
 
 - This script creates a new `architecture_path.yaml` which contains path information
-- To get the original architecture file, you need to set either `trace_data` or `architecture_file_src`
-  - Using `architecture_file_src` saves your time
 
 ### `analyze_path.py`
 
 ```sh:usage
 usage: analyze_path.py [-h] [-m MESSAGE_FLOW] [-s START_POINT] [-d DURATION] [-f] [-v]
-                       trace_data [architecture_file]
+                       trace_data [architecture_file_path]
 ```
 
 - This script creates message flow graph (html and image files) and statistics file (`stats_path.yaml`) for each target path

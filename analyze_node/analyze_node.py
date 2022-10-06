@@ -26,8 +26,7 @@ import yaml
 import numpy as np
 import pandas as pd
 from bokeh.plotting import Figure, figure
-from caret_analyze import Lttng
-from caret_analyze import Architecture, Application
+from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
@@ -36,7 +35,7 @@ from common import utils
 _logger: logging.Logger = None
 
 
-def calcualte_stats(data: pd.DataFrame) -> dict:
+def calculate_stats(data: pd.DataFrame) -> dict:
     """Calculate stats"""
     stats = {
         'avg': '-',
@@ -64,7 +63,7 @@ def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
             data, bins=bin_num, range=(range_min, range_max), density=density)
 
     if len(data) == 0:
-        _logger.warning(f'len = 0: {title}')
+        _logger.info(f'len = 0: {title}')
         return None
     hist, bin_edges = _to_histogram(data, (max(data) - min(data)) / 30, False)
     figure_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom', title=title,
@@ -77,15 +76,15 @@ def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
 def analyze_callback(callback_name: str, callback_displayname: str, metrics_str: str,
                      data: pd.DataFrame, metrics: str, dest_dir_path: str):
     """Analyze a callback"""
-    callack_stats = calcualte_stats(data)
+    callback_stats = calculate_stats(data)
     figure_hist = draw_histogram(data, callback_displayname, metrics_str)
     if figure_hist:
         filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
         utils.export_graph(figure_hist, dest_dir_path, filename_hist, _logger)
-        callack_stats['filename_hist'] = filename_hist
+        callback_stats['filename_hist'] = filename_hist
     else:
-        callack_stats['filename_hist'] = ''
-    return callack_stats
+        callback_stats['filename_hist'] = ''
+    return callback_stats
 
 
 def analyze_node(node: Node, dest_dir: str) -> dict:
@@ -121,10 +120,10 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             callback_displayname += utils.make_callback_displayname(node.get_callback(callback_name))
             data = callback_info[1].dropna()
             data = data[:-2]    # remove the last data because freq becomes small
-            callack_stats = analyze_callback(callback_name, callback_displayname,
-                                             metrics_str, data, metrics, dest_dir)
+            callback_stats = analyze_callback(callback_name, callback_displayname,
+                                              metrics_str, data, metrics, dest_dir)
             node_stats['callbacks'].setdefault(callback_name, {})
-            node_stats['callbacks'][callback_name][metrics] = callack_stats
+            node_stats['callbacks'][callback_name][metrics] = callback_stats
             node_stats['callbacks'][callback_name]['displayname'] = callback_displayname
 
     return node_stats
@@ -143,9 +142,6 @@ def analyze_package(node_list: list[Node], dest_dir: str):
     stat_file_path = f"{dest_dir}/stats_node.yaml"
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
-
-
-
 
 
 def get_node_list(lttng: Lttng, app: Application,
@@ -170,18 +166,20 @@ def get_node_list(lttng: Lttng, app: Application,
     return node_list
 
 
-def analyze(args, dest_dir):
-    """Analyze All"""
+def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
+    """Analyze nodes"""
+    global _logger
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger.info('<<< Analyze Nodes: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
-    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
-    arch = Architecture('lttng', str(args.trace_data[0]))
     arch.export(dest_dir + '/architecture.yaml', force=True)
-    app = Application(arch, lttng)
+    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
 
     for package_name, regexp in package_dict.items():
         node_list = get_node_list(lttng, app, regexp, ignore_list)
         analyze_package(node_list, f'{dest_dir}/{package_name}')
+
+    _logger.info('<<< Analyze Nodes: Finish >>>')
 
 
 def parse_arg():
@@ -203,22 +201,21 @@ def parse_arg():
 
 def main():
     """Main function"""
-    args = parse_arg()
-
     global _logger
-    if args.verbose:
-        _logger = utils.create_logger(__name__, logging.DEBUG)
-    else:
-        _logger = utils.create_logger(__name__, logging.INFO)
+    args = parse_arg()
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'package_list_json: {args.package_list_json}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}/node'
+    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
 
-    analyze(args, dest_dir)
-    _logger.info('<<< OK. All nodes are analyzed >>>')
+    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    arch = Architecture('lttng', str(args.trace_data[0]))
+    app = Application(arch, lttng)
+
+    analyze(args, lttng, arch, app, dest_dir + '/node')
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ import statistics
 import yaml
 import pandas as pd
 from bokeh.plotting import Figure, figure
-from caret_analyze import Architecture, Application
+from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.communication import Communication
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common import utils
@@ -95,7 +95,7 @@ def match_pubsub_freq(pub_freq: tuple[list[float], list[int]],
 
     Note
     ---
-    In case there is not correspondib subscription(*), the publish event is ignored
+    In case there is not correspond subscription(*), the publish event is ignored
     (*: gap between publishment timestamp and subscription timestamp > 1 sec)
     """
     timestamp_list = []
@@ -208,14 +208,12 @@ def analyze_communication(args, dest_dir, package_dict, communication: Communica
         is_warning = True
     return stats, is_warning
 
-
-def analyze(args, dest_dir):
-    """Analyze All"""
+def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
+    """Analyze Subscription Callbacks"""
+    global _logger
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger.info('<<< Analyze Subscription Callbacks: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
-    arch = Architecture('lttng', str(args.trace_data[0]))
-    app = Application(arch, lttng)
-
     package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
 
     stats_all_list = []
@@ -229,7 +227,7 @@ def analyze(args, dest_dir):
         try:
             communication_list = app.get_communications(topic_name)
         except:
-            _logger.warning(f' Failed to get communication: {topic_name}')
+            _logger.info(f' No topic communication: {topic_name}')
             continue
 
         for communication in communication_list:
@@ -250,6 +248,8 @@ def analyze(args, dest_dir):
     with open(f'{dest_dir}/stats_callback_subscription_warning.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_warning_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
+
+    _logger.info('<<< Analyze Subscription Callbacks: Finish >>>')
 
 
 def parse_arg():
@@ -275,24 +275,23 @@ def parse_arg():
 
 def main():
     """Main function"""
-    args = parse_arg()
-
     global _logger
-    if args.verbose:
-        _logger = utils.create_logger(__name__, logging.DEBUG)
-    else:
-        _logger = utils.create_logger(__name__, logging.INFO)
+    args = parse_arg()
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'package_list_json: {args.package_list_json}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}/check_callback_sub'
+    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
     _logger.debug(f'gap_threshold_ratio: {args.gap_threshold_ratio}')
     _logger.debug(f'count_threshold: {args.count_threshold}')
 
-    analyze(args, dest_dir)
-    _logger.info('<<< OK. All nodes are analyzed >>>')
+    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    arch = Architecture('lttng', str(args.trace_data[0]))
+    app = Application(arch, lttng)
+
+    analyze(args, lttng, arch, app, dest_dir + '/check_callback_sub')
 
 
 if __name__ == '__main__':

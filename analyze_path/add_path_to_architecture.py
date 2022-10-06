@@ -73,11 +73,11 @@ def find_path(arch: Architecture, target_path: list, max_node_depth: int):
                                        node_filter=node_filter,
                                        communication_filter=comm_filter)
 
-    # 2. Check if all nodes/topics in the canddiate path are the same as JSON
+    # 2. Check if all nodes/topics in the canddidate path are the same as JSON
     found_path_list = []
     for path in path_info_list:
         if len(target_path) != len(path.node_names):
-            # if the len is diffrent, it's not the target path
+            # if the len is different, it's not the target path
             continue
 
         is_target_path = True
@@ -130,8 +130,11 @@ def convert_context_type_to_use_latest_message(filename_src, filename_dst):
         yaml.dump(yml, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
-def add_path_to_architecture(args):
+def add_path_to_architecture(args, arch: Architecture):
     """Add path information to architecture file"""
+    global _logger
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger.info('<<< Add Path: Start >>>')
     # Read target path information from JSON
     try:
         with open(args.target_path_json[0], encoding='UTF-8') as f_json:
@@ -140,12 +143,7 @@ def add_path_to_architecture(args):
         _logger.error(f'Unable to read {args.target_path_json[0]}')
         sys.exit(-1)
 
-    # Create architecture object from architecture file or trace data
-    if args.architecture_file_src:
-        arch = Architecture('yaml', args.architecture_file_src)
-    else:
-        arch = Architecture('lttng', args.trace_data)
-        arch.export('architecture_raw.yaml', force=True)
+    # arch.export('architecture_raw.yaml', force=True)
 
     # Find path from architecture
     for target_path in target_path_list:
@@ -160,21 +158,21 @@ def add_path_to_architecture(args):
             _logger.error(f'Target path not found: {target_path_name}')
             sys.exit(-1)
 
-    arch.export(args.architecture_file_dst, force=True)
+    arch.export(args.architecture_file_path, force=True)
 
     if args.use_latest_message:
-        convert_context_type_to_use_latest_message(args.architecture_file_dst,
-                                                   args.architecture_file_dst)
+        convert_context_type_to_use_latest_message(args.architecture_file_path,
+                                                   args.architecture_file_path)
 
+    _logger.info('<<< Add Path: Finish >>>')
 
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
                 description='Script to add path information to architecture file')
+    parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('target_path_json', nargs=1, type=str)
-    parser.add_argument('--trace_data', type=str, default=None)
-    parser.add_argument('--architecture_file_src', type=str, default=None)
-    parser.add_argument('--architecture_file_dst', type=str, default='architecture_path.yaml')
+    parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('--use_latest_message', action='store_true', default=True)
     parser.add_argument('--max_node_depth', type=int, default=2)
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -184,26 +182,19 @@ def parse_arg():
 
 def main():
     """Main function"""
-    args = parse_arg()
-
     global _logger
-    if args.verbose:
-        _logger = utils.create_logger(__name__, logging.DEBUG)
-    else:
-        _logger = utils.create_logger(__name__, logging.INFO)
+    args = parse_arg()
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
+    _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'target_path_json: {args.target_path_json[0]}')
-    _logger.debug(f'trace_data: {args.trace_data}')
-    _logger.debug(f'architecture_file_src: {args.architecture_file_src}')
-    _logger.debug(f'architecture_file_dst: {args.architecture_file_dst}')
+    _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'use_latest_message: {args.use_latest_message}')
+    _logger.debug(f'max_node_depth: {args.max_node_depth}')
 
-    if not args.trace_data and not args.architecture_file_src:
-        _logger.error('Either trace_data or architecture_file_src must be set')
-        sys.exit(-1)
+    arch = Architecture('lttng', str(args.trace_data[0]))
 
-    add_path_to_architecture(args)
-    _logger.info('<<< OK. All target paths are found >>>')
+    add_path_to_architecture(args, arch)
 
 
 if __name__ == '__main__':
