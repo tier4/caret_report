@@ -26,7 +26,7 @@ import yaml
 import numpy as np
 from bokeh.plotting import Figure, figure
 from caret_analyze.record import RecordsInterface
-from caret_analyze import Architecture, Application
+from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.experiment import ResponseTime
 from caret_analyze.plot import message_flow
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
@@ -48,7 +48,7 @@ def align_timeseries(timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[np.ndar
 
 def draw_response_time(hist: np.ndarray, bin_edges: np.ndarray,
                        timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[Figure, Figure]:
-    """Draw histogram and timeseries graphs of resopnse time"""
+    """Draw histogram and timeseries graphs of response time"""
     bin_edges = bin_edges * 10**-6  # nanoseconds to milliseconds
     p_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
                     x_axis_label='Response Time [ms]', y_axis_label='Frequency')
@@ -73,7 +73,7 @@ def get_messageflow_durationtime(records: RecordsInterface):
     input_time_min = None
     output_time_max = None
 
-    # Need to check all records because some pathes may not be fully connected
+    # Need to check all records because some paths may not be fully connected
     data_list = records.data
     for data in data_list:
         if input_column in data.columns:
@@ -218,13 +218,13 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     return stats
 
 
-def analyze(args, dest_dir):
-    """Analyze all paths"""
+def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
+    """Analyze paths"""
+    global _logger
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger.info('<<< Analyze Paths: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
-    arch = Architecture('yaml', args.architecture_file)
-    app = Application(arch, lttng)
-    shutil.copy(args.architecture_file, dest_dir)
+    shutil.copy(args.architecture_file_path, dest_dir)
 
     stats_list = []
 
@@ -247,13 +247,15 @@ def analyze(args, dest_dir):
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
+    _logger.info('<<< Analyze Paths: Finish >>>')
+
 
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
                 description='Script to analyze path')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('architecture_file', nargs='?', type=str, default='architecture_path.yaml')
+    parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('-m', '--message_flow', type=strtobool, default=False,
                         help='Output message flow graph')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
@@ -269,24 +271,23 @@ def parse_arg():
 
 def main():
     """Main function"""
-    args = parse_arg()
-
     global _logger
-    if args.verbose:
-        _logger = utils.create_logger(__name__, logging.DEBUG)
-    else:
-        _logger = utils.create_logger(__name__, logging.INFO)
+    args = parse_arg()
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
-    _logger.debug(f'architecture_file: {args.architecture_file}')
+    _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{pathlib.Path(args.trace_data[0]).stem}/path'
+    dest_dir = f'report_{pathlib.Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
     args.message_flow = True if args.message_flow == 1 else False
     _logger.debug(f'message_flow: {args.message_flow}')
 
-    analyze(args, dest_dir)
-    _logger.info('<<< OK. All target paths are analyzed >>>')
+    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    arch = Architecture('yaml', args.architecture_file_path)
+    app = Application(arch, lttng)
+
+    analyze(args, lttng, arch, app, dest_dir + '/path')
 
 
 if __name__ == '__main__':

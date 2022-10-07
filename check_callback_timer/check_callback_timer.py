@@ -22,7 +22,7 @@ import argparse
 import logging
 import statistics
 import yaml
-from caret_analyze import Architecture, Application
+from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.callback import CallbackBase
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
@@ -79,13 +79,12 @@ def analyze_callback(args, dest_dir, package_dict: dict, callback: CallbackBase)
     return stats, is_warning
 
 
-def analyze(args, dest_dir):
-    """Analyze All"""
+def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
+    """Analyze Timer Callbacks"""
+    global _logger
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger.info('<<< Analyze Timer Callbacks: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
-    arch = Architecture('lttng', str(args.trace_data[0]))
-    app = Application(arch, lttng)
-
     package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
 
     stats_all_list = []
@@ -112,6 +111,8 @@ def analyze(args, dest_dir):
         yaml.safe_dump(stats_warning_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
 
+    _logger.info('<<< Analyze Timer Callbacks: Finish >>>')
+
 
 def parse_arg():
     """Parse arguments"""
@@ -136,24 +137,23 @@ def parse_arg():
 
 def main():
     """Main function"""
-    args = parse_arg()
-
     global _logger
-    if args.verbose:
-        _logger = utils.create_logger(__name__, logging.DEBUG)
-    else:
-        _logger = utils.create_logger(__name__, logging.INFO)
+    args = parse_arg()
+    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'package_list_json: {args.package_list_json}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}/check_callback_timer'
+    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
     _logger.debug(f'gap_threshold_ratio: {args.gap_threshold_ratio}')
     _logger.debug(f'count_threshold: {args.count_threshold}')
 
-    analyze(args, dest_dir)
-    _logger.info('<<< OK. All nodes are analyzed >>>')
+    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    arch = Architecture('lttng', str(args.trace_data[0]))
+    app = Application(arch, lttng)
+
+    analyze(args, lttng, arch, app, dest_dir + '/check_callback_timer')
 
 
 if __name__ == '__main__':
