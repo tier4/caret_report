@@ -19,7 +19,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 
 ## 2. Install CARET
 
-- Follow [the instruction](https://tier4.github.io/CARET_doc/main/tutorials/installation/)
+- Follow [the instruction](https://tier4.github.io/CARET_doc/latest/installation/installation/)
 - Note:
   - This explanation assumes you install CARET to `${caret_dir}` (e.g. `export caret_dir=~/ros2_caret_ws/` )
 
@@ -36,7 +36,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
     - Autoware uses lots of nodes and topics. If all nodes and communications are traced, it causes trace data lost
     - So, it's better to ignore nodes and topics which are not necessary for your analysis
   - Add [caret_autoware_launch](https://github.com/tier4/caret_autoware_launch) package
-    - Basically, you need to manually start trace session by yourself as described [here](https://tier4.github.io/CARET_doc/main/tutorials/measurement/#starting-lttng-session)
+    - Basically, you need to manually start trace session by yourself as described [here](https://tier4.github.io/CARET_doc/latest/recording/recording/)
     - It's handy to wrap Autoware launcher to automatically start CARET trace session
 - How to modify:
 
@@ -44,12 +44,12 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
     - Make sure you have `src/vendor/caret_autoware_launch/` by updating `src` ( `vcs import src < autoware.repos && vcs pull src` )
   - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware/commit/b1e2f6ef5982ccbe9434bff49397b2783713cb98), so it may not be valid in the future )
 
-        ```sh
-        cd ${autoware_dir}
-        git remote add autoware_caret https://github.com/takeshi-iwanari/autoware
-        git fetch autoware_caret 16fb26f365df64c4b7e279df35bdc41b72d7732b
-        git cherry-pick -n 16fb26f365df64c4b7e279df35bdc41b72d7732b
-        ```
+  ```sh
+  cd ${autoware_dir}
+  git remote add autoware_caret https://github.com/takeshi-iwanari/autoware
+  git fetch autoware_caret 16fb26f365df64c4b7e279df35bdc41b72d7732b
+  git cherry-pick -n 16fb26f365df64c4b7e279df35bdc41b72d7732b
+  ```
 
 ### 3.b Change code to avoid CARET restrictions
 
@@ -63,13 +63,13 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
   - Please refer to [this commit](https://github.com/takeshi-iwanari/autoware.universe/commit/7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb) , and make the same change
   - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware.universe/commit/2d62bdf127b8215c73be6416c57861d4a812ef0b), so it may not be valid in the future )
 
-        ```sh
-        cd ${autoware_dir}
-        cd src/universe/autoware.universe/
-        git remote add autoware_universe_caret https://github.com/takeshi-iwanari/autoware.universe
-        git fetch autoware_universe_caret 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
-        git cherry-pick -n 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
-        ```
+  ```sh
+  cd ${autoware_dir}
+  cd src/universe/autoware.universe/
+  git remote add autoware_universe_caret https://github.com/takeshi-iwanari/autoware.universe
+  git fetch autoware_universe_caret 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
+  git cherry-pick -n 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
+  ```
 
 ## 4. Build Autoware with CARET
 
