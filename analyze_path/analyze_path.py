@@ -221,7 +221,8 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
 def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
     """Analyze paths"""
     global _logger
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    if _logger is None:
+        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Paths: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
     shutil.copy(args.architecture_file_path, dest_dir)

@@ -82,7 +82,8 @@ def analyze_callback(args, dest_dir, package_dict: dict, callback: CallbackBase)
 def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
     """Analyze Timer Callbacks"""
     global _logger
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    if _logger is None:
+        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Timer Callbacks: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
     package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)

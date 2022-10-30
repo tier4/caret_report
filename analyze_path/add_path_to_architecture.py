@@ -133,7 +133,8 @@ def convert_context_type_to_use_latest_message(filename_src, filename_dst):
 def add_path_to_architecture(args, arch: Architecture):
     """Add path information to architecture file"""
     global _logger
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    if _logger is None:
+        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Add Path: Start >>>')
     # Read target path information from JSON
     try:
