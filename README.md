@@ -34,7 +34,7 @@
 pip3 install Flask==2.1.0
 
 # Firefox, selenium and geckodriver are required to generate graph image files
-sudo apt install -y firefox    # Skip this if using Ubntu 22.04
+sudo apt install -y firefox
 pip3 install selenium
 wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz
 tar xzvf geckodriver-v0.31.0-linux64.tar.gz
@@ -163,22 +163,29 @@ Contents described in `note_text_top.txt` and `note_text_bottom.txt` are added t
 
 ## Troubleshooting
 
-### Firefox in Ubuntu 22.04
+### Graph files (png files) are not created or Report creation script is stuck
+- Please make sure Firefox is installed properly
+- In Ubuntu 22.04, please consider to install Firefox from tar rather than Firefox installed by snap
 
-In case graph files (png files) are not created with report or report creation script is stuck, please make sure Firefox is installed properly. In Ubuntu 22.04, please consider to install Firefox from tar rather than Firefox installed by snap (You can keep using Firefox (snap version) while installing Firefox (tar version) )
+  ```sh
+  wget --content-disposition "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+  tar jxf `ls firefox*`
+  sudo mv firefox /opt
+  sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
+  sudo apt install -y libdbus-glib-1-2
+  ```
 
-```sh
-wget --content-disposition "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
-tar jxf `ls firefox*`
-sudo mv firefox /opt
-sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
-sudo apt install -y libdbus-glib-1-2
-```
+  - Also, try the following commands before running the report creation script
 
-Also, try the following commands before running the report creation script
+  ```sh
+  mkdir $HOME/tmp
+  export TMPDIR=$HOME/tmp
+  chmod 777 $TMPDIR
+  ```
 
-```sh
-mkdir $HOME/tmp
-export TMPDIR=$HOME/tmp
-chmod 777 $TMPDIR
-```
+- Or, please consider to use Chromium rather than Firefox to create graph image files using either of the following commands. If using `pip` command to install, you may need to specify the version which is the same as your chrome browser (e.g. Google Chrome)
+
+  ```sh
+  sudo apt install chromium-chromedriver
+  pip3 install chromedriver-binary
+  ```
