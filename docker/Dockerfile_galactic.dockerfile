@@ -29,15 +29,13 @@ RUN wget -nv https://github.com/mozilla/geckodriver/releases/download/v0.31.0/ge
     tar xzvf geckodriver-v0.31.0-linux64.tar.gz && \
     mv geckodriver /usr/local/bin/.
 
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
+ADD "https://www.random.org/sequences/?min=1&max=52&col=1&format=plain&rnd=new" /dev/null
 # Build CARET (Galactic)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003
 RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     cd ros2_caret_ws && \
-    git checkout d4b410ee4ee9c6a14d3a01fc178020b0e8d6020f && \
-    grep -v lttng-modules-dkms < ansible/roles/lttng/tasks/main.yml > ansible/roles/lttng/tasks/main_.yml && \
-    mv ansible/roles/lttng/tasks/main_.yml ansible/roles/lttng/tasks/main.yml && \
+    git checkout galactic && \
     mkdir src && \
     vcs import src < caret.repos && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \

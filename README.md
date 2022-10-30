@@ -33,8 +33,8 @@
 # Flask 2.1.0 (need to specify version) is required to create html report pages
 pip3 install Flask==2.1.0
 
-# firefox, selenium and geckodriver are required to generate graph image files
-sudo apt install -y firefox
+# Firefox, selenium and geckodriver are required to generate graph image files
+sudo apt install -y firefox    # Skip this if using Ubntu 22.04
 pip3 install selenium
 wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz
 tar xzvf geckodriver-v0.31.0-linux64.tar.gz
@@ -165,7 +165,7 @@ Contents described in `note_text_top.txt` and `note_text_bottom.txt` are added t
 
 ### Firefox in Ubuntu 22.04
 
-In case graph files (png files) are not created with report, please make sure Firefox is installed properly. In Ubuntu 22.04, please consider to install Firefox from tar
+In case graph files (png files) are not created with report or report creation script is stuck, please make sure Firefox is installed properly. In Ubuntu 22.04, please consider to install Firefox from tar rather than Firefox installed by snap (You can keep using Firefox (snap version) while installing Firefox (tar version) )
 
 ```sh
 wget --content-disposition "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
