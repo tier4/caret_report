@@ -97,7 +97,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
     node_stats['callbacks'] = {}
 
     for metrics, method in all_metrics_dict.items():
-        p_timeseries = method(node)
+        p_timeseries = method(node.callbacks)
         filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
         try:
             measurement = p_timeseries.to_dataframe()
@@ -108,18 +108,18 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             utils.export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
             node_stats['filename_timeseries'][metrics] = filename_timeseries
         except:
-            _logger.warning(f'This node is not called: {node.node_name}')
+            _logger.info(f'This node is not called: {node.node_name}')
             return None
 
-        for callback_info in measurement.iteritems():
-            callback_name = callback_info[0][0]
-            metrics_str = callback_info[0][1]
+        for key, value in measurement.items():
+            callback_name = key[0]
+            metrics_str = key[1]
             if 'callback_start_timestamp' in metrics_str:
                 continue
             callback_displayname = callback_name.split('/')[-1] + ': '
             callback_displayname += utils.make_callback_displayname(node.get_callback(callback_name))
-            data = callback_info[1].dropna()
-            data = data[:-2]    # remove the last data because freq becomes small
+            data = value.dropna()
+            data = data.iloc[:-2]    # remove the last data because freq becomes small
             callback_stats = analyze_callback(callback_name, callback_displayname,
                                               metrics_str, data, metrics, dest_dir)
             node_stats['callbacks'].setdefault(callback_name, {})
@@ -169,7 +169,8 @@ def get_node_list(lttng: Lttng, app: Application,
 def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
     """Analyze nodes"""
     global _logger
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    if _logger is None:
+        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Nodes: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
     arch.export(dest_dir + '/architecture.yaml', force=True)

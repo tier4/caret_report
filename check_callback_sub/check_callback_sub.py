@@ -211,7 +211,8 @@ def analyze_communication(args, dest_dir, package_dict, communication: Communica
 def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
     """Analyze Subscription Callbacks"""
     global _logger
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    if _logger is None:
+        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Subscription Callbacks: Start >>>')
     utils.make_destination_dir(dest_dir, args.force, _logger)
     package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
