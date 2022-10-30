@@ -164,6 +164,7 @@ Contents described in `note_text_top.txt` and `note_text_bottom.txt` are added t
 ## Troubleshooting
 
 ### Graph files (png files) are not created or Report creation script is stuck
+
 - Please make sure Firefox is installed properly
 - In Ubuntu 22.04, please consider to install Firefox from tar rather than Firefox installed by snap
 
