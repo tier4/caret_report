@@ -16,7 +16,7 @@ RUN apt-get update -y && \
         unzip=6.0-25ubuntu1 \
         wget=1.20.3-1ubuntu2 \
         nano=4.8-1ubuntu1 \
-        firefox=105.0+build2-0ubuntu0.20.04.1 \
+        firefox=106.0.5+build1-0ubuntu0.20.04.1 \
         python3-pip=20.0.2-5ubuntu1.6 \
         fonts-urw-base35=20170801.1-3 \
         && \
