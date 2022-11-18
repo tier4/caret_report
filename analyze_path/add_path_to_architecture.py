@@ -112,6 +112,7 @@ def find_path(arch: Architecture, target_path: list, max_node_depth: int):
                 _logger.debug(node_name)
             _logger.debug('---')
         # sys.exit(-1)
+        return found_path_list
 
 
 def convert_context_type_to_use_latest_message(filename_src, filename_dst):
