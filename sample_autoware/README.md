@@ -156,5 +156,7 @@ sh ${script_path}/make_report.sh
 
 ## Note
 
+- In case path results in a created report is blank, please find `Target path not found` error message in script log and modify `target_path.json`
+  - `target_path.json` is just a sample and path may be changed as Autoware is modified
 - In case you use LTTng 2.13+, run the following command before starting Autoware
   - `ulimit -n 65535`

@@ -111,7 +111,7 @@ def find_path(arch: Architecture, target_path: list, max_node_depth: int):
             for node_name in path.node_names:
                 _logger.debug(node_name)
             _logger.debug('---')
-        sys.exit(-1)
+        # sys.exit(-1)
 
 
 def convert_context_type_to_use_latest_message(filename_src, filename_dst):
@@ -157,7 +157,7 @@ def add_path_to_architecture(args, arch: Architecture):
                 arch.add_path(target_path_name + '_' + str(i), found_path)
         else:
             _logger.error(f'Target path not found: {target_path_name}')
-            sys.exit(-1)
+            # sys.exit(-1)
 
     arch.export(args.architecture_file_path, force=True)
 

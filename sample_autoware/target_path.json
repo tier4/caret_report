@@ -73,6 +73,7 @@
       "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
       "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
       "/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner",
+      "/planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter",
       "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
       "/planning/scenario_planning/scenario_selector",
       "/planning/scenario_planning/motion_velocity_smoother",
