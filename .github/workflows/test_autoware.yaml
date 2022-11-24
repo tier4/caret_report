@@ -83,7 +83,7 @@ jobs:
           export trace_data=`pwd`/autoware_launch_trace_20220826-105249_universe_rosbag
           export work_dir=`pwd`/sample_autoware
           export package_list_json=package_list.json
-          export target_path_json=target_path.json
+          export target_path_json=target_path_for_ci.json
 
           export start_time=20
           export duration_time=9999
