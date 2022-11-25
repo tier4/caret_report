@@ -58,6 +58,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
     - CARET cannot trace data, when a node has "two or more" timer callback functions whose timer period are the same
     - CARET cannot trace data, when a node has "two or more" subscription callback functions whose topic name are the same
   - Dependency on `rclcpp` needs to be written in package.xml
+  - Give more priority to CARET/rclcpp rather than ROS/rclcpp
 - How to modify:
 
   - Please refer to [this commit](https://github.com/takeshi-iwanari/autoware.universe/commit/7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb) , and make the same change
@@ -69,6 +70,14 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
   git remote add autoware_universe_caret https://github.com/takeshi-iwanari/autoware.universe
   git fetch autoware_universe_caret 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
   git cherry-pick -n 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
+  ```
+
+  - If you use humble branch, you also need to revert [ament_cmake](https://github.com/autowarefoundation/ament_cmake/commit/6dc53769ada4c99dd1d061165b421fa11db0c769) to use CARET/rclcpp instead of SYSTEM using the following command
+
+  ```sh
+  cd ${autoware_dir}
+  cd src/core/external/ament_cmake
+  git revert -n 6dc53769ada4c99dd1d061165b421fa11db0c769
   ```
 
 ## 4. Build Autoware with CARET
