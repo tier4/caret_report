@@ -41,6 +41,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003
 RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     cd ros2_caret_ws && \
+    git checkout v0.3.2 && \
     mkdir src && \
     vcs import src < caret.repos && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \
