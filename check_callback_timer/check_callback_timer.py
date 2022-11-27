@@ -64,7 +64,9 @@ def analyze_callback(args, dest_dir, package_dict: dict, callback: CallbackBase)
     utils.export_graph(figure, dest_dir, graph_filename, _logger)
 
     measurement = p_timeseries.to_dataframe().dropna()
-    freq_callback_list = measurement.iloc[:-2, 1]  # remove the last data because freq becomes small
+    freq_callback_list = measurement.iloc[:, 1]
+    freq_callback_list = freq_callback_list[freq_callback_list != 0]    # Ignore data when the node is not running
+    freq_callback_list = freq_callback_list.iloc[1:-2]  # remove the first and last data because freq becomes small
     if len(freq_callback_list) < 2:
         _logger.warning(f'Not enough data: {callback.callback_name}')
         return None, False
