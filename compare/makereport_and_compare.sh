@@ -2,7 +2,7 @@
 
 # shellcheck disable=SC1090
 
-# set -e
+set -e
 
 WORK_DIR=$(pwd)/verify_work
 
@@ -26,7 +26,7 @@ script_path="$(pwd)"/../
 trace_data="$(pwd)"/autoware_launch_trace_20220826-105249_universe_rosbag
 sample_autoware_dir="$(pwd)"/../sample_autoware
 package_list_json=package_list.json
-target_path_json=target_path.json
+target_path_json=target_path_for_ci.json
 start_time=20
 duration_time=9999
 max_node_depth=2

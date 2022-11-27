@@ -195,15 +195,15 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
 
     stats['target_path_name'] =target_path_name
     stats['node_names'] =arch.get_path(target_path_name).node_names
-    stats['worst_avg'] =float(worst_avg)
-    stats['worst_min'] =float(worst_min)
-    stats['worst_max'] =float(worst_max)
-    stats['best_avg'] =float(best_avg)
-    stats['best_min'] =float(best_min)
-    stats['best_max'] =float(best_max)
-    stats['total_avg'] =float(worst_avg)
-    stats['total_min'] =float(total_min)
-    stats['total_max'] =float(total_max)
+    stats['worst_avg'] = round(float(worst_avg), 3)
+    stats['worst_min'] = round(float(worst_min), 3)
+    stats['worst_max'] = round(float(worst_max), 3)
+    stats['best_avg'] = round(float(best_avg), 3)
+    stats['best_min'] = round(float(best_min), 3)
+    stats['best_max'] = round(float(best_max), 3)
+    stats['total_avg'] = round(float(worst_avg), 3)
+    stats['total_min'] = round(float(total_min), 3)
+    stats['total_max'] = round(float(total_max), 3)
     if args.message_flow:
         stats['filename_messageflow'] = f'{target_path_name}_messageflow'
     else:
@@ -247,6 +247,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     stat_file_path = f'{dest_dir}/stats_path.yaml'
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
+    utils.round_yaml(stat_file_path)
 
     _logger.info('<<< Analyze Paths: Finish >>>')
 

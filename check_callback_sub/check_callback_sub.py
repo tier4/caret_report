@@ -194,10 +194,10 @@ def analyze_communication(args, dest_dir, package_dict, communication: Communica
 
 
     # Check if sub freq is lower than pub freq
-    mean_pub_freq = statistics.mean(matched_pubsub_freq[1])
-    mean_sub_freq = statistics.mean(matched_pubsub_freq[2])
+    mean_pub_freq = round(float(statistics.mean(matched_pubsub_freq[1])), 3)
+    mean_sub_freq = round(float(statistics.mean(matched_pubsub_freq[2])), 3)
     freq_threshold = mean_pub_freq * (1 - args.gap_threshold_ratio)
-    num_huge_gap = sum(freq_callback <= freq_threshold for freq_callback in matched_pubsub_freq[2])
+    num_huge_gap = int(sum(freq_callback <= freq_threshold for freq_callback in matched_pubsub_freq[2]))
 
     stats = create_stats(title, package_dict, graph_filename, communication.topic_name,
                          communication.publish_node_name, communication.subscribe_node_name,
@@ -246,9 +246,11 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     with open(f'{dest_dir}/stats_callback_subscription.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_all_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
+    utils.round_yaml(f'{dest_dir}/stats_callback_subscription.yaml')
     with open(f'{dest_dir}/stats_callback_subscription_warning.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_warning_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
+    utils.round_yaml(f'{dest_dir}/stats_callback_subscription_warning.yaml')
 
     _logger.info('<<< Analyze Subscription Callbacks: Finish >>>')
 

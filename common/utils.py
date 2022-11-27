@@ -146,3 +146,21 @@ def check_if_ignore(package_dict: dict, ignore_list: list[str], callback_name: s
         if re.search(ignore, callback_name):
             return True
     return False
+
+
+def round_yaml(filename):
+    '''Round float value in yaml file'''
+    with open(filename, 'r', encoding='utf-8') as f_yaml:
+        lines = f_yaml.readlines()
+        for i, line in enumerate(lines):
+            line_split = line.split()
+            for val in line_split:
+                try:
+                    new_val = float(val)
+                    new_val = f'{round(new_val, 3): .03f}'.strip()
+                    lines[i] = line.replace(val, new_val)
+                except:
+                    pass
+    new_yaml = ''.join(lines)
+    with open(filename, 'w', encoding='utf-8') as f_yaml:
+        f_yaml.write(new_yaml)
