@@ -44,11 +44,11 @@ def calculate_stats(data: pd.DataFrame) -> dict:
         'std': '-',
     }
     if len(data) > 1:
-        stats['avg'] = float(data.mean())
-        stats['std'] = float(data.std())
+        stats['avg'] = round(float(data.mean()), 3)
+        stats['std'] = round(float(data.std()), 3)
     if len(data) > 0:
-        stats['min'] = float(data.min())
-        stats['max'] = float(data.max())
+        stats['min'] = round(float(data.min()), 3)
+        stats['max'] = round(float(data.max()), 3)
     return stats
 
 
@@ -142,6 +142,7 @@ def analyze_package(node_list: list[Node], dest_dir: str):
     stat_file_path = f"{dest_dir}/stats_node.yaml"
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
+    utils.round_yaml(stat_file_path)
 
 
 def get_node_list(lttng: Lttng, app: Application,

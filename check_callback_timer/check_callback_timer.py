@@ -68,8 +68,8 @@ def analyze_callback(args, dest_dir, package_dict: dict, callback: CallbackBase)
     if len(freq_callback_list) < 2:
         _logger.warning(f'Not enough data: {callback.callback_name}')
         return None, False
-    freq_callback_avg = statistics.mean(freq_callback_list)
-    num_huge_gap = sum(freq_callback <= freq_threshold for freq_callback in freq_callback_list)
+    freq_callback_avg = round(float(statistics.mean(freq_callback_list)), 3)
+    num_huge_gap = int(sum(freq_callback <= freq_threshold for freq_callback in freq_callback_list))
 
     stats = create_stats(callback, package_dict, freq_timer, freq_callback_avg, num_huge_gap, graph_filename)
 
@@ -108,9 +108,11 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     with open(f'{dest_dir}/stats_callback_timer.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_all_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
+    utils.round_yaml(f'{dest_dir}/stats_callback_timer.yaml')
     with open(f'{dest_dir}/stats_callback_timer_warning.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_warning_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
+    utils.round_yaml(f'{dest_dir}/stats_callback_timer_warning.yaml')
 
     _logger.info('<<< Analyze Timer Callbacks: Finish >>>')
 
