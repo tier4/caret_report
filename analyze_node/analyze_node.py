@@ -119,7 +119,9 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             callback_displayname = callback_name.split('/')[-1] + ': '
             callback_displayname += utils.make_callback_displayname(node.get_callback(callback_name))
             data = value.dropna()
-            data = data.iloc[:-2]    # remove the last data because freq becomes small
+            if metrics == 'Frequency':
+                data = data[data > 0]     # Ignore data when the node is not running
+                data = data.iloc[1:-2]    # remove the first and last data because freq becomes small
             callback_stats = analyze_callback(callback_name, callback_displayname,
                                               metrics_str, data, metrics, dest_dir)
             node_stats['callbacks'].setdefault(callback_name, {})
