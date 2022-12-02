@@ -72,14 +72,6 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
   git cherry-pick -n 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
   ```
 
-  - If you use humble branch, you also need to revert [ament_cmake](https://github.com/autowarefoundation/ament_cmake/commit/6dc53769ada4c99dd1d061165b421fa11db0c769) to use CARET/rclcpp instead of SYSTEM using the following command
-
-  ```sh
-  cd ${autoware_dir}
-  cd src/core/external/ament_cmake
-  git revert -n 6dc53769ada4c99dd1d061165b421fa11db0c769
-  ```
-
 ## 4. Build Autoware with CARET
 
 ### Build Autoware
@@ -163,9 +155,23 @@ export draw_all_message_flow=false
 sh ${script_path}/make_report.sh
 ```
 
-## Note
+## FAQ
 
-- In case path results in a created report is blank, please find `Target path not found` error message in script log and modify `target_path.json`
+### Build
+
+- Build for a package which uses `pcl_ros` fails. (e.g. `static_centerline_optimizer` , `map_loader` )
+  - Please refer to [this issue](https://github.com/tier4/caret/issues/56)
+
+### Recording
+
+- Trace data size is extremely small
+  - If you use LTTng 2.13+, run the following command before starting Autoware
+    - `ulimit -n 65535`
+
+### Analysis report
+
+- Path results in a created report is blank
+  - Please find `Target path not found` error message in script log and modify `target_path.json`
+  - If a node in `target_path.json` doesn't run at all while recording, the path will be blank
+    - e.g. If route (2D GOAL) is not set, a path including planning module will be blank
   - `target_path.json` is just a sample and path may be changed as Autoware is modified
-- In case you use LTTng 2.13+, run the following command before starting Autoware
-  - `ulimit -n 65535`
