@@ -22,7 +22,7 @@ unzip autoware_launch_trace_20220826-105249_universe_rosbag.zip
 git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
 
 # Create report
-script_path="$(pwd)"/../
+script_path="$(pwd)"/../report
 trace_data="$(pwd)"/autoware_launch_trace_20220826-105249_universe_rosbag
 sample_autoware_dir="$(pwd)"/../sample_autoware
 package_list_json=package_list.json
