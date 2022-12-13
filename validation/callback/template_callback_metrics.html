@@ -76,58 +76,13 @@
               OUT_OF_SCOPE
               {% endif %}
             </td>
-            <td>
-              {{ '%.1f' % stats['stats']['avg'] | float }} /
-              {% if stats['expectation_value'] != -1 %}
-              {{ '%.1f' % stats['expectation_value'] | float }}
-              {% else %}
-              ---
-              {% endif %}
-            </td>
-            <td>
-              {{ '%.1f' % stats['stats']['min'] | float }} /
-              {% if stats['expectation_lower_limit'] != -1 %}
-              {{ '%.1f' % stats['expectation_lower_limit'] | float }}
-              {% else %}
-              ---
-              {% endif %}
-            </td>
-            <td>
-              {{ '%.1f' % stats['stats']['max'] | float }} /
-              {% if stats['expectation_upper_limit'] != -1 %}
-              {{ '%.1f' % stats['expectation_upper_limit'] | float }}
-              {% else %}
-              ---
-              {% endif %}
-            </td>
-            <td>
-              {% if stats['ratio_lower_limit'] != -1 %}
-              {{ '%.1f' % stats['ratio_lower_limit'] | float }} / {{ '%.1f' % stats['expectation_ratio'] | float }}
-              {% else %}
-              --- / ---
-              {% endif %}
-            </td>
-            <td>
-              {% if stats['ratio_upper_limit'] != -1 %}
-              {{ '%.1f' % stats['ratio_upper_limit'] | float }} / {{ '%.1f' % stats['expectation_ratio'] | float }}
-              {% else %}
-              --- / ---
-              {% endif %}
-            </td>
-            <td>
-              {% if stats['burst_num_lower_limit'] != -1 %}
-              {{ '%d' % stats['burst_num_lower_limit'] | int }} / {{ '%d' % stats['expectation_burst_num'] | int }}
-              {% else %}
-              --- / ---
-              {% endif %}
-            </td>
-            <td>
-              {% if stats['burst_num_upper_limit'] != -1 %}
-              {{ '%d' % stats['burst_num_upper_limit'] | int }} / {{ '%d' % stats['expectation_burst_num'] | int }}
-              {% else %}
-              --- / ---
-              {% endif %}
-            </td>
+            <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
+            <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
+            <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
+            <td>{{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+            <td>{{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+            <td>{{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+            <td>{{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
           </tr>
           {% endfor %}
         {% endfor %}

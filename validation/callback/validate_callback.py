@@ -35,6 +35,11 @@ from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common import utils
 
+# Supress log for CARET
+from logging import getLogger, FATAL
+logger = getLogger()
+logger.setLevel(FATAL)
+
 _logger: logging.Logger = None
 
 class Metrics(Enum):
@@ -45,6 +50,7 @@ class Metrics(Enum):
 metrics_dict = {Metrics.FREQUENCY: Plot.create_callback_frequency_plot,
                 Metrics.PERIOD: Plot.create_callback_period_plot,
                 Metrics.LATENCY: Plot.create_callback_latency_plot}
+
 
 class ResultStatus(Enum):
     PASS = 1
@@ -147,7 +153,8 @@ class Stats():
             stats.max = float(df_callback.max())
             stats.percentile5_min = float(df_callback.quantile(0.05))
             stats.percentile5_max = float(df_callback.quantile(0.95))
-            stats.percentile5_avg = float(df_callback[(df_callback >= stats.percentile5_min) & (df_callback <= stats.percentile5_max)].mean())
+            df_percentile5 = df_callback[(df_callback >= stats.percentile5_min) & (df_callback <= stats.percentile5_max)]
+            stats.percentile5_avg = float(df_percentile5.mean()) if len(df_percentile5) > 2 else stats.avg
         return stats
 
     @staticmethod

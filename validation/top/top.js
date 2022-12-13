@@ -66,6 +66,14 @@ var cy = (window.cy = cytoscape({
         "target-arrow-color": "#F00",
       },
     },
+    {
+      selector: ".not_measured",
+      style: {
+        "background-color": "#FF0",
+        "line-color": "#FF0",
+        "target-arrow-color": "#FF0",
+      },
+    },
   ],
 
   elements: {
@@ -332,10 +340,10 @@ for (let component_name in summary_callback_dict_component_metrics) {
   let cnt_total = cnt_pass + cnt_failed;
   let class_name = "pass";
   if (cnt_not_measured > 0) {
-    let class_name = "not_measured";
+    class_name = "not_measured";
   }
   if (cnt_failed > 0) {
-    let class_name = "failed";
+    class_name = "failed";
   }
   cy.getElementById(component_name).data(
     "text",

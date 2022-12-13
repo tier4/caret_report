@@ -71,13 +71,13 @@
                   {% endif %}
                 {% endif %}
                 </br>
-                Avg: {{ '%.1f' % stats['stats']['avg'] | float }}</br>
-                Std: {{ '%.1f' % stats['stats']['std'] | float }}</br>
-                Min: {{ '%.1f' % stats['stats']['min'] | float }}</br>
-                Max: {{ '%.1f' % stats['stats']['max'] | float }}</br>
-                Avg(5%): {{ '%.1f' % stats['stats']['percentile5_avg'] | float }}</br>
-                Min(5%): {{ '%.1f' % stats['stats']['percentile5_min'] | float }}</br>
-                Max(5%): {{ '%.1f' % stats['stats']['percentile5_max'] | float }}</br>
+                Avg: {{ stats['stats']['avg'] }}</br>
+                Std: {{ stats['stats']['std'] }}</br>
+                Min: {{ stats['stats']['min'] }}</br>
+                Max: {{ stats['stats']['max'] }}</br>
+                Avg(5%): {{ stats['stats']['percentile5_avg'] }}</br>
+                Min(5%): {{ stats['stats']['percentile5_min'] }}</br>
+                Max(5%): {{ stats['stats']['percentile5_max'] }}</br>
               </td>
             {% endfor %}
           </tr>

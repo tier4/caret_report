@@ -49,9 +49,14 @@ def summarize_result(stats_dict_node_callback_metrics: dict) -> dict:
         }
 
     for metrics in Metrics:
-        for _, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
-            for _, stats_dict_metrics in stats_dict_callback_metrics.items():
-                stats = stats_dict_metrics[metrics.name]
+        for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
+            for callback_name, stats_dict_metrics in stats_dict_callback_metrics.items():
+                try:
+                    stats = stats_dict_metrics[metrics.name]
+                except:
+                    print('This metrics is not measured: ', node_name, callback_name, metrics.name)
+                    continue
+
                 if stats['result_status'] == 'PASS':
                     summary_dict_metrics[metrics.name]['cnt_pass'] += 1
                 elif stats['result_status'] == 'FAILED':
@@ -71,6 +76,17 @@ def summarize_callback_result(report_dir: str, component_name: str):
             for stats in stats_list:
                 stats['stats']['callback_name'] = stats['stats']['callback_name'].split('/')[-1]
                 stats['stats']['callback_type'] = stats['stats']['callback_type'].split('_')[0]
+                for key, value in stats.items():
+                    if type(value) == float or type(value) == int:
+                        stats[key] = '---' if value == -1 else f'{round(value, 3): .03f}'.strip()
+                for key, value in stats['stats'].items():
+                    if key != 'period_ns' and (type(value) == float or type(value) == int):
+                        stats['stats'][key] = '---' if value == -1 else f'{round(value, 3): .03f}'.strip()
+
+                if stats['stats']['avg'] == '---' and stats['expectation_value'] == '---':
+                    # not measured(but added to stats file) and OUT_OF_SCOPE
+                    continue
+
                 node_name = stats['stats']['node_name']
                 callback_name = stats['stats']['callback_name']
                 if node_name not in stats_dict_node_callback_metrics:

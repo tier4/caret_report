@@ -92,11 +92,11 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
                  logger: logging.Logger = None) -> None:
     """Export graph as html and image"""
     save(figure, filename=f'{dest_dir}/{filename}.html', title=title, resources=CDN)
-    try:
-        export_png(figure, filename=f'{dest_dir}/{filename}.png')
-    except:
-        if logger:
-            logger.warning('Unable to export png')
+    # try:
+    #     export_png(figure, filename=f'{dest_dir}/{filename}.png')
+    # except:
+    #     if logger:
+    #         logger.warning('Unable to export png')
 
 
 def make_package_list(package_list_json_path: str, logger: logging.Logger = None) -> tuple[dict, list]:
