@@ -1,0 +1,93 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+    />
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <h3>Target: {{ report_name }}</h3>
+      <table class="table table-hover table-bordered" style="word-break:break-all">
+        <tr class="table-primary text-center">
+          <th width="14%">Node</th>
+          <th width="8%">Callback</th>
+          <th width="8%">Type</th>
+          <th width="20%">Trigger</th>
+          <th width="10%"><a href="index_FREQUENCY.html" target="_blank">Frequency [Hz]</a></th>
+          <th width="10%"><a href="index_PERIOD.html" target="_blank">Period [ms]</a></th>
+          <th width="10%"><a href="index_LATENCY.html" target="_blank">Latency [ms]</a></th>
+        </tr>
+
+        {% for node_name, stats_callback_metrics in stats_node_callback_metrics.items() %}
+          {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
+          <tr>
+            <td><a href="{{ node_filename_dict[node_name] }}.html" target="_blank">{{ node_name }}</a></td>
+            <td>{{ callback_name }}</td>
+            <td>{{ stats_metrics[stats_metrics | first]['stats']['callback_type'] }}</td>
+            <td>
+              {% if stats_metrics[stats_metrics | first]['stats']['period_ns'] != -1 %}
+              {{ stats_metrics[stats_metrics | first]['stats']['period_ns'] / 1e6 }} [ms]
+              {% else %}
+              <a href="todo: link to topic Hz" target="_blank">{{ stats_metrics[stats_metrics | first]['stats']['subscribe_topic_name'] }}</a>
+              {% endif %}
+            </td>
+            {% for metrics_name in metrics_list %}
+              <td>
+                {% if metrics_name not in stats_metrics %}
+                {% continue %}
+                {% endif %}
+                {% set stats = stats_metrics[metrics_name] %}
+                {% if metrics_name == 'FREQUENCY' %}
+                  {% if stats['result_status'] == 'PASS' %}
+                  <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status'] }}
+                  {% elif stats['result_status'] == 'FAILED' %}
+                  <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status'] }}
+                  {% elif stats['result_status'] == 'NOT_MEASURED' %}
+                  <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status'] }}
+                  {% else %}
+                  OUT_OF_SCOPE
+                  {% endif %}
+                {% endif %}
+                </br>
+                Avg: {{ '%.1f' % stats['stats']['avg'] | float }}</br>
+                Std: {{ '%.1f' % stats['stats']['std'] | float }}</br>
+                Min: {{ '%.1f' % stats['stats']['min'] | float }}</br>
+                Max: {{ '%.1f' % stats['stats']['max'] | float }}</br>
+                Avg(5%): {{ '%.1f' % stats['stats']['percentile5_avg'] | float }}</br>
+                Min(5%): {{ '%.1f' % stats['stats']['percentile5_min'] | float }}</br>
+                Max(5%): {{ '%.1f' % stats['stats']['percentile5_max'] | float }}</br>
+              </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        {% endfor %}
+      </table>
+
+    </div><!-- container -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
