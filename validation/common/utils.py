@@ -219,4 +219,3 @@ def summarize_callback_result(stats_dict_node_callback_metrics: dict) -> dict:
                 else:
                     summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
     return summary_dict_metrics
-
