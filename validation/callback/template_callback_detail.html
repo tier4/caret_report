@@ -24,7 +24,7 @@
       {% for metrics in metrics_list %}
         <h2>{{ sub_title_list[loop.index0] }}</h2>
         <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
-        <table class="table table-hover table-bordered" style="word-break:break-all">
+        <table class="table table-hover table-bordered" style="word-break:normal">
           <tr class="table-primary text-center">
             <th width="8%">Name</th>
             <th width="8%">Type</th>
@@ -54,27 +54,31 @@
                 {% if stats['stats']['period_ns'] != -1 %}
                 {{ stats['stats']['period_ns'] / 1e6 }} [ms]
                 {% else %}
-                <a href="todo: link to topic Hz">{{ stats['stats']['subscribe_topic_name'] }}</a>
+                <a href="todo: link to topic Hz">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
                 {% endif %}
               </td>
               <td>
                 {% if stats['result_status'] == 'PASS' %}
-                <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status'] }}
+                <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
                 {% elif stats['result_status'] == 'FAILED' %}
-                <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status'] }}
+                <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
                 {% elif stats['result_status'] == 'NOT_MEASURED' %}
-                <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status'] }}
+                <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
                 {% else %}
-                OUT_OF_SCOPE
+                {{ stats['result_status']}}
                 {% endif %}
               </td>
               <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
               <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
               <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
-              <td>{{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
-              <td>{{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
-              <td>{{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
-              <td>{{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+              <td {% if stats['result_ratio_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+              <td {% if stats['result_ratio_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+              <td {% if stats['result_burst_num_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+              <td {% if stats['result_burst_num_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
             </tr>
           {% endfor %}
         </table>

@@ -14,6 +14,10 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css"
+    />
     <title>{{ title }}</title>
   </head>
 
@@ -29,45 +33,53 @@
         <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
       </ul>
 
-      <table class="table table-hover table-bordered" style="word-break:break-all">
-        <tr class="table-primary text-center">
-          <th width="14%">Node</th>
-          <th width="8%">Callback</th>
-          <th width="8%">Type</th>
-          <th width="20%">Trigger</th>
-          <th width="10%"><a href="index_FREQUENCY.html">Frequency [Hz]</a></th>
-          <th width="10%"><a href="index_PERIOD.html">Period [ms]</a></th>
-          <th width="10%"><a href="index_LATENCY.html">Latency [ms]</a></th>
-        </tr>
+      <table id="result_table" class="table table-hover table-bordered" style="word-break:normal">
+        <thead>
+          <tr class="table-primary text-center">
+            <th width="3%">#</th>
+            <th width="11%">Node</th>
+            <th width="8%">Callback</th>
+            <th width="8%">Type</th>
+            <th width="20%">Trigger</th>
+            <th width="10%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></th>
+            <th width="10%"><a href="index_PERIOD.html">Period[ms]</a></th>
+            <th width="10%"><a href="index_LATENCY.html">Latency[ms]</a></th>
+          </tr>
+        </thead>
 
+        <tbody>
+        {% set ns = namespace(index = 0) %}
         {% for node_name, stats_callback_metrics in stats_node_callback_metrics.items() %}
           {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
           <tr>
-            <td><a href="{{ node_filename_dict[node_name] }}.html">{{ node_name }}</a></td>
+            <td>{{ ns.index }}</td>
+            {% set ns.index = ns.index + 1 %}
+            <td><a href="{{ node_filename_dict[node_name] }}.html">{{ node_name | safe }}</a></td>
             <td>{{ callback_name }}</td>
             <td>{{ stats_metrics[stats_metrics | first]['stats']['callback_type'] }}</td>
             <td>
               {% if stats_metrics[stats_metrics | first]['stats']['period_ns'] != -1 %}
               {{ stats_metrics[stats_metrics | first]['stats']['period_ns'] / 1e6 }} [ms]
               {% else %}
-              <a href="todo: link to topic Hz">{{ stats_metrics[stats_metrics | first]['stats']['subscribe_topic_name'] }}</a>
+              <a href="todo: link to topic Hz">{{ stats_metrics[stats_metrics | first ]['stats']['subscribe_topic_name'] | safe }}</a>
               {% endif %}
             </td>
             {% for metrics_name in metrics_list %}
               <td>
                 {% if metrics_name not in stats_metrics %}
+                  </td>
                 {% continue %}
                 {% endif %}
                 {% set stats = stats_metrics[metrics_name] %}
                 {% if metrics_name == 'FREQUENCY' %}
                   {% if stats['result_status'] == 'PASS' %}
-                  <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status'] }}
+                  <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
                   {% elif stats['result_status'] == 'FAILED' %}
-                  <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status'] }}
+                  <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
                   {% elif stats['result_status'] == 'NOT_MEASURED' %}
-                  <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status'] }}
+                  <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
                   {% else %}
-                  OUT_OF_SCOPE
+                  {{ stats['result_status']}}
                   {% endif %}
                 {% endif %}
                 </br>
@@ -83,6 +95,7 @@
           </tr>
           {% endfor %}
         {% endfor %}
+        </tbody>
       </table>
 
     </div><!-- container -->
@@ -97,5 +110,21 @@
       integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
       crossorigin="anonymous"
     ></script>
+    <script
+      src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"
+    ></script>
+    <script
+      src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"
+    ></script>
+    <script>
+      $(document).ready(function() {
+        $("#result_table").DataTable({
+          lengthMenu: [
+            [-1, 10, 25],
+            ['All', 10, 25],
+          ],
+        });
+      });
+    </script>
   </body>
 </html>
