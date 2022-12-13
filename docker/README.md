@@ -35,7 +35,7 @@ docker image build -t caret/caret_report ./docker
 ```sh
 cd CARET_report
 # Settings: modify for your usage and environment
-export script_path=`pwd`
+export script_path=`pwd`/report
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 export work_dir=`pwd`/sample_autoware
 export package_list_json=package_list.json

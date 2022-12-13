@@ -5,7 +5,7 @@ name: Test with Autoware
 on:
   schedule:
     - cron: 0 16 * * * # run at 1 AM JST
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 env:
@@ -79,7 +79,7 @@ jobs:
       - name: Create CARET report
         if: ${{ matrix.do_test }}
         run: |
-          export script_path=`pwd`
+          export script_path=`pwd`/report
           export trace_data=`pwd`/autoware_launch_trace_20220826-105249_universe_rosbag
           export work_dir=`pwd`/sample_autoware
           export package_list_json=package_list.json
@@ -116,4 +116,4 @@ jobs:
           git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
           export report_dir_1=`pwd`/reference_result
           export report_dir_2=`pwd`/sample_autoware/report_trace_data
-          sh ./compare/compare.sh
+          sh `pwd`/report/compare/compare.sh
