@@ -338,7 +338,7 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
 
     _logger.info(f'<<< Validate topic finish >>>')
 
- 
+
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(

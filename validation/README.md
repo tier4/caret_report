@@ -12,7 +12,6 @@ docker run -it --rm \
     caret/caret_autoware_validation
 ```
 
-
 ```sh
 # Settings: modify for your usage and environment
 export script_path=./CARET_report/validation        # Path to 'validation' directory in this repo cloned

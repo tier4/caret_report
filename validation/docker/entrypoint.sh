@@ -18,9 +18,9 @@ sudo chmod u-s /usr/sbin/groupadd
 # Add user and group: end
 
 # Add to .bashrc for VSCode
-echo "source /opt/ros/humble/setup.bash" >> $HOME/.bashrc
-echo "source /ros2_caret_ws/install/local_setup.bash" >> $HOME/.bashrc
-echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> $HOME/.bashrc
+echo "source /opt/ros/humble/setup.bash" >>$HOME/.bashrc
+echo "source /ros2_caret_ws/install/local_setup.bash" >>$HOME/.bashrc
+echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >>$HOME/.bashrc
 
 cd /work
 # work_dir="work_"`date +"%Y%m%d_%H%M%S"`
