@@ -1,2 +1,6 @@
 *.param.yaml
 *.rviz
+*.py
+*.html
+*.md
+*.sh

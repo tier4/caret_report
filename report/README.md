@@ -18,7 +18,7 @@
 
 ## Requirements
 
-[Please refer to the top page](../)
+[Please refer to the top page](https://github.com/tier4/CARET_report#requirements)
 
 ## How to use
 

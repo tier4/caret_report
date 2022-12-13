@@ -1,0 +1,102 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+    />
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <h3>Trace name: {{ trace_name }}</h3>
+      {% for metrics in metrics_list %}
+        <h2>{{ sub_title_list[loop.index0] }}</h2>
+        <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
+        <table class="table table-hover table-bordered" style="word-break:normal">
+          <tr class="table-primary text-center">
+            <th width="8%">Name</th>
+            <th width="8%">Type</th>
+            <th width="10%">Trigger</th>
+            <th width="10%">Result</th>
+            <th width="9%">Avg</th>
+            <th width="9%">Min</th>
+            <th width="9%">Max</th>
+            <th width="9%">Min violation ratio</th>
+            <th width="9%">Max violation ratio</th>
+            <th width="9%">Min violation burst</th>
+            <th width="9%">Max violation burst</th>
+          </tr>
+
+          {% set ns = namespace(graphfilename = none) %}
+          {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
+            {% if metrics in stats_metrics %}
+              {% set stats = stats_metrics[metrics] %}
+              {% set ns.graphfilename = stats['stats']['graph_filename'] %}
+            {% else %}
+              {% continue %}
+            {% endif %}
+            <tr>
+              <td>{{ stats['stats']['callback_name'] }}</td>
+              <td>{{ stats['stats']['callback_type'] }}</td>
+              <td>
+                {% if stats['stats']['period_ns'] != -1 %}
+                {{ stats['stats']['period_ns'] / 1e6 }} [ms]
+                {% else %}
+                <a href="todo: link to topic Hz">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
+                {% endif %}
+              </td>
+              <td>
+                {% if stats['result_status'] == 'PASS' %}
+                <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
+                {% elif stats['result_status'] == 'FAILED' %}
+                <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
+                {% elif stats['result_status'] == 'NOT_MEASURED' %}
+                <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
+                {% else %}
+                {{ stats['result_status']}}
+                {% endif %}
+              </td>
+              <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
+              <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
+              <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
+              <td {% if stats['result_ratio_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+              <td {% if stats['result_ratio_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+              <td {% if stats['result_burst_num_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+              <td {% if stats['result_burst_num_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+                {{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+        {% if ns.graphfilename is not none%}
+          <iframe src="{{ ns.graphfilename }}.html" width="1100" height="350" scrolling="no"></iframe>
+        {% endif %}
+      {% endfor %}
+    </div><!-- container -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
