@@ -5,7 +5,7 @@ name: Test with Autoware
 on:
   schedule:
     - cron: 0 16 * * * # run at 1 AM JST
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 env:
@@ -18,9 +18,9 @@ jobs:
     strategy:
       matrix:
         include:
-          # - ros_version: galactic
-          #   dockerfile: Dockerfile_galactic.dockerfile
-          #   do_test: false
+          - ros_version: galactic
+            dockerfile: Dockerfile_galactic.dockerfile
+            do_test: false
           - ros_version: humble
             dockerfile: Dockerfile
             do_test: true

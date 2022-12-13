@@ -9,8 +9,8 @@
 
 ## Sample
 
+- [sample report page](https://tier4.github.io/CARET_report/)
 - Please refer to [sample_autoware](./sample_autoware) to find sample settings and a full explanation of how to analyze Autoware with CARET
-- Open a [sample report page](https://tier4.github.io/CARET_report/)
 
 ## Requirements
 
@@ -35,7 +35,7 @@ tar xzvf geckodriver-v0.31.0-linux64.tar.gz
 sudo mv geckodriver /usr/local/bin/
 ```
 
-## Troubleshooting
+## FAQ and Troubleshooting
 
 ### Process is stuck or PC freezes/crashes
 
@@ -70,3 +70,10 @@ sudo mv geckodriver /usr/local/bin/
   sudo apt install chromium-chromedriver
   pip3 install chromedriver-binary
   ```
+
+### How to run regression test
+
+```sh
+# cd to this repo cloned
+sh ./report/compare/makereport_and_compare.sh
+```
