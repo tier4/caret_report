@@ -38,13 +38,39 @@ app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 
+
+def summarize_result(stats_dict_node_callback_metrics: dict) -> dict:
+    summary_dict_metrics = {}
+    for metrics in Metrics:
+        summary_dict_metrics[metrics.name] = {
+            'cnt_pass': 0,
+            'cnt_failed': 0,
+            'cnt_not_measured': 0,
+            'cnt_out_of_scope': 0,
+        }
+
+    for metrics in Metrics:
+        for _, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
+            for _, stats_dict_metrics in stats_dict_callback_metrics.items():
+                stats = stats_dict_metrics[metrics.name]
+                if stats['result_status'] == 'PASS':
+                    summary_dict_metrics[metrics.name]['cnt_pass'] += 1
+                elif stats['result_status'] == 'FAILED':
+                    summary_dict_metrics[metrics.name]['cnt_failed'] += 1
+                elif stats['result_status'] == 'NOT_MEASURED':
+                    summary_dict_metrics[metrics.name]['cnt_not_measured'] += 1
+                else:
+                    summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
+    return summary_dict_metrics
+
+
 def make_callback_detail_filename(node_name: str):
     return node_name.replace('/', '_')[1:]
 
 
-def make_report_callback_validation(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict):
+def make_report_callback_validation(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
     title = f'Callback validation result: {component_name}'
-    report_name = report_dir.split('/')[-1]
+    trace_name = report_dir.split('/')[-1]
     destination_path = f'{report_dir}/callback/{component_name}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_callback_validation.html'
 
@@ -58,9 +84,10 @@ def make_report_callback_validation(report_dir: str, component_name: str, stats_
             rendered = flask.render_template_string(
                 template_string,
                 title=title,
-                report_name=report_name,
+                trace_name=trace_name,
                 metrics_list=[Metrics.FREQUENCY.name, Metrics.PERIOD.name, Metrics.LATENCY.name],
                 stats_node_callback_metrics=stats_dict_node_callback_metrics,
+                summary_dict=summary_dict_metrics[Metrics.FREQUENCY.name],
                 node_filename_dict=node_filename_dict,
             )
 
@@ -68,10 +95,10 @@ def make_report_callback_validation(report_dir: str, component_name: str, stats_
             f_html.write(rendered)
 
 
-def make_report_callback_metrics(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict):
+def make_report_callback_metrics(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
     for i, metrics in enumerate(Metrics):
         title = f'Callback validation result ({metrics.name}): {component_name}'
-        report_name = report_dir.split('/')[-1]
+        trace_name = report_dir.split('/')[-1]
         destination_path = f'{report_dir}/callback/{component_name}/index_{metrics.name}.html'
         template_path = f'{Path(__file__).resolve().parent}/template_callback_metrics.html'
 
@@ -85,10 +112,11 @@ def make_report_callback_metrics(report_dir: str, component_name: str, stats_dic
                 rendered = flask.render_template_string(
                     template_string,
                     title=title,
-                    report_name=report_name,
+                    trace_name=trace_name,
                     metrics_name=metrics.name,
                     sub_title=sub_title_list[i],
                     stats_node_callback_metrics=stats_dict_node_callback_metrics,
+                    summary_dict=summary_dict_metrics[metrics.name],
                     node_filename_dict=node_filename_dict,
                 )
 
@@ -96,10 +124,10 @@ def make_report_callback_metrics(report_dir: str, component_name: str, stats_dic
                 f_html.write(rendered)
 
 
-def make_report_callback_detail(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict):
+def make_report_callback_detail(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
     for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
         title = f'Callback details: {node_name}'
-        report_name = report_dir.split('/')[-1]
+        trace_name = report_dir.split('/')[-1]
         destination_path = f'{report_dir}/callback/{component_name}/{make_callback_detail_filename(node_name)}.html'
         template_path = f'{Path(__file__).resolve().parent}/template_callback_detail.html'
 
@@ -109,7 +137,7 @@ def make_report_callback_detail(report_dir: str, component_name: str, stats_dict
                 rendered = flask.render_template_string(
                     template_string,
                     title=title,
-                    report_name=report_name,
+                    trace_name=trace_name,
                     metrics_list=[Metrics.FREQUENCY.name, Metrics.PERIOD.name, Metrics.LATENCY.name],
                     stats_callback_metrics=stats_dict_callback_metrics,
                     sub_title_list=sub_title_list,
@@ -135,9 +163,11 @@ def make_report_callback(report_dir: str, component_name: str):
                     stats_dict_node_callback_metrics[node_name][callback_name] = {}
                 stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
 
-    make_report_callback_validation(report_dir, component_name, stats_dict_node_callback_metrics)
-    make_report_callback_metrics(report_dir, component_name, stats_dict_node_callback_metrics)
-    make_report_callback_detail(report_dir, component_name, stats_dict_node_callback_metrics)
+    summary_dict_metrics = summarize_result(stats_dict_node_callback_metrics)
+
+    make_report_callback_validation(report_dir, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
+    make_report_callback_metrics(report_dir, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
+    make_report_callback_detail(report_dir, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
 
 
 def make_report(report_dir: str, package_list_json: str):

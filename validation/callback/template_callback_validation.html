@@ -20,29 +20,37 @@
   <body>
     <div class="container">
       <h1>{{ title }}</h1>
-      <h3>Target: {{ report_name }}</h3>
+      <h3>Trace name: {{ trace_name }}</h3>
+
+      <ul>
+        <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
+        <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
+        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
+        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
+      </ul>
+
       <table class="table table-hover table-bordered" style="word-break:break-all">
         <tr class="table-primary text-center">
           <th width="14%">Node</th>
           <th width="8%">Callback</th>
           <th width="8%">Type</th>
           <th width="20%">Trigger</th>
-          <th width="10%"><a href="index_FREQUENCY.html" target="_blank">Frequency [Hz]</a></th>
-          <th width="10%"><a href="index_PERIOD.html" target="_blank">Period [ms]</a></th>
-          <th width="10%"><a href="index_LATENCY.html" target="_blank">Latency [ms]</a></th>
+          <th width="10%"><a href="index_FREQUENCY.html">Frequency [Hz]</a></th>
+          <th width="10%"><a href="index_PERIOD.html">Period [ms]</a></th>
+          <th width="10%"><a href="index_LATENCY.html">Latency [ms]</a></th>
         </tr>
 
         {% for node_name, stats_callback_metrics in stats_node_callback_metrics.items() %}
           {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
           <tr>
-            <td><a href="{{ node_filename_dict[node_name] }}.html" target="_blank">{{ node_name }}</a></td>
+            <td><a href="{{ node_filename_dict[node_name] }}.html">{{ node_name }}</a></td>
             <td>{{ callback_name }}</td>
             <td>{{ stats_metrics[stats_metrics | first]['stats']['callback_type'] }}</td>
             <td>
               {% if stats_metrics[stats_metrics | first]['stats']['period_ns'] != -1 %}
               {{ stats_metrics[stats_metrics | first]['stats']['period_ns'] / 1e6 }} [ms]
               {% else %}
-              <a href="todo: link to topic Hz" target="_blank">{{ stats_metrics[stats_metrics | first]['stats']['subscribe_topic_name'] }}</a>
+              <a href="todo: link to topic Hz">{{ stats_metrics[stats_metrics | first]['stats']['subscribe_topic_name'] }}</a>
               {% endif %}
             </td>
             {% for metrics_name in metrics_list %}

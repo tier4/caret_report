@@ -147,7 +147,7 @@ class Stats():
             stats.max = float(df_callback.max())
             stats.percentile5_min = float(df_callback.quantile(0.05))
             stats.percentile5_max = float(df_callback.quantile(0.95))
-            stats.percentile5_avg = float(df_callback[(df_callback > stats.percentile5_min) & (df_callback < stats.percentile5_max)].mean())
+            stats.percentile5_avg = float(df_callback[(df_callback >= stats.percentile5_min) & (df_callback <= stats.percentile5_max)].mean())
         return stats
 
     @staticmethod

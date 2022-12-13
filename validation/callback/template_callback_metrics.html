@@ -20,8 +20,16 @@
   <body>
     <div class="container">
       <h1>{{ title }}</h1>
-      <h3>Target: {{ report_name }}</h3>
+      <h3>Trace name: {{ trace_name }}</h3>
       <h3>{{ sub_title }}</h3>
+
+      <ul>
+        <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
+        <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
+        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
+        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
+      </ul>
+
       <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
       <table class="table table-hover table-bordered" style="word-break:break-all">
         <tr class="table-primary text-center">
@@ -42,7 +50,7 @@
         {% for node_name, stats_callback_metrics in stats_node_callback_metrics.items() %}
           {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
           <tr>
-            <td><a href="{{ node_filename_dict[node_name] }}.html" target="_blank">{{ node_name }}</a></td>
+            <td><a href="{{ node_filename_dict[node_name] }}.html">{{ node_name }}</a></td>
             <td>{{ callback_name }}</td>
             {% if metrics_name not in stats_metrics %}
             <td>---</td>
@@ -54,7 +62,7 @@
               {% if stats['stats']['period_ns'] != -1 %}
               {{ stats['stats']['period_ns'] / 1e6 }} [ms]
               {% else %}
-              <a href="todo: link to topic Hz" target="_blank">{{ stats['stats']['subscribe_topic_name'] }}</a>
+              <a href="todo: link to topic Hz">{{ stats['stats']['subscribe_topic_name'] }}</a>
               {% endif %}
             </td>
             <td>
