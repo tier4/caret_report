@@ -38,7 +38,6 @@ app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 
-
 def summarize_result(stats_dict_node_callback_metrics: dict) -> dict:
     summary_dict_metrics = {}
     for metrics in Metrics:
