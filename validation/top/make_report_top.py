@@ -18,94 +18,25 @@ import os
 import sys
 import shutil
 import argparse
-from enum import Enum
 from pathlib import Path
 import sys
-import yaml
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result
+from common.utils import Metrics, ResultStatus, ComponentManager
 
-
-class Metrics(Enum):
-    FREQUENCY = 1
-    PERIOD = 2
-    LATENCY = 3
-
-sub_title_list = ['Frequency [Hz]', 'Period [ms]', 'Latency [ms]']
 
 app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 
-def summarize_result(stats_dict_node_callback_metrics: dict) -> dict:
-    summary_dict_metrics = {}
-    for metrics in Metrics:
-        summary_dict_metrics[metrics.name] = {
-            'cnt_pass': 0,
-            'cnt_failed': 0,
-            'cnt_not_measured': 0,
-            'cnt_out_of_scope': 0,
-        }
+def make_report(report_dir: str, component_list_json: str):
+    ComponentManager().initialize(component_list_json)
 
-    for metrics in Metrics:
-        for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
-            for callback_name, stats_dict_metrics in stats_dict_callback_metrics.items():
-                try:
-                    stats = stats_dict_metrics[metrics.name]
-                except:
-                    print('This metrics is not measured: ', node_name, callback_name, metrics.name)
-                    continue
-
-                if stats['result_status'] == 'PASS':
-                    summary_dict_metrics[metrics.name]['cnt_pass'] += 1
-                elif stats['result_status'] == 'FAILED':
-                    summary_dict_metrics[metrics.name]['cnt_failed'] += 1
-                elif stats['result_status'] == 'NOT_MEASURED':
-                    summary_dict_metrics[metrics.name]['cnt_not_measured'] += 1
-                else:
-                    summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
-    return summary_dict_metrics
-
-
-def summarize_callback_result(report_dir: str, component_name: str):
-    stats_dict_node_callback_metrics: dict = {}
-    for metrics in Metrics:
-        with open(f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml', 'r', encoding='utf-8') as f_yaml:
-            stats_list = yaml.safe_load(f_yaml)
-            for stats in stats_list:
-                stats['stats']['callback_name'] = stats['stats']['callback_name'].split('/')[-1]
-                stats['stats']['callback_type'] = stats['stats']['callback_type'].split('_')[0]
-                for key, value in stats.items():
-                    if type(value) == float or type(value) == int:
-                        stats[key] = '---' if value == -1 else f'{round(value, 3): .03f}'.strip()
-                for key, value in stats['stats'].items():
-                    if key != 'period_ns' and (type(value) == float or type(value) == int):
-                        stats['stats'][key] = '---' if value == -1 else f'{round(value, 3): .03f}'.strip()
-
-                if stats['stats']['avg'] == '---' and stats['expectation_value'] == '---':
-                    # not measured(but added to stats file) and OUT_OF_SCOPE
-                    continue
-
-                node_name = stats['stats']['node_name']
-                callback_name = stats['stats']['callback_name']
-                if node_name not in stats_dict_node_callback_metrics:
-                    stats_dict_node_callback_metrics[node_name] = {}
-                if callback_name not in stats_dict_node_callback_metrics[node_name]:
-                    stats_dict_node_callback_metrics[node_name][callback_name] = {}
-                stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
-
-    summary_dict_metrics = summarize_result(stats_dict_node_callback_metrics)
-    return summary_dict_metrics
-
-
-def make_report(report_dir: str, package_list_json: str):
     summary_callback_dict_component_metrics = {}
-
-    package_dict, _ = utils.make_package_list(package_list_json)
-    for component_name, _ in package_dict.items():
-        summary_callback_dict_component_metrics[component_name] = summarize_callback_result(report_dir, component_name)
-
+    for component_name, _ in ComponentManager().component_dict.items():
+        stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
+        summary_callback_dict_component_metrics[component_name] = summarize_callback_result(stats_dict_node_callback_metrics)
 
     title = f'Validation result'
     trace_name = report_dir.split('/')[-1]
@@ -134,7 +65,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to make report page')
     parser.add_argument('report_directory', nargs=1, type=str)
-    parser.add_argument('--package_list_json', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='')
     args = parser.parse_args()
     return args
 
@@ -144,7 +75,7 @@ def main():
     args = parse_arg()
 
     report_dir = args.report_directory[0]
-    make_report(report_dir, args.package_list_json)
+    make_report(report_dir, args.component_list_json)
     print('<<< OK. report page is created >>>')
 
 

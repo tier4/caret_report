@@ -15,7 +15,7 @@ docker run -it --rm \
 ```sh
 # Settings: modify for your usage and environment
 export script_path=./CARET_report/validation        # Path to 'validation' directory in this repo cloned
-export package_list_json=./package_list.json        # Path to setting file you prepare
+export component_list_json=./component_list.json    # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
 export start_time=20                                # start time[sec] for analysis
 export duration_time=9999                           # duration time[sec] for analysis

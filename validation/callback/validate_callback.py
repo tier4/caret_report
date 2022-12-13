@@ -17,23 +17,21 @@ Script to validate callback functions
 from typing import Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Union, Type
 import sys
 import os
-from enum import Enum
 from pathlib import Path
 import argparse
 import logging
-import re
 from itertools import groupby
 import csv
 import yaml
 import numpy as np
 import pandas as pd
-from bokeh.plotting import Figure, figure
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import Metrics, ResultStatus, ComponentManager
 
 # Supress log for CARET
 from logging import getLogger, FATAL
@@ -42,22 +40,10 @@ logger.setLevel(FATAL)
 
 _logger: logging.Logger = None
 
-class Metrics(Enum):
-    FREQUENCY = 1
-    PERIOD = 2
-    LATENCY = 3
 
 metrics_dict = {Metrics.FREQUENCY: Plot.create_callback_frequency_plot,
                 Metrics.PERIOD: Plot.create_callback_period_plot,
                 Metrics.LATENCY: Plot.create_callback_latency_plot}
-
-
-class ResultStatus(Enum):
-    PASS = 1
-    FAILED = 2
-    OUT_OF_SCOPE = 3
-    NOT_MEASURED = 4
-    NOT_MEASURED_OUT_OF_SCOPE = 5
 
 
 class Expectation():
@@ -213,18 +199,6 @@ class Result():
                 self.result_status = ResultStatus.FAILED.name
 
 
-def check_if_target(component_name: str, node_name: str, ignore_list: list[str], package_dict: dict) -> bool:
-    if node_name is None:
-        return False
-    for ignore in ignore_list:
-        if re.search(ignore, node_name):
-            return False
-    regexp = package_dict[component_name]
-    if re.search(regexp, node_name):
-        return True
-    return False
-
-
 def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str) -> dict[str, Stats]:
     stats_list = {}
     try:
@@ -235,7 +209,7 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
         figure.height = 350
         graph_filename = metrics.name + node.node_name.replace('/', '_')
         graph_filename = graph_filename[:250]
-        utils.export_graph(figure, dest_dir + '/callback/' + component_name, graph_filename, _logger)
+        export_graph(figure, dest_dir + '/callback/' + component_name, graph_filename, _logger)
         df_node = timeseries_plot.to_dataframe()
     except:
         _logger.info(f'This node is not called: {node.node_name}')
@@ -290,15 +264,14 @@ def save_stats(result_list: list[Result], component_name: str, dest_dir: str, me
     with open(result_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
-def validate_component(app: Application, component_name: str, dest_dir: str, force: bool,
-                       package_dict: dict, ignore_list: list, expectation_csv_filename: str):
+def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str):
     """Validate callback for each component"""
-    utils.make_destination_dir(dest_dir + '/callback/' + component_name, force, _logger)
+    make_destination_dir(dest_dir + '/callback/' + component_name, force, _logger)
 
     target_node_list: list[Node] = []
     for node in app.nodes:
         # _logger.debug(f'Processing: {node.node_name}')
-        if check_if_target(component_name, node.node_name, ignore_list, package_dict):
+        if ComponentManager().check_if_target(component_name, node.node_name):
             target_node_list.append(node)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_name))
@@ -312,19 +285,19 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
-             package_list_json: str, expectation_csv_filename: str):
+             component_list_json: str, expectation_csv_filename: str):
     """Validate callback"""
     global _logger
     _logger = logger
 
     _logger.info(f'<<< Validate callback start >>>')
 
-    utils.make_destination_dir(dest_dir, force, _logger)
+    make_destination_dir(dest_dir, force, _logger)
     arch.export(dest_dir + '/architecture.yaml', force=True)
-    package_dict, ignore_list = utils.make_package_list(package_list_json, _logger)
+    ComponentManager().initialize(component_list_json, _logger)
 
-    for component_name, _ in package_dict.items():
-        validate_component(app, component_name, dest_dir, force, package_dict, ignore_list, expectation_csv_filename)
+    for component_name, _ in ComponentManager().component_dict.items():
+        validate_component(app, component_name, dest_dir, force, expectation_csv_filename)
 
     _logger.info(f'<<< Validate callback finish >>>')
 
@@ -334,7 +307,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('--package_list_json', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_callback.csv')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
                         help='Start point[sec] to load trace data')
@@ -350,20 +323,20 @@ def parse_arg():
 def main():
     """Main function"""
     args = parse_arg()
-    logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     logger.debug(f'trace_data: {args.trace_data[0]}')
-    logger.debug(f'package_list_json: {args.package_list_json}')
+    logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
     logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
     dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
 
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
-    validate(logger, arch, app, dest_dir, args.force, args.package_list_json, args.expectation_csv_filename)
+    validate(logger, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename)
 
 
 if __name__ == '__main__':

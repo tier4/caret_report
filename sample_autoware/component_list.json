@@ -1,0 +1,19 @@
+{
+  "component_dict": {
+    "sensing": "^/sensing",
+    "localization": "^/localization",
+    "perception": "^/perception",
+    "planning": "^/planning",
+    "control": "^/control",
+    "system": "^/system",
+    "vehicle": "(^/pacmod|^/raw_vehicle_cmd_converter)"
+  },
+  "ignore_list": [
+    "driver",
+    "goal_pose_visualizer",
+    "mission_planner",
+    "external_velocity_limit_selector",
+    "container",
+    "^/sensing/gnss"
+  ]
+}
