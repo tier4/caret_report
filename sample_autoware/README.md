@@ -144,7 +144,7 @@ ros2 caret check_ctf -d ~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 cd ${path-to-this-repo}/sample_autoware
 
 export script_path=../report
-export package_list_json=./package_list.json
+export component_list_json=./component_list.json
 export target_path_json=./target_path.json
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss    # modify for your environment
 export start_time=20

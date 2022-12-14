@@ -4,17 +4,18 @@
 
 set -e
 
-WORK_DIR=$(pwd)/verify_work
+script_path="$(pwd)"/report
+work_dir="$(pwd)"/verify_work
 
 . /opt/ros/"$ROS_DISTRO"/setup.sh
 . ~/ros2_caret_ws/install/local_setup.sh
 
 # Create work directory
-if [ -e "${WORK_DIR}" ]; then
-    rm -rf "${WORK_DIR}"
+if [ -e "${work_dir}" ]; then
+    rm -rf "${work_dir}"
 fi
-mkdir "${WORK_DIR}"
-cd "${WORK_DIR}" || exit
+mkdir "${work_dir}"
+cd "${work_dir}" || exit
 
 # Download reference data
 wget -nv https://github.com/tier4/CARET_report/releases/download/20220831/autoware_launch_trace_20220826-105249_universe_rosbag.zip
@@ -22,22 +23,21 @@ unzip autoware_launch_trace_20220826-105249_universe_rosbag.zip
 git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
 
 # Create report
-script_path="$(pwd)"/../report
 trace_data="$(pwd)"/autoware_launch_trace_20220826-105249_universe_rosbag
 sample_autoware_dir="$(pwd)"/../sample_autoware
-package_list_json=package_list.json
+component_list_json=component_list_for_ci.json
 target_path_json=target_path_for_ci.json
 start_time=20
 duration_time=9999
 max_node_depth=2
 draw_all_message_flow=false
-export script_path trace_data package_list_json target_path_json start_time duration_time max_node_depth draw_all_message_flow
+export script_path trace_data component_list_json target_path_json start_time duration_time max_node_depth draw_all_message_flow
 cd "${sample_autoware_dir}" || exit
 sh "${script_path}"/make_report.sh
-mv report_autoware_launch_trace_20220826-105249_universe_rosbag "${WORK_DIR}"/.
+mv report_autoware_launch_trace_20220826-105249_universe_rosbag "${work_dir}"/.
 
 # Compare result
-cd "${WORK_DIR}" || exit
+cd "${work_dir}" || exit
 report_dir_1=./reference_result
 report_dir_2=./report_autoware_launch_trace_20220826-105249_universe_rosbag
 export report_dir_1 report_dir_2

@@ -8,7 +8,7 @@ set -e
 . /ros2_caret_ws/install/local_setup.sh
 
 cd /work
-export package_list_json=/work/${package_list_json}
+export component_list_json=/work/${component_list_json}
 export target_path_json=/work/${target_path_json}
 
 # export start_time=15

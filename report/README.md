@@ -31,7 +31,7 @@
 ```sh
 # Settings: modify for your usage and environment
 export script_path=./CARET_report/report            # Path to 'report' directory in this repo cloned
-export package_list_json=./package_list.json        # Path to setting file you prepare
+export component_list_json=./component_list.json    # Path to setting file you prepare
 export target_path_json=./target_path.json          # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
 export start_time=20                                # start time[sec] for analysis
@@ -45,26 +45,26 @@ sh ${script_path}/make_report.sh
 
 ## Setting JSON files
 
-### package_list.json
+### component_list.json
 
-- Node analysis report will be created for each `package_name`
+- Node analysis report will be created for each `component_name`
 - Settings
-  - `package_list_json` : path to the JSON file
+  - `component_list_json` : path to the JSON file
 - Please describe the following information
-  - Package name information (`package_dict`)
-    - Pairs of `package_name` and `regular expression for nodes belonging to the package`
+  - component name information (`component_dict`)
+    - Pairs of `component_name` and `regular expression for nodes belonging to the component`
   - Ignore node list (`ignore_list`)
     - List of `Regular expression for nodes to be ignored`
 
-```json:package_list.json
+```json:component_list.json
 {
-    "package_dict": {
-        "Package_A" : "^/package_a",
-        "Package_B" : "^/package_b",
+    "component_dict": {
+        "Component_A" : "^/component_a",
+        "Component_B" : "^/component_b",
     },
     "ignore_list": [
         "noisy_node_name_a",
-        "^/annoying_package_name",
+        "^/annoying_component_name",
     ]
 }
 ```
@@ -96,10 +96,10 @@ sh ${script_path}/make_report.sh
     {
         "name": "sample_path",
         "path": [
-            "/package_a/node_1",
-            "/package_a/node_2",
-            ["/package_a/node_3", "/topic_3"],
-            "/package_a/node_4_.*"
+            "/component_a/node_1",
+            "/component_a/node_2",
+            ["/component_a/node_3", "/topic_3"],
+            "/component_a/node_4_.*"
         ]
     },
 ]

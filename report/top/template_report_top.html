@@ -39,8 +39,8 @@
         functions in each package.
       </p>
       <ul>
-        {% for package_name in package_list %}
-        <li><a href="node/{{ package_name }}/index.html">{{ package_name }}</a></li>
+        {% for component_name in component_list %}
+        <li><a href="node/{{ component_name }}/index.html">{{ component_name }}</a></li>
         {% endfor %}
       </ul>
 
@@ -136,9 +136,9 @@
 
       <h3>Callback Latency</h3>
       <p>List of callback function latency time (Top k)</p>
-      {% for package_name in package_list %}
+      {% for component_name in component_list %}
       <br />
-      <h4>{{ package_name }}</h4>
+      <h4>{{ component_name }}</h4>
       <div style="height: calc(50vh); overflow: scroll">
         <table class="table table-hover table-bordered height">
           <tr class="table-primary text-center">
@@ -147,7 +147,7 @@
             <th width="10%">Min [ms]</th>
             <th width="10%">Max [ms]</th>
           </tr>
-          {% for info in stats_node_dict[package_name]['latency_topk'] %}
+          {% for info in stats_node_dict[component_name]['latency_topk'] %}
           <tr>
             <td><a href="{{ info['link'] }}">{{ info['displayname'] }}</a></td>
             <td class="text-end">{{ '%.3f' % info['avg']|float }}</td>

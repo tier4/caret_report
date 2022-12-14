@@ -24,7 +24,7 @@ import flask
 app = flask.Flask(__name__)
 
 
-def render_page(destination_path, template_path, report_name, package_list, stats_node_dict,
+def render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
                 stats_path, stats_cb_sub_warn, stats_cb_timer_warn, note_text_top, note_text_bottom):
     """Render html page"""
     with app.app_context():
@@ -33,7 +33,7 @@ def render_page(destination_path, template_path, report_name, package_list, stat
             rendered = flask.render_template_string(
                 template_string,
                 title=report_name,
-                package_list=package_list,
+                component_list=component_list,
                 stats_node_dict=stats_node_dict,
                 stats_path=stats_path,
                 stats_cb_sub_warn=stats_cb_sub_warn,
@@ -46,22 +46,22 @@ def render_page(destination_path, template_path, report_name, package_list, stat
             f_html.write(rendered)
 
 
-def get_package_list(report_dir: str) -> list[str]:
-    """Create package name list in node analysis"""
-    package_list = os.listdir(report_dir + '/node')
-    package_list = [f for f in package_list if os.path.isdir(os.path.join(report_dir + '/node', f))]
-    package_list.sort()
-    return package_list
+def get_component_list(report_dir: str) -> list[str]:
+    """Create component name list in node analysis"""
+    component_list = os.listdir(report_dir + '/node')
+    component_list = [f for f in component_list if os.path.isdir(os.path.join(report_dir + '/node', f))]
+    component_list.sort()
+    return component_list
 
 
 def get_stats_node(report_dir: str) -> dict:
     """Read stats"""
     stats_dict = {}
-    package_list = get_package_list(report_dir)
-    for package_name in package_list:
-        with open(report_dir + '/node/' + package_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
+    component_list = get_component_list(report_dir)
+    for component_name in component_list:
+        with open(report_dir + '/node/' + component_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
             stats = yaml.safe_load(f_yaml)
-            stats_dict[package_name] = stats
+            stats_dict[component_name] = stats
     return stats_dict
 
 
@@ -90,14 +90,14 @@ def get_stats_callback_timer(report_dir: str):
     return stats, stats_warn
 
 
-def find_latency_topk(package_name, stats_node, numk=20) -> None:
+def find_latency_topk(component_name, stats_node, numk=20) -> None:
     """Find callback functions whose latency time is the longest(top5), and add this information into stats"""
     callback_latency_list = []
     for node_name, node_info in stats_node.items():
         callbacks = node_info['callbacks']
         for _, callback_info in callbacks.items():
             callback_latency_list.append({
-                'link': 'node/' + package_name + '/index.html#' + node_name,
+                'link': 'node/' + component_name + '/index.html#' + node_name,
                 'displayname': flask.Markup(node_name + '<br>' + callback_info['displayname']),
                 'avg': callback_info['Latency']['avg'] if isinstance(callback_info['Latency']['avg'], (int, float)) else 0,
                 'min': callback_info['Latency']['min'] if isinstance(callback_info['Latency']['min'], (int, float)) else 0,
@@ -126,10 +126,10 @@ def make_report(args, index_filename: str='index'):
     report_dir = str(Path(args.report_directory[0]))
     report_name = report_dir.split('/')[-1]
 
-    package_list = get_package_list(report_dir)
+    component_list = get_component_list(report_dir)
     stats_node_dict = get_stats_node(report_dir)
-    for package_name in package_list:
-        find_latency_topk(package_name, stats_node_dict[package_name])
+    for component_name in component_list:
+        find_latency_topk(component_name, stats_node_dict[component_name])
 
     stats_path = get_stats_path(report_dir)
     _, stats_cb_sub_warn = get_stats_callback_subscription(report_dir)
@@ -139,7 +139,7 @@ def make_report(args, index_filename: str='index'):
 
     destination_path = f'{report_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_top.html'
-    render_page(destination_path, template_path, report_name, package_list, stats_node_dict,
+    render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
                 stats_path, stats_cb_sub_warn, stats_cb_timer_warn, note_text_top, note_text_bottom)
 
 

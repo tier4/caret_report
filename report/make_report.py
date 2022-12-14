@@ -45,7 +45,7 @@ def parse_arg():
                         help='Duration[sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
-    parser.add_argument('--package_list_json', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('--use_latest_message', action='store_true', default=True)
     parser.add_argument('--max_node_depth', type=int, default=2)
@@ -74,7 +74,7 @@ def main():
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
     _logger.debug(f'target_path_json: {args.target_path_json[0]}')
-    _logger.debug(f'package_list_json: {args.package_list_json}')
+    _logger.debug(f'component_list_json: {args.component_list_json}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'use_latest_message: {args.use_latest_message}')
     _logger.debug(f'max_node_depth: {args.max_node_depth}')
