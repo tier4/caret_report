@@ -99,55 +99,6 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
             logger.warning('Unable to export png')
 
 
-def make_package_list(package_list_json_path: str, logger: logging.Logger = None) -> tuple[dict, list]:
-    """make package list"""
-    package_dict = {}   # pairs of package name and regular_exp
-    ignore_list = []
-
-    package_list_json = ''
-    if package_list_json_path != '':
-        try:
-            with open(package_list_json_path, encoding='UTF-8') as f_json:
-                package_list_json = json.load(f_json)
-        except:
-            if logger:
-                logger.error(f'Unable to read {package_list_json_path}')
-            else:
-                print(f'Unable to read {package_list_json_path}')
-
-    if package_list_json == '':
-        package_dict = {
-            'package': r'.*'
-        }
-    else:
-        package_dict =package_list_json['package_dict']
-        ignore_list =package_list_json['ignore_list']
-
-    if logger:
-        logger.debug(f'package_dict = {package_dict}')
-        logger.debug(f'ignore_list = {ignore_list}')
-
-    return package_dict, ignore_list
-
-
-def nodename2packagename(package_dict: dict, node_name: str) -> str:
-    """Convert node name to package name"""
-    for package_name, regexp in package_dict.items():
-        if re.search(regexp, node_name):
-            return package_name
-    return ''
-
-
-def check_if_ignore(package_dict: dict, ignore_list: list[str], callback_name: str) -> bool:
-    """Check if the callback should be ignored"""
-    # if nodename2packagename(package_dict, callback_name) == '':
-    #     return True
-    for ignore in ignore_list:
-        if re.search(ignore, callback_name):
-            return True
-    return False
-
-
 def round_yaml(filename):
     '''Round float value in yaml file'''
     with open(filename, 'r', encoding='utf-8') as f_yaml:
@@ -164,3 +115,60 @@ def round_yaml(filename):
     new_yaml = ''.join(lines)
     with open(filename, 'w', encoding='utf-8') as f_yaml:
         f_yaml.write(new_yaml)
+
+
+class ComponentManager:
+    def __new__(cls, *args, **kargs):
+        if not hasattr(cls, "_instance"):
+            cls._instance = super(ComponentManager, cls).__new__(cls)
+            cls.component_dict = {}  # pairs of component name and regular_exp
+            cls.ignore_list = []
+        return cls._instance
+
+    def initialize(self, component_list_json_path: str, logger: logging.Logger = None):
+        """make component list"""
+        component_list_json = ''
+        if component_list_json_path != '':
+            try:
+                with open(component_list_json_path, encoding='UTF-8') as f_json:
+                    component_list_json = json.load(f_json)
+            except:
+                if logger:
+                    logger.error(f'Unable to read {component_list_json_path}')
+                else:
+                    print(f'Unable to read {component_list_json_path}')
+
+        if component_list_json == '':
+            self.component_dict = {
+                'all': r'.*'
+            }
+        else:
+            self.component_dict = component_list_json['component_dict']
+            self.ignore_list = component_list_json['ignore_list']
+
+        if logger:
+            logger.debug(f'component_dict = {self.component_dict}')
+            logger.debug(f'ignore_list = {self.ignore_list}')
+
+    def get_component_name(self, node_name: str) -> str:
+        for component_name, regexp in self.component_dict.items():
+            if re.search(regexp, node_name):
+                return component_name
+        return ''
+
+    def check_if_ignore(self, node_name: str) -> bool:
+        for ignore in self.ignore_list:
+            if re.search(ignore, node_name):
+                return True
+        return False
+
+    def check_if_target(self, component_name: str, node_name: str) -> bool:
+        if node_name is None:
+            return False
+        if self.check_if_ignore(node_name):
+            return False
+
+        regexp = self.component_dict[component_name]
+        if re.search(regexp, node_name):
+            return True
+        return False

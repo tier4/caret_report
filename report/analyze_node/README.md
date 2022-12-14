@@ -6,9 +6,9 @@
   - This report shows detailed information of each callback function
     - Metrics: Frequency, Period and Latency
     - Statistics and graph (timeseries and histogram)
-  - It is useful for each package developers, also to investigate a problem
+  - It is useful for each component developers, also to investigate a problem
 - Artifacts
-  - `report_ooo/node/{package_name}/`
+  - `report_ooo/node/{component_name}/`
     - `index.html` : report main page
     - `ooo.html` : graph file as html
     - `ooo.png` : graph file as image
@@ -19,7 +19,7 @@
 ### `analyze_node.py`
 
 ```sh:usage
-usage: analyze_node.py [-h] [--package_list_json PACKAGE_LIST_JSON] [-s START_POINT] [-d DURATION] [-f] [-v]
+usage: analyze_node.py [-h] [--component_list_json COMPONENT_LIST_JSON] [-s START_POINT] [-d DURATION] [-f] [-v]
                        trace_data
 
 ```

@@ -38,7 +38,7 @@ cd CARET_report
 export script_path=`pwd`/report
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 export work_dir=`pwd`/sample_autoware
-export package_list_json=package_list.json
+export component_list_json=component_list.json
 export target_path_json=target_path.json
 
 export start_time=20
@@ -55,7 +55,7 @@ docker run -it --rm \
     -e duration_time \
     -e max_node_depth \
     -e draw_all_message_flow \
-    -e package_list_json \
+    -e component_list_json \
     -e target_path_json \
     -v /etc/localtime:/etc/localtime:ro caret/caret_report
 ```

@@ -1,5 +1,5 @@
 {
-  "package_dict": {
+  "component_dict": {
     "sensing": "^/sensing",
     "localization": "^/localization",
     "perception": "^/perception",

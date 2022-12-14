@@ -20,7 +20,6 @@ import os
 from pathlib import Path
 import argparse
 import logging
-import re
 import math
 import yaml
 import numpy as np
@@ -30,7 +29,14 @@ from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import make_callback_displayname, round_yaml
+from common.utils import ComponentManager
+
+# Supress log for CARET
+from logging import getLogger, FATAL
+logger = getLogger()
+logger.setLevel(FATAL)
 
 _logger: logging.Logger = None
 
@@ -80,7 +86,7 @@ def analyze_callback(callback_name: str, callback_displayname: str, metrics_str:
     figure_hist = draw_histogram(data, callback_displayname, metrics_str)
     if figure_hist:
         filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
-        utils.export_graph(figure_hist, dest_dir_path, filename_hist, _logger)
+        export_graph(figure_hist, dest_dir_path, filename_hist, _logger)
         callback_stats['filename_hist'] = filename_hist
     else:
         callback_stats['filename_hist'] = ''
@@ -105,7 +111,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             p_timeseries.frame_width = 1000
             p_timeseries.frame_height = 350
             p_timeseries.y_range.start = 0
-            utils.export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
+            export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
             node_stats['filename_timeseries'][metrics] = filename_timeseries
         except:
             _logger.info(f'This node is not called: {node.node_name}')
@@ -117,7 +123,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             if 'callback_start_timestamp' in metrics_str:
                 continue
             callback_displayname = callback_name.split('/')[-1] + ': '
-            callback_displayname += utils.make_callback_displayname(node.get_callback(callback_name))
+            callback_displayname += make_callback_displayname(node.get_callback(callback_name))
             data = value.dropna()
             if metrics == 'Frequency':
                 data = data[data > 0]     # Ignore data when the node is not running
@@ -131,9 +137,9 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
     return node_stats
 
 
-def analyze_package(node_list: list[Node], dest_dir: str):
-    """Analyze a package"""
-    utils.make_destination_dir(dest_dir, False, _logger)
+def analyze_component(node_list: list[Node], dest_dir: str):
+    """Analyze a component"""
+    make_destination_dir(dest_dir, False, _logger)
 
     stats = {}
     for node in node_list:
@@ -144,23 +150,16 @@ def analyze_package(node_list: list[Node], dest_dir: str):
     stat_file_path = f"{dest_dir}/stats_node.yaml"
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
-    utils.round_yaml(stat_file_path)
+    round_yaml(stat_file_path)
 
 
-def get_node_list(lttng: Lttng, app: Application,
-                  prefix_regexp: dict, ignore_list: list[str]) -> list[Node]:
+def get_node_list(lttng: Lttng, app: Application, component_name: str) -> list[Node]:
     """Get node list"""
     target_node_name_list = []
     for node in lttng.get_nodes():
         node_name = node.node_name
-        if re.search(prefix_regexp, node_name):
-            is_match = True
-            for ignore in ignore_list:
-                if re.search(ignore, node_name):
-                    is_match = False
-                    break
-            if is_match:
-                target_node_name_list.append(node_name)
+        if ComponentManager().check_if_target(component_name, node_name):
+            target_node_name_list.append(node_name)
     target_node_name_list.sort()
     node_list = []
     for node_name in target_node_name_list:
@@ -173,15 +172,15 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     """Analyze nodes"""
     global _logger
     if _logger is None:
-        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+        _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Nodes: Start >>>')
-    utils.make_destination_dir(dest_dir, args.force, _logger)
+    make_destination_dir(dest_dir, args.force, _logger)
     arch.export(dest_dir + '/architecture.yaml', force=True)
-    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
+    ComponentManager().initialize(args.component_list_json, _logger)
 
-    for package_name, regexp in package_dict.items():
-        node_list = get_node_list(lttng, app, regexp, ignore_list)
-        analyze_package(node_list, f'{dest_dir}/{package_name}')
+    for component_name, _ in ComponentManager().component_dict.items():
+        node_list = get_node_list(lttng, app, component_name)
+        analyze_component(node_list, f'{dest_dir}/{component_name}')
 
     _logger.info('<<< Analyze Nodes: Finish >>>')
 
@@ -191,7 +190,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('--package_list_json', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
                         help='Start point[sec] to load trace data')
     parser.add_argument('-d', '--duration', type=float, default=0.0,
@@ -207,15 +206,15 @@ def main():
     """Main function"""
     global _logger
     args = parse_arg()
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
-    _logger.debug(f'package_list_json: {args.package_list_json}')
+    _logger.debug(f'component_list_json: {args.component_list_json}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
     dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
 
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 

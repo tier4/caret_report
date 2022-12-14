@@ -26,6 +26,11 @@ from caret_analyze import Architecture
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common import utils
 
+# Supress log for CARET
+from logging import getLogger, FATAL
+logger = getLogger()
+logger.setLevel(FATAL)
+
 _logger: logging.Logger = None
 
 

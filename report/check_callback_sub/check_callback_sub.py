@@ -27,7 +27,14 @@ from bokeh.plotting import Figure, figure
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.communication import Communication
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import make_callback_displayname, round_yaml
+from common.utils import ComponentManager
+
+# Supress log for CARET
+from logging import getLogger, FATAL
+logger = getLogger()
+logger.setLevel(FATAL)
 
 _logger: logging.Logger = None
 
@@ -138,7 +145,7 @@ def make_graph(pub_freq: tuple[list[float], list[int]],
     return graph
 
 
-def create_stats(title, package_dict,  graph_filename, topic_name, publisher_name,
+def create_stats(title,  graph_filename, topic_name, publisher_name,
                  node_name, callback_name, callback_displayname,
                  publishment_freq, subscription_freq, num_huge_gap) -> dict:
     """Create stats"""
@@ -148,7 +155,7 @@ def create_stats(title, package_dict,  graph_filename, topic_name, publisher_nam
         'topic_name': topic_name,
         'publisher_name': publisher_name,
         'node_name': node_name,
-        'package_name': utils.nodename2packagename(package_dict, node_name),
+        'component_name': ComponentManager().get_component_name(node_name),
         'callback_name': callback_name,
         'callback_displayname': callback_displayname,
         'publishment_freq': publishment_freq,
@@ -158,13 +165,13 @@ def create_stats(title, package_dict,  graph_filename, topic_name, publisher_nam
     return stats
 
 
-def analyze_communication(args, dest_dir, package_dict, communication: Communication) -> tuple(dict, bool):
+def analyze_communication(args, dest_dir, communication: Communication) -> tuple(dict, bool):
     """Analyze a subscription callback function"""
     title = f'{communication.topic_name} : {communication.publish_node_name} -> {communication.subscribe_node_name}'
     graph_filename = communication.topic_name.replace('/', '_')[1:] + communication.subscribe_node_name.replace('/', '_')
     graph_filename = graph_filename[:250]
     callback_name = communication.callback_subscription.callback_name
-    display_name = utils.make_callback_displayname(communication.callback_subscription)
+    display_name = make_callback_displayname(communication.callback_subscription)
     _logger.debug(f'Processing {title}')
 
     try:
@@ -190,7 +197,7 @@ def analyze_communication(args, dest_dir, package_dict, communication: Communica
 
     # Save graph file
     graph = make_graph(pub_freq, sub_freq)
-    utils.export_graph(graph, dest_dir, graph_filename, title, _logger)
+    export_graph(graph, dest_dir, graph_filename, title, _logger)
 
 
     # Check if sub freq is lower than pub freq
@@ -199,7 +206,7 @@ def analyze_communication(args, dest_dir, package_dict, communication: Communica
     freq_threshold = mean_pub_freq * (1 - args.gap_threshold_ratio)
     num_huge_gap = int(sum(freq_callback <= freq_threshold for freq_callback in matched_pubsub_freq[2]))
 
-    stats = create_stats(title, package_dict, graph_filename, communication.topic_name,
+    stats = create_stats(title, graph_filename, communication.topic_name,
                          communication.publish_node_name, communication.subscribe_node_name,
                          callback_name, display_name, mean_pub_freq, mean_sub_freq, num_huge_gap)
 
@@ -212,10 +219,10 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     """Analyze Subscription Callbacks"""
     global _logger
     if _logger is None:
-        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+        _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Subscription Callbacks: Start >>>')
-    utils.make_destination_dir(dest_dir, args.force, _logger)
-    package_dict, ignore_list = utils.make_package_list(args.package_list_json, _logger)
+    make_destination_dir(dest_dir, args.force, _logger)
+    ComponentManager().initialize(args.component_list_json, _logger)
 
     stats_all_list = []
     stats_warning_list = []
@@ -232,9 +239,9 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
             continue
 
         for communication in communication_list:
-            if utils.check_if_ignore(package_dict, ignore_list, communication.callback_subscription.callback_name):
+            if ComponentManager().check_if_ignore(communication.callback_subscription.callback_name):
                 continue
-            stats, is_warning = analyze_communication(args, dest_dir, package_dict, communication)
+            stats, is_warning = analyze_communication(args, dest_dir, communication)
             if stats:
                 stats_all_list.append(stats)
             if is_warning:
@@ -246,11 +253,11 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     with open(f'{dest_dir}/stats_callback_subscription.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_all_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
-    utils.round_yaml(f'{dest_dir}/stats_callback_subscription.yaml')
+    round_yaml(f'{dest_dir}/stats_callback_subscription.yaml')
     with open(f'{dest_dir}/stats_callback_subscription_warning.yaml', 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_warning_list, f_yaml, encoding='utf-8',
                        allow_unicode=True, sort_keys=False)
-    utils.round_yaml(f'{dest_dir}/stats_callback_subscription_warning.yaml')
+    round_yaml(f'{dest_dir}/stats_callback_subscription_warning.yaml')
 
     _logger.info('<<< Analyze Subscription Callbacks: Finish >>>')
 
@@ -260,7 +267,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to check gap b/w publishment and subscription frequency')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('--package_list_json', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
                         help='Start point[sec] to load trace data')
     parser.add_argument('-d', '--duration', type=float, default=0.0,
@@ -280,17 +287,17 @@ def main():
     """Main function"""
     global _logger
     args = parse_arg()
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
-    _logger.debug(f'package_list_json: {args.package_list_json}')
+    _logger.debug(f'component_list_json: {args.component_list_json}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
     dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
     _logger.debug(f'gap_threshold_ratio: {args.gap_threshold_ratio}')
     _logger.debug(f'count_threshold: {args.count_threshold}')
 
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 

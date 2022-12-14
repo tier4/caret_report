@@ -24,14 +24,14 @@ import flask
 app = flask.Flask(__name__)
 
 
-def render_page(stats, report_name, package_name, destination_path, template_path):
+def render_page(stats, report_name, component_name, destination_path, template_path):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
-                title=f'{package_name}: {report_name}',
+                title=f'{component_name}: {report_name}',
                 stats=stats,
                 metrics_list=['Frequency', 'Period', 'Latency'],
                 metrics_unit=['[Hz]', '[ms]', '[ms]']
@@ -48,10 +48,10 @@ def make_report(stats_path: str):
 
     stats_dir = Path(stats_path).resolve().parent
     report_name = stats_path.split('/')[-4]
-    package_name = stats_path.split('/')[-2]
+    component_name = stats_path.split('/')[-2]
     destination_path = f'{stats_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_node.html'
-    render_page(stats, report_name, package_name, destination_path, template_path)
+    render_page(stats, report_name, component_name, destination_path, template_path)
 
 
 def parse_arg():

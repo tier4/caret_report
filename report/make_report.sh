@@ -14,13 +14,13 @@ python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" --architec
 python3 "${script_path}"/analyze_path/make_report_path.py "${report_dir_name}"
 
 # Node analysis
-python3 "${script_path}"/analyze_node/analyze_node.py "${trace_data}" --package_list_json="${package_list_json}" -s "${start_time}" -d "${duration_time}" -f -v
+python3 "${script_path}"/analyze_node/analyze_node.py "${trace_data}" --component_list_json="${component_list_json}" -s "${start_time}" -d "${duration_time}" -f -v
 python3 "${script_path}"/analyze_node/make_report_node.py "${report_dir_name}"
 
-python3 "${script_path}"/check_callback_sub/check_callback_sub.py "${trace_data}" --package_list_json="${package_list_json}" -s "${start_time}" -d "${duration_time}" -f -v
+python3 "${script_path}"/check_callback_sub/check_callback_sub.py "${trace_data}" --component_list_json="${component_list_json}" -s "${start_time}" -d "${duration_time}" -f -v
 python3 "${script_path}"/check_callback_sub/make_report_sub.py "${report_dir_name}"
 
-python3 "${script_path}"/check_callback_timer/check_callback_timer.py "${trace_data}" --package_list_json="${package_list_json}" -s "${start_time}" -d "${duration_time}" -f -v
+python3 "${script_path}"/check_callback_timer/check_callback_timer.py "${trace_data}" --component_list_json="${component_list_json}" -s "${start_time}" -d "${duration_time}" -f -v
 python3 "${script_path}"/check_callback_timer/make_report_timer.py "${report_dir_name}"
 
 # Make top page
