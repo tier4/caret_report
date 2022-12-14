@@ -27,7 +27,7 @@ sudo reboot yes
 
 ```sh
 cd CARET_report
-docker image build -t caret/caret_report ./docker
+docker image build -t caret/caret_report --build-arg CARET_VERSION="v0.3.3" ./docker
 ```
 
 ## Run scripts to create report in Docker
@@ -48,6 +48,7 @@ export draw_all_message_flow=false
 
 # Run script
 docker run -it --rm \
+    --user $(id -u):$(id -g) \
     -v ${script_path}:/CARET_report \
     -v ${trace_data}:/trace_data \
     -v ${work_dir}:/work \

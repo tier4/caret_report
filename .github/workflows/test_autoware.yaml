@@ -91,6 +91,7 @@ jobs:
           export draw_all_message_flow=false
 
           docker run --rm \
+              --user $(id -u):$(id -g) \
               -v ${script_path}:/CARET_report \
               -v ${trace_data}:/trace_data \
               -v ${work_dir}:/work \
