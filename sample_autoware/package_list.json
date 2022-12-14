@@ -4,9 +4,7 @@
     "localization": "^/localization",
     "perception": "^/perception",
     "planning": "^/planning",
-    "control": "^/control",
-    "system": "^/system",
-    "vehicle": "(^/pacmod|^/raw_vehicle_cmd_converter)"
+    "control": "^/control"
   },
   "ignore_list": [
     "driver",
