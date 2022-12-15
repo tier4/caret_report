@@ -21,6 +21,7 @@ from enum import Enum
 import shutil
 import logging
 import re
+import itertools
 import json
 import yaml
 from caret_analyze import Lttng, LttngEventFilter
@@ -143,6 +144,13 @@ class ComponentManager:
                 return component_name
         return 'other'
 
+    def get_component_pair_list(self) -> list[str, str]:
+        component_name_list = self.component_dict.keys()
+        component_pair_list = itertools.product(component_name_list, component_name_list)
+        component_pair_list = [component_pair for component_pair in component_pair_list
+                                if component_pair[0] != component_pair[1]]
+        return component_pair_list
+
     def check_if_ignore(self, node_name: str) -> bool:
         for ignore in self.ignore_list:
             if re.search(ignore, node_name):
@@ -223,3 +231,68 @@ def summarize_callback_result(stats_dict_node_callback_metrics: dict) -> dict:
                 else:
                     summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
     return summary_dict_metrics
+
+
+def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[str]):
+    stats_dict_topic_pubsub_metrics: dict = {}
+    for metrics in Metrics:
+        stats_filename = f'{report_dir}/topic/{component_pair[0]}-{component_pair[1]}/stats_{metrics.name}.yaml'
+        if not os.path.isfile(stats_filename):
+            continue
+        with open(stats_filename, 'r', encoding='utf-8') as f_yaml:
+            stats_list = yaml.safe_load(f_yaml)
+            for stats in stats_list:
+                for key, value in stats.items():
+                    if type(value) == float or type(value) == int:
+                        rounded_value = value if 'num' in key else f'{round(value, 3): .01f}'.strip()
+                        stats[key] = '---' if value == -1 else rounded_value
+                for key, value in stats['stats'].items():
+                    if key != 'period_ns' and (type(value) == float or type(value) == int):
+                        rounded_value = value if 'num' in key else f'{round(value, 3): .01f}'.strip()
+                        stats['stats'][key] = '---' if value == -1 else rounded_value
+
+                if stats['stats']['avg'] == '---' and stats['expectation_value'] == '---':
+                    # not measured(but added to stats file) and OUT_OF_SCOPE
+                    continue
+
+                topic_name = stats['stats']['topic_name']
+                pubsub = (stats['stats']['publish_node_name'], stats['stats']['subscribe_node_name'])
+                if topic_name not in stats_dict_topic_pubsub_metrics:
+                    stats_dict_topic_pubsub_metrics[topic_name] = {}
+                if pubsub not in stats_dict_topic_pubsub_metrics[topic_name]:
+                    stats_dict_topic_pubsub_metrics[topic_name][pubsub] = {}
+                stats_dict_topic_pubsub_metrics[topic_name][pubsub][metrics.name] = stats
+
+    return stats_dict_topic_pubsub_metrics
+
+
+def summarize_topic_result(stats_dict_topic_pubsub_metrics: dict) -> dict:
+    summary_dict_metrics = {}
+    for metrics in Metrics:
+        summary_dict_metrics[metrics.name] = {
+            'cnt_pass': 0,
+            'cnt_failed': 0,
+            'cnt_not_measured': 0,
+            'cnt_out_of_scope': 0,
+        }
+
+    for metrics in Metrics:
+        for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items():
+            for pubsub, stats_dict_metrics in stats_dict_pubsub_metrics.items():
+                try:
+                    stats = stats_dict_metrics[metrics.name]
+                except:
+                    # print('This metrics is not measured: ', node_name, callback_name, metrics.name)
+                    continue
+
+                if stats['result_status'] == ResultStatus.PASS.name:
+                    summary_dict_metrics[metrics.name]['cnt_pass'] += 1
+                elif stats['result_status'] == ResultStatus.FAILED.name:
+                    summary_dict_metrics[metrics.name]['cnt_failed'] += 1
+                elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
+                    summary_dict_metrics[metrics.name]['cnt_not_measured'] += 1
+                else:
+                    summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
+    return summary_dict_metrics
+
+

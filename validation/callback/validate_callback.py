@@ -84,6 +84,8 @@ class Expectation():
     @staticmethod
     def from_csv(expectation_csv_filename: str, component_name: Optional[str]) -> List:
         expectation_list: list[Expectation] = []
+        if not os.path.isfile(expectation_csv_filename):
+            return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
             for row in csv.DictReader(csvfile, ['component_name', 'node_name', 'callback_name', 'callback_type', 'period_ns', 'topic_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
                 try:
@@ -322,7 +324,7 @@ def parse_arg():
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
-    parser.add_argument('--expectation_csv_filename', type=str, default='expectation_callback.csv')
+    parser.add_argument('--expectation_csv_filename', type=str, default='')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
                         help='Start point[sec] to load trace data')
     parser.add_argument('-d', '--duration', type=float, default=0.0,

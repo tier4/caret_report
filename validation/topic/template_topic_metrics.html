@@ -1,0 +1,128 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css"
+    />
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <h3>Trace name: {{ trace_name }}</h3>
+      <h3>{{ sub_title }}</h3>
+
+      <ul>
+        <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
+        <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
+        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
+        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
+      </ul>
+
+      <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
+      <table id="result_table" class="table table-hover table-bordered" style="word-break:normal">
+        <thead>
+          <tr class="table-primary text-center">
+            <th width="3%">#</th>
+            <th width="11%">Topic</th>
+            <th width="8%">Publish</th>
+            <th width="8%">Subscribe</th>
+            <th width="7%">Result</th>
+            <th width="8%">Avg</th>
+            <th width="8%">Min</th>
+            <th width="8%">Max</th>
+            <th width="9%">Min violation ratio</th>
+            <th width="9%">Max violation ratio</th>
+            <th width="9%">Min violation burst</th>
+            <th width="9%">Max violation burst</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% set ns = namespace(index = 0) %}
+        {% for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items() %}
+          {% for pubsub, stats_metrics in stats_dict_pubsub_metrics.items() %}
+          <tr>
+            <td>{{ ns.index }}</td>
+            {% set ns.index = ns.index + 1 %}
+            <td><a href="{{ topic_filename_dict[topic_name] }}.html">{{ topic_name | safe }}</a></td>
+            <td>{{ pubsub[0] }}</td>
+            <td>{{ pubsub[1] }}</td>
+            {% if metrics_name not in stats_metrics %}
+            <td>---</td>
+            {% continue %}
+            {% endif %}
+            {% set stats = stats_metrics[metrics_name] %}
+            <td>
+              {% if stats['result_status'] == 'PASS' %}
+              <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
+              {% elif stats['result_status'] == 'FAILED' %}
+              <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
+              {% elif stats['result_status'] == 'NOT_MEASURED' %}
+              <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
+              {% else %}
+              {{ stats['result_status']}}
+              {% endif %}
+            </td>
+            <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
+            <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
+            <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
+            <td {% if stats['result_ratio_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+              {{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+            <td {% if stats['result_ratio_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+              {{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
+            <td {% if stats['result_burst_num_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+              {{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+            <td {% if stats['result_burst_num_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
+              {{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
+          </tr>
+          {% endfor %}
+        {% endfor %}
+        </tbody>
+      </table>
+
+    </div><!-- container -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"
+    ></script>
+    <script
+      src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"
+    ></script>
+    <script>
+      $(document).ready(function() {
+        $("#result_table").DataTable({
+          lengthMenu: [
+            [-1, 10, 25],
+            ['All', 10, 25],
+          ],
+        });
+      });
+    </script>
+  </body>
+</html>

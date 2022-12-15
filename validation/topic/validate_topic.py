@@ -45,8 +45,8 @@ logger.setLevel(FATAL)
 
 _logger: logging.Logger = None
 
-metrics_dict = {Metrics.FREQUENCY: Plot.create_publish_subscription_frequency_plot,
-                Metrics.PERIOD: Plot.create_publish_subscription_frequency_plot,
+metrics_dict = {Metrics.FREQUENCY: Plot.create_communication_frequency_plot,
+                Metrics.PERIOD: Plot.create_communication_period_plot,
                 Metrics.LATENCY: Plot.create_communication_latency_plot}
 
 # todo
@@ -77,7 +77,7 @@ class Expectation():
         self.burst_num = burst_num or 2
 
     @staticmethod
-    def find_expectation():
+    def find_expectation(expectation_list: list, comm: Communication):
         # todo
         return None
 
@@ -95,7 +95,6 @@ class Stats():
         self.pubilsh_component_name = ''
         self.subscribe_node_name = ''
         self.subscribe_component_name = ''
-        self.comm_id = -1
         self.metrics = ''
         self.graph_filename = ''
         self.avg = -1
@@ -107,14 +106,13 @@ class Stats():
         self.percentile5_avg = -1
 
     @staticmethod
-    def from_df(comm: Communication, metrics: Metrics, graph_filename: str, df_comm: pd.DataFrame, id: int):
+    def from_df(component_pair: tuple[str], comm: Communication, metrics: Metrics, graph_filename: str, df_comm: pd.DataFrame):
         stats = Stats()
         stats.topic_name = comm.topic_name
         stats.publish_node_name = comm.publish_node_name
-        stats.pubilsh_component_name = ComponentManager().get_component_name(stats.publish_node_name)
+        stats.pubilsh_component_name = component_pair[0]
         stats.subscribe_node_name = comm.subscribe_node_name
-        stats.subscribe_component_name = ComponentManager().get_component_name(stats.subscribe_node_name)
-        stats.comm_id = id
+        stats.subscribe_component_name = component_pair[1]
         stats.metrics = metrics.name
         stats.graph_filename = graph_filename
 
@@ -151,6 +149,10 @@ class Result():
         self.ratio_upper_limit = -1
         self.burst_num_lower_limit = -1
         self.burst_num_upper_limit = -1
+        self.result_ratio_lower_limit = ResultStatus.PASS.name
+        self.result_ratio_upper_limit = ResultStatus.PASS.name
+        self.result_burst_num_lower_limit = ResultStatus.PASS.name
+        self.result_burst_num_upper_limit = ResultStatus.PASS.name
 
         if expectation:
             self.result_status = ResultStatus.NOT_MEASURED.name
@@ -169,76 +171,45 @@ class Result():
         # todo
 
 
-def create_stats_for_topic(topic_name: str, comms: list[Communication], metrics: Metrics, dest_dir: str) -> list[Stats]:
-    stats_list = []
-
-    graph_filename = metrics.name + topic_name.replace('/', '_')[:250]
-    pub_list = []
-    sub_list = []
-    comm_list = []
-    for id, comm in enumerate(comms):
-        if ComponentManager().check_if_ignore(comm.publish_node_name) or ComponentManager().check_if_ignore(comm.subscribe_node_name):
-            continue
-
-        try:
-            if metrics == Metrics.LATENCY:
-                timeseries_plot = metrics_dict[metrics](comm)
-            else:
-                timeseries_plot = metrics_dict[metrics](comm.publisher)
-            df_comm = timeseries_plot.to_dataframe()
-        except:
-            _logger.info(f'This communication is invalid: {comm.topic_name}, {comm.publish_node_name} -> {comm.subscribe_node_name}')
-            continue
-
-        stats = Stats.from_df(comm, metrics, graph_filename, df_comm, id)
-        stats_list.append(stats)
-
-        pub_list.append(comm.publisher)
-        sub_list.append(comm.subscription)
-        comm_list.append(comm)
-
-    if len(comm_list) > 1 and len(pub_list) > 1:
-        if metrics == Metrics.LATENCY:
-            timeseries_plot = metrics_dict[metrics](comm_list)
-        else:
-            timeseries_plot = metrics_dict[metrics](pub_list + sub_list)
-        figure = timeseries_plot.show(export_path='dummy.html')
+def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str) -> Stats:
+    stats = {}
+    try:
+        timeseries_plot = metrics_dict[metrics](comm)
+        figure = timeseries_plot.show('system_time', export_path='dummy.html')
         figure.y_range.start = 0
         figure.width = 1000
         figure.height = 350
+        graph_filename = metrics.name + comm.topic_name.replace('/', '_') + comm.publish_node_name.replace('/', '_') + comm.subscribe_node_name.replace('/', '_')
+        graph_filename = graph_filename[:250]
+        export_graph(figure, dest_dir, graph_filename, _logger)
+        df_comm = timeseries_plot.to_dataframe()
+    except:
+        _logger.info(f'This comm is invalid: {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
+        return stats
 
-        export_graph(figure, dest_dir + '/topic/', graph_filename, _logger)
+    stats = Stats.from_df(component_pair, comm, metrics, graph_filename, df_comm)
+    return stats
 
-    return stats_list
 
+def validate_topic(component_pair: tuple[str], target_comm_list: list[Communication], metrics: Metrics, dest_dir: str, expectation_list: List[Expectation] = []) -> list[Result]:
 
-def validate_topic(topic_name: str, comms: list[Communication], metrics: Metrics, dest_dir: str, expectation_list: List[Expectation] = []) -> list[Result]:
-    _logger.debug(f'Processing ({metrics.name}): {topic_name}')
+    result_info_list: list[Result] = []
+    for comm in target_comm_list:
+        _logger.debug(f'Processing ({metrics.name}): {component_pair}, {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
+        stats = create_stats_for_comm(component_pair, comm, metrics, dest_dir)
 
-    result_info_list: List[Result] = []
-    stats_list = create_stats_for_topic(topic_name, comms, metrics, dest_dir)
-
-    for stats in stats_list:
         # Measured
-        expectation = Expectation.find_expectation()
+        expectation = Expectation.find_expectation(expectation_list, comm)
         result = Result(stats, expectation)
         if expectation:
             # Measured and to be validated
-            comm = [comm for comm in comms if comm.topic_name == stats.topic_name
-                                              and comm.publish_node_name == stats.publish_node_name
-                                              and comm.subscribe_node_name == stats.subscribe_node_name]
-            if len(comm) > 0:
-                comm = comm[0]
-                try:
-                    if metrics == Metrics.LATENCY:
-                        timeseries_plot = metrics_dict[metrics](comm)
-                    else:
-                        timeseries_plot = metrics_dict[metrics](comm.publisher)
-                    df_comm = timeseries_plot.to_dataframe()
-                    expectation_list.remove(expectation)
-                    result.validate(df_comm, expectation)
-                except:
-                    _logger.info(f'This communication is invalid: {comm.topic_name}, {comm.publish_node_name} -> {comm.subscribe_node_name}')
+            try:
+                timeseries_plot = metrics_dict[metrics](comm)
+                df_comm = timeseries_plot.to_dataframe()
+                expectation_list.remove(expectation)
+                result.validate(df_comm, expectation)
+            except:
+                _logger.info(f'This communication is invalid: {comm.topic_name}, {comm.publish_node_name} -> {comm.subscribe_node_name}')
 
         result_info_list.append(result)
 
@@ -250,35 +221,46 @@ def validate_topic(topic_name: str, comms: list[Communication], metrics: Metrics
     return result_info_list
 
 
-def save_stats(result_list: list[Result], dest_dir: str, metrics_str: str):
+def save_stats(result_list: list[Result], metrics_str: str, dest_dir: str):
     result_var_list = []
     for result in result_list:
         result.stats = vars(result.stats)
         result_var_list.append(vars(result))
-    result_var_list.sort(key=lambda x: x['stats']['comm_id'])
     result_var_list.sort(key=lambda x: x['stats']['topic_name'])
     result_var_list.sort(key=lambda x: x['expectation_id'] if 'expectation_id' in x else 9999)
-    result_file_path = f'{dest_dir}/topic/stats_{metrics_str}.yaml'
+    result_file_path = f'{dest_dir}/stats_{metrics_str}.yaml'
     with open(result_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
-# def save_stats_for_all_(result_list: list[Result], dest_dir: str, metrics_str: str):
-#     inter_component_matrix = []
-#     for component_name_src, _ in ComponentManager.package_dict.items():
-#         for component_name_dst, _ in ComponentManager.package_dict.items():
-#             inter_component_matrix.append((component_name_src, component_name_dst))
+def validate_component_pair(app: Application, component_pair: tuple[str], dest_dir: str, force: bool, expectation_csv_filename: str):
+    """Validate callback for component pair"""
+    dest_dir = f'{dest_dir}/topic/{component_pair[0]}-{component_pair[1]}'
 
-#     for inter_component in inter_component_matrix:
-#         src2dst = inter_component[0] + '2' + inter_component[1]
+    target_comm_list: list[Communication] = []
+    for comm in app.communications:
+        if ComponentManager().check_if_ignore(comm.publish_node_name) \
+            or ComponentManager().check_if_ignore(comm.subscribe_node_name)\
+            or ComponentManager().check_if_ignore(comm.topic_name):
+            continue
+        pubilsh_component_name = ComponentManager().get_component_name(comm.publish_node_name)
+        subscribe_component_name = ComponentManager().get_component_name(comm.subscribe_node_name)
+        if pubilsh_component_name == component_pair[0] and subscribe_component_name == component_pair[1]:
+            target_comm_list.append(comm)
 
-#         result_list_for_inter_component = []
-#         for result in result_list:
-#             if result.stats.pubilsh_component_name == inter_component[0] and result.stats.subscribe_component_name == inter_component[1]:
-#                 result_list_for_inter_component.append(copy.deepcopy(result))
+    if len(target_comm_list) == 0:
+        return
 
-#         if len(result_list_for_inter_component) > 0:
-#             save_stats(result_list_for_inter_component, dest_dir, metrics_str, src2dst)
+    make_destination_dir(dest_dir, force, _logger)
+
+    result_list = validate_topic(component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir)
+    save_stats(result_list, Metrics.FREQUENCY.name, dest_dir)
+
+    result_list = validate_topic(component_pair, target_comm_list, Metrics.PERIOD, dest_dir)
+    save_stats(result_list, Metrics.PERIOD.name, dest_dir)
+
+    result_list = validate_topic(component_pair, target_comm_list, Metrics.LATENCY, dest_dir)
+    save_stats(result_list, Metrics.LATENCY.name, dest_dir)
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
@@ -289,23 +271,12 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
 
     _logger.info(f'<<< Validate topic start >>>')
 
-    make_destination_dir(dest_dir + '/topic', force, _logger)
     ComponentManager().initialize(component_list_json, _logger)
 
-    frequency_result_list: list[Result] = []
-    period_result_list: list[Result] = []
-    latency_result_list: list[Result] = []
+    make_destination_dir(dest_dir + '/topic', force, _logger)
 
-    all_communications = app.communications
-    for topic_name in app.topic_names:
-        comms = [comms for comms in all_communications if comms.topic_name == topic_name]
-        frequency_result_list.extend(validate_topic(topic_name, comms, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename)))
-        period_result_list.extend(validate_topic(topic_name, comms, Metrics.PERIOD, dest_dir))
-        latency_result_list.extend(validate_topic(topic_name, comms, Metrics.LATENCY, dest_dir))
-
-    save_stats(frequency_result_list, dest_dir, Metrics.FREQUENCY.name)
-    save_stats(period_result_list, dest_dir, Metrics.PERIOD.name)
-    save_stats(latency_result_list, dest_dir, Metrics.LATENCY.name)
+    for component_pair in ComponentManager().get_component_pair_list():
+        validate_component_pair(app, component_pair, dest_dir, force, expectation_csv_filename)
 
     _logger.info(f'<<< Validate topic finish >>>')
 
