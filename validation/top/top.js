@@ -35,6 +35,7 @@ var cy = (window.cy = cytoscape({
         width: "10",
         height: "10",
         "background-color": "#333",
+        visibility: "hidden"
       },
     },
     {
@@ -178,149 +179,6 @@ cy.getElementById("vehicle_ext").position("y", cy.getElementById("vehicle_box").
 cy.getElementById("system_ext").position("x", cy.getElementById("system_box").position("x") - 100);
 cy.getElementById("system_ext").position("y", cy.getElementById("system_box").position("y"));
 
-cy.add([
-  {
-    group: "edges",
-    data: { id: "ext2sensing", source: "sensing_ext", target: "sensing_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "ext2sensing", source: "sensing_ext", target: "sensing_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "ext2perception",
-      source: "perception_ext",
-      target: "perception_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "ext2localization",
-      source: "localization_ext",
-      target: "localization_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: { id: "ext2planning", source: "planning_ext", target: "planning_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "ext2control", source: "control_ext", target: "control_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "ext2system", source: "system_ext", target: "system_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "ext2vehicle", source: "vehicle_ext", target: "vehicle_box", text: "10/20" },
-  },
-]);
-
-cy.add([
-  {
-    group: "edges",
-    data: {
-      id: "sensing2localization",
-      source: "sensing_box",
-      target: "localization_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "sensing2perception",
-      source: "sensing_box",
-      target: "perception_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: { id: "sensing2planning", source: "sensing_box", target: "planning_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "perception2planning",
-      source: "perception_box",
-      target: "planning_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "localization2perception",
-      source: "localization_box",
-      target: "perception_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "localization2planning",
-      source: "localization_box",
-      target: "planning_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "localization2control",
-      source: "localization_box",
-      target: "control_box",
-      text: "10/20",
-    },
-  },
-  {
-    group: "edges",
-    data: { id: "planning2control", source: "planning_box", target: "control_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "control2vehicle", source: "control_box", target: "vehicle_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "vehicle2control", source: "vehicle_box", target: "control_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "vehicle2sensing", source: "vehicle_box", target: "sensing_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "vehicle2system", source: "vehicle_box", target: "system_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "control2system", source: "control_box", target: "system_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: { id: "system2control", source: "system_box", target: "control_box", text: "10/20" },
-  },
-  {
-    group: "edges",
-    data: {
-      id: "localization2system",
-      source: "localization_box",
-      target: "system_box",
-      text: "10/20",
-    },
-  },
-]);
-
 cy.fit();
 cy.zoomingEnabled(false);
 cy.panningEnabled(false);
@@ -330,7 +188,7 @@ cy.nodes().unselectify();
 cy.edges().lock();
 cy.edges().unselectify();
 
-// Update validation result
+// Update using callback validation result
 let metrics = "FREQUENCY";
 for (let component_name in summary_callback_dict_component_metrics) {
   let cnt_pass = summary_callback_dict_component_metrics[component_name][metrics].cnt_pass;
@@ -358,8 +216,75 @@ for (let component_name in summary_callback_dict_component_metrics) {
 cy.on("tap", "node", function (evt) {
   let node = evt.target;
   let html = node.data("html");
-  window.open(html, "_blank");
+  if (html != null) {
+    window.open(html, "_blank");
+  }
 });
+
+// Update using topic validation result
+for (let componentpair in summary_topic_dict_componentpair_metrics) {
+  let pub_component_name = componentpair.split("-")[0];
+  let sub_component_name = componentpair.split("-")[1];
+  let cnt_pass = summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_pass;
+  let cnt_failed = summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_failed;
+  let cnt_not_measured =
+  summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_not_measured;
+  let cnt_total = cnt_pass + cnt_failed;
+  let class_name = "pass";
+  if (cnt_not_measured > 0) {
+    class_name = "not_measured";
+  }
+  if (cnt_failed > 0) {
+    class_name = "failed";
+  }
+
+  if (pub_component_name != "external" && sub_component_name != "external") {
+    cy.add(
+      {
+        group: "edges",
+        data: {
+          id: componentpair,
+          source: pub_component_name + "_box",
+          target: sub_component_name + "_box",
+          text: cnt_pass + " / " + cnt_total,
+        },
+      },
+    )
+  } else if (pub_component_name == "external" && sub_component_name != "external") {
+    ext = sub_component_name + "_ext"
+    cy.getElementById(ext).style("visibility", "visible");
+    cy.add(
+      {
+        group: "edges",
+        data: {
+          id: componentpair,
+          source: ext,
+          target: sub_component_name + "_box",
+          text: cnt_pass + " / " + cnt_total,
+        },
+      },
+    )
+  } else if (pub_component_name != "external" && sub_component_name == "external") {
+    ext = pub_component_name + "_ext"
+    cy.getElementById(ext).style("visibility", "visible");
+    cy.add(
+      {
+        group: "edges",
+        data: {
+          id: componentpair,
+          source: pub_component_name + "_box",
+          target: ext,
+          text: cnt_pass + " / " + cnt_total,
+        },
+      },
+    )
+  }
+
+  cy.getElementById(componentpair).addClass(class_name);
+  html = "topic/" + componentpair + "/index.html";
+  cy.getElementById(componentpair).data("html", html);
+
+}
 
 cy.on("tap", "edge", function (evt) {
   var edge = evt.target;

@@ -23,6 +23,7 @@ import sys
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result
+from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 
@@ -38,6 +39,13 @@ def make_report(report_dir: str, component_list_json: str):
         stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
         summary_callback_dict_component_metrics[component_name] = summarize_callback_result(stats_dict_node_callback_metrics)
 
+    summary_topic_dict_componentpair_metrics = {}
+    for component_pair in ComponentManager().get_component_pair_list():
+        stats_dict_node_callback_metrics: dict = make_stats_dict_topic_pubsub_metrics(report_dir, component_pair)
+        if len(stats_dict_node_callback_metrics) == 0:
+            continue
+        summary_topic_dict_componentpair_metrics[component_pair[0] + '-' + component_pair[1]] = summarize_topic_result(stats_dict_node_callback_metrics)
+
     title = f'Validation result'
     trace_name = report_dir.split('/')[-1]
     destination_path = f'{report_dir}/index.html'
@@ -51,6 +59,7 @@ def make_report(report_dir: str, component_list_json: str):
                 title=title,
                 trace_name=trace_name,
                 summary_callback_dict_component_metrics=summary_callback_dict_component_metrics,
+                summary_topic_dict_componentpair_metrics=summary_topic_dict_componentpair_metrics,
             )
 
         with open(destination_path, 'w', encoding='utf-8') as f_html:

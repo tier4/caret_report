@@ -1,5 +1,6 @@
 {
   "component_dict": {
+    "external": "^/external_sensor",
     "sensing": "^/sensing",
     "localization": "^/localization",
     "perception": "^/perception",

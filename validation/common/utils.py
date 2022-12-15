@@ -139,6 +139,10 @@ class ComponentManager:
             logger.debug(f'ignore_list = {self.ignore_list}')
 
     def get_component_name(self, node_name: str) -> str:
+        external = 'external'
+        if external in self.component_dict:
+            if re.search(self.component_dict[external], node_name):
+                return external
         for component_name, regexp in self.component_dict.items():
             if re.search(regexp, node_name):
                 return component_name
@@ -162,9 +166,7 @@ class ComponentManager:
             return False
         if self.check_if_ignore(node_name):
             return False
-
-        regexp = self.component_dict[component_name]
-        if re.search(regexp, node_name):
+        if component_name == self.get_component_name(node_name):
             return True
         return False
 
