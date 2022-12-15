@@ -43,7 +43,7 @@ var cy = (window.cy = cytoscape({
       style: {
         "source-label": "data(text)",
         "source-text-offset": 25,
-        "source-text-margin-y": 10,
+        // "source-text-margin-y": 10,
         "font-size": "10",
         "curve-style": "bezier",
         "target-arrow-shape": "triangle",
@@ -132,13 +132,13 @@ var cy = (window.cy = cytoscape({
   // pan: { x: 300, y: 600 },
 }));
 
-cy.getElementById("sensing").position({ x: 0, y: 0 });
+cy.getElementById("sensing").position({ x: -50, y: 0 });
 cy.getElementById("localization").position({ x: 0, y: 100 });
 cy.getElementById("perception").position({ x: 200, y: 100 });
-cy.getElementById("planning").position({ x: 200, y: 0 });
+cy.getElementById("planning").position({ x: 250, y: 0 });
 cy.getElementById("control").position({ x: 250, y: -100 });
 cy.getElementById("vehicle").position({ x: 50, y: -100 });
-cy.getElementById("system").position({ x: 150, y: -200 });
+cy.getElementById("system").position({ x: 150, y: -170 });
 
 cy.getElementById("sensing_ext").position(
   "x",
