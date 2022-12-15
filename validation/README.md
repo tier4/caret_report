@@ -19,8 +19,8 @@ export component_list_json=./component_list.json    # Path to setting file you p
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
 export start_time=20                                # start time[sec] for analysis
 export duration_time=9999                           # duration time[sec] for analysis
-export expectation_callback_csv_filename=${script_path}/experiment/expectation_callback_csv_filename.csv
-export expectation_topic_csv_filename=${script_path}/experiment/expectation_topic_csv_filename.csv
+export expectation_callback_csv_filename=${script_path}/experiment/expectation_callback.csv
+export expectation_topic_csv_filename=${script_path}/experiment/expectation_topic.csv
 
 # Run script
 sh ${script_path}/make_report.sh

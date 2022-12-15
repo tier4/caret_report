@@ -45,31 +45,29 @@ logger.setLevel(FATAL)
 
 _logger: logging.Logger = None
 
-metrics_dict = {Metrics.FREQUENCY: Plot.create_communication_frequency_plot,
-                Metrics.PERIOD: Plot.create_communication_period_plot,
-                Metrics.LATENCY: Plot.create_communication_latency_plot}
 
-# todo
+def get_comm_plot(comm: Communication, metrics: Metrics):
+    # todo: create_communication_frequency_plot doesn't work (it's stuck and consumes too much memory)
+    if metrics == Metrics.FREQUENCY:
+        return Plot.create_publish_subscription_frequency_plot(comm.publisher)
+    elif metrics == Metrics.PERIOD:
+        return Plot.create_publish_subscription_period_plot(comm.publisher)
+    elif metrics == Metrics.LATENCY:
+        return Plot.create_communication_latency_plot(comm)
+
+
 class Expectation():
     id = 0
     def __init__(self,
-        component_name: str, node_name: str, callback_name: str, callback_type: CallbackType, period_ns: Optional[int], topic_name: Optional[str],
+        topic_name: str, publish_node_name: str, pubilsh_component_name: str, subscribe_node_name: str, subscribe_component_name: str,
         value: float, lower_limit: Optional[float] = None, upper_limit: Optional[float] = None, ratio: Optional[float] = None, burst_num: Optional[int] = None):
-        if callback_type == CallbackType.TIMER and period_ns is not None:
-            pass
-        elif callback_type == CallbackType.SUBSCRIPTION and topic_name is not None:
-            pass
-        else:
-            msg = f'Invalid callback_type or parameter. callback_type: {callback_type.type_name}, period_ns: {period_ns}, topic_name: {topic_name}'
-            raise Exception(msg)
         self.id = Expectation.id
         Expectation.id += 1
-        self.component_name = component_name
-        self.node_name = node_name
-        self.callback_name = callback_name
-        self.callback_type = callback_type
-        self.period_ns = period_ns
         self.topic_name = topic_name
+        self.publish_node_name = publish_node_name
+        self.pubilsh_component_name = pubilsh_component_name
+        self.subscribe_node_name = subscribe_node_name
+        self.subscribe_component_name = subscribe_component_name
         self.value = value
         self.lower_limit = lower_limit or self.value * 0.8
         self.upper_limit = upper_limit or self.value * 1.2
@@ -78,15 +76,30 @@ class Expectation():
 
     @staticmethod
     def find_expectation(expectation_list: list, comm: Communication):
-        # todo
+        for expectation in expectation_list:
+            if expectation.topic_name == comm.topic_name and \
+                expectation.publish_node_name == comm.publish_node_name and expectation.subscribe_node_name == comm.subscribe_node_name:
+                return expectation
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str) -> List:
+    def from_csv(expectation_csv_filename: str, pubilsh_component_name: Optional[str], subscribe_component_name: Optional[str]) -> List:
         expectation_list: list[Expectation] = []
-        # todo
+        if not os.path.isfile(expectation_csv_filename):
+            return []
+        with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
+            for row in csv.DictReader(csvfile, ['topic_name', 'publish_node_name', 'pubilsh_component_name', 'subscribe_node_name', 'subscribe_component_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
+                try:
+                    if (pubilsh_component_name is not None and row['pubilsh_component_name'] != pubilsh_component_name) \
+                        or (subscribe_component_name is not None and row['subscribe_component_name'] != subscribe_component_name):
+                        continue
+                    expectation = Expectation(row['topic_name'], row['publish_node_name'], row['pubilsh_component_name'],
+                        row['subscribe_node_name'], row['subscribe_component_name'], float(row['value']), float(row['lower_limit']), float(row['upper_limit']), float(row['ratio']), int(row['burst_num']))
+                except:
+                    _logger.error(f"Error at reading: {row['topic_name']}")
+                    return None
+                expectation_list.append(expectation)
         return expectation_list
-
 
 class Stats():
     def __init__(self):
@@ -130,9 +143,14 @@ class Stats():
         return stats
 
     @staticmethod
-    def from_expectation():
+    def from_expectation(expectation: Expectation, metrics: Metrics):
         stats = Stats()
-        # todo
+        stats.topic_name = expectation.topic_name
+        stats.publish_node_name = expectation.publish_node_name
+        stats.pubilsh_component_name = expectation.pubilsh_component_name
+        stats.subscribe_node_name = expectation.subscribe_node_name
+        stats.subscribe_component_name = expectation.subscribe_component_name
+        stats.metrics = metrics.name
         return stats
 
 
@@ -167,14 +185,35 @@ class Result():
         df_topic = df_topic.dropna()
         df_topic = df_topic.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
         if len(df_topic) >= 2:
-            pass
-        # todo
+            self.result_status = ResultStatus.PASS.name
+            self.ratio_lower_limit = float((df_topic <= expectation.lower_limit).sum() / len(df_topic))
+            self.ratio_upper_limit = float((df_topic >= expectation.upper_limit).sum() / len(df_topic))
+            if self.ratio_lower_limit >= expectation.ratio:
+                self.result_ratio_lower_limit = ResultStatus.FAILED.name
+            if self.ratio_upper_limit >= expectation.ratio:
+                self.result_ratio_upper_limit = ResultStatus.FAILED.name
+
+            flag_group = [(flag, len(list(group))) for flag, group in groupby(df_topic, key=lambda x: x < expectation.lower_limit)]
+            group = [x[1] for x in flag_group if x[0]]
+            self.burst_num_lower_limit = max(group) if len(group) > 0 else 0
+            flag_group = [(flag, len(list(group))) for flag, group in groupby(df_topic, key=lambda x: x > expectation.upper_limit)]
+            group = [x[1] for x in flag_group if x[0]]
+            self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
+            if self.burst_num_lower_limit >= expectation.burst_num:
+                self.result_burst_num_lower_limit = ResultStatus.FAILED.name
+            if self.burst_num_upper_limit >= expectation.burst_num:
+                self.result_burst_num_upper_limit = ResultStatus.FAILED.name
+
+        if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
+            or self.result_ratio_upper_limit == ResultStatus.FAILED.name \
+            or self.result_burst_num_lower_limit == ResultStatus.FAILED.name \
+            or self.result_burst_num_upper_limit == ResultStatus.FAILED.name:
+                self.result_status = ResultStatus.FAILED.name
 
 
 def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str) -> Stats:
-    stats = {}
     try:
-        timeseries_plot = metrics_dict[metrics](comm)
+        timeseries_plot = get_comm_plot(comm, metrics)
         figure = timeseries_plot.show('system_time', export_path='dummy.html')
         figure.y_range.start = 0
         figure.width = 1000
@@ -185,7 +224,7 @@ def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metri
         df_comm = timeseries_plot.to_dataframe()
     except:
         _logger.info(f'This comm is invalid: {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
-        return stats
+        return None
 
     stats = Stats.from_df(component_pair, comm, metrics, graph_filename, df_comm)
     return stats
@@ -197,6 +236,8 @@ def validate_topic(component_pair: tuple[str], target_comm_list: list[Communicat
     for comm in target_comm_list:
         _logger.debug(f'Processing ({metrics.name}): {component_pair}, {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
         stats = create_stats_for_comm(component_pair, comm, metrics, dest_dir)
+        if stats is None:
+            continue
 
         # Measured
         expectation = Expectation.find_expectation(expectation_list, comm)
@@ -204,7 +245,7 @@ def validate_topic(component_pair: tuple[str], target_comm_list: list[Communicat
         if expectation:
             # Measured and to be validated
             try:
-                timeseries_plot = metrics_dict[metrics](comm)
+                timeseries_plot = get_comm_plot(comm, metrics)
                 df_comm = timeseries_plot.to_dataframe()
                 expectation_list.remove(expectation)
                 result.validate(df_comm, expectation)
@@ -215,7 +256,7 @@ def validate_topic(component_pair: tuple[str], target_comm_list: list[Communicat
 
     for expectation in expectation_list:
         # Not measured but should be validated
-        result = Result(Stats.from_expectation(), expectation)
+        result = Result(Stats.from_expectation(expectation, metrics), expectation)
         result_info_list.append(result)
 
     return result_info_list
@@ -253,7 +294,7 @@ def validate_component_pair(app: Application, component_pair: tuple[str], dest_d
 
     make_destination_dir(dest_dir, force, _logger)
 
-    result_list = validate_topic(component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir)
+    result_list = validate_topic(component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_pair[0], component_pair[1]))
     save_stats(result_list, Metrics.FREQUENCY.name, dest_dir)
 
     result_list = validate_topic(component_pair, target_comm_list, Metrics.PERIOD, dest_dir)

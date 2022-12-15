@@ -41,9 +41,13 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-metrics_dict = {Metrics.FREQUENCY: Plot.create_callback_frequency_plot,
-                Metrics.PERIOD: Plot.create_callback_period_plot,
-                Metrics.LATENCY: Plot.create_callback_latency_plot}
+def get_node_plot(node: Node, metrics: Metrics):
+    if metrics == Metrics.FREQUENCY:
+        return Plot.create_callback_frequency_plot(node.callbacks)
+    elif metrics == Metrics.PERIOD:
+        return Plot.create_callback_period_plot(node.callbacks)
+    elif metrics == Metrics.LATENCY:
+        return Plot.create_callback_latency_plot(node.callbacks)
 
 
 class Expectation():
@@ -218,7 +222,7 @@ class Result():
 def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str) -> dict[str, Stats]:
     stats_list = {}
     try:
-        timeseries_plot = metrics_dict[metrics](node.callbacks)
+        timeseries_plot = get_node_plot(node, metrics)
         figure = timeseries_plot.show('system_time', export_path='dummy.html')
         figure.y_range.start = 0
         figure.width = 1000
@@ -254,7 +258,7 @@ def validate_callback(component_name: str, target_node_list: list[Node], metrics
             if expectation:
                 # Measured and to be validated
                 try:
-                    df_node = metrics_dict[metrics](node.callbacks).to_dataframe()
+                    df_node = get_node_plot(node, metrics).to_dataframe()
                     df_callback = df_node[callback.callback_name]
                     expectation_list.remove(expectation)
                     result.validate(df_callback, expectation)
@@ -325,7 +329,7 @@ def parse_arg():
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
-    parser.add_argument('--expectation_csv_filename', type=str, default='')
+    parser.add_argument('--expectation_csv_filename', type=str, default='expectation_callback.csv')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
                         help='Start point[sec] to load trace data')
     parser.add_argument('-d', '--duration', type=float, default=0.0,
