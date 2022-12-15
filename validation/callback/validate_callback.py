@@ -225,7 +225,7 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
         figure.height = 350
         graph_filename = metrics.name + node.node_name.replace('/', '_')
         graph_filename = graph_filename[:250]
-        export_graph(figure, dest_dir + '/callback/' + component_name, graph_filename, _logger)
+        export_graph(figure, dest_dir, graph_filename, _logger)
         df_node = timeseries_plot.to_dataframe()
     except:
         _logger.info(f'This node is not called: {node.node_name}')
@@ -276,13 +276,14 @@ def save_stats(result_list: list[Result], component_name: str, dest_dir: str, me
         result_var_list.append(vars(result))
     result_var_list.sort(key=lambda x: x['stats']['node_name'])
     result_var_list.sort(key=lambda x: x['expectation_id'] if 'expectation_id' in x else 9999)
-    result_file_path = f'{dest_dir}/callback/{component_name}/stats_{metrics_str}.yaml'
+    result_file_path = f'{dest_dir}/stats_{metrics_str}.yaml'
     with open(result_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str):
     """Validate callback for each component"""
-    make_destination_dir(dest_dir + '/callback/' + component_name, force, _logger)
+    dest_dir = f'{dest_dir}/callback/{component_name}'
+    make_destination_dir(dest_dir, force, _logger)
 
     target_node_list: list[Node] = []
     for node in app.nodes:

@@ -177,10 +177,10 @@ def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
         with open(f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml', 'r', encoding='utf-8') as f_yaml:
             stats_list = yaml.safe_load(f_yaml)
             for stats in stats_list:
-                stats['stats']['node_name'] = stats['stats']['node_name'].replace('_', '_<wbr>')
+                # stats['stats']['node_name'] = stats['stats']['node_name'].replace('_', '_<wbr>')
                 stats['stats']['callback_name'] = stats['stats']['callback_name'].split('/')[-1]
                 stats['stats']['callback_type'] = stats['stats']['callback_type'].split('_')[0]
-                stats['stats']['subscribe_topic_name'] = stats['stats']['subscribe_topic_name'].replace('_', '_<wbr>')
+                # stats['stats']['subscribe_topic_name'] = stats['stats']['subscribe_topic_name'].replace('_', '_<wbr>')
                 for key, value in stats.items():
                     if type(value) == float or type(value) == int:
                         rounded_value = value if 'num' in key else f'{round(value, 3): .01f}'.strip()

@@ -35,10 +35,9 @@ def make_callback_detail_filename(node_name: str):
     return node_name.replace('/', '_')[1:]
 
 
-def make_report_callback_validation(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
+def make_report_callback_validation(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
     title = f'Callback validation result: {component_name}'
-    trace_name = report_dir.split('/')[-1]
-    destination_path = f'{report_dir}/callback/{component_name}/index.html'
+    destination_path = f'{dest_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_callback_validation.html'
 
     node_filename_dict = {}
@@ -62,11 +61,10 @@ def make_report_callback_validation(report_dir: str, component_name: str, stats_
             f_html.write(rendered)
 
 
-def make_report_callback_metrics(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
+def make_report_callback_metrics(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
     for i, metrics in enumerate(Metrics):
         title = f'Callback validation result ({metrics.name}): {component_name}'
-        trace_name = report_dir.split('/')[-1]
-        destination_path = f'{report_dir}/callback/{component_name}/index_{metrics.name}.html'
+        destination_path = f'{dest_dir}/index_{metrics.name}.html'
         template_path = f'{Path(__file__).resolve().parent}/template_callback_metrics.html'
 
         node_filename_dict = {}
@@ -91,11 +89,10 @@ def make_report_callback_metrics(report_dir: str, component_name: str, stats_dic
                 f_html.write(rendered)
 
 
-def make_report_callback_detail(report_dir: str, component_name: str, stats_dict_node_callback_metrics: dict):
+def make_report_callback_detail(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict):
     for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
         title = f'Callback details: {node_name}'
-        trace_name = report_dir.split('/')[-1]
-        destination_path = f'{report_dir}/callback/{component_name}/{make_callback_detail_filename(node_name)}.html'
+        destination_path = f'{dest_dir}/{make_callback_detail_filename(node_name)}.html'
         template_path = f'{Path(__file__).resolve().parent}/template_callback_detail.html'
 
         with app.app_context():
@@ -118,9 +115,12 @@ def make_report_callback(report_dir: str, component_name: str):
     stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
     summary_dict_metrics = summarize_callback_result(stats_dict_node_callback_metrics)
 
-    make_report_callback_validation(report_dir, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
-    make_report_callback_metrics(report_dir, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
-    make_report_callback_detail(report_dir, component_name, stats_dict_node_callback_metrics)
+    dest_dir = f'{report_dir}/callback/{component_name}'
+    trace_name = report_dir.split('/')[-1]
+
+    make_report_callback_validation(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
+    make_report_callback_metrics(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
+    make_report_callback_detail(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics)
 
 
 def make_report(report_dir: str, component_list_json: str):
