@@ -49,7 +49,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
     title = f'Validation result'
     trace_name = report_dir.split('/')[-1]
     destination_path = f'{report_dir}/index.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_top.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_index.html'
 
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -67,7 +67,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
         with open(destination_path, 'w', encoding='utf-8') as f_html:
             f_html.write(rendered)
 
-    script_path = f'{Path(__file__).resolve().parent}/top.js'
+    script_path = f'{Path(__file__).resolve().parent}/index.js'
     shutil.copy(script_path, report_dir)
 
 

@@ -16,7 +16,7 @@ python3 "${script_path}"/callback/make_report_callback.py "${report_dir_name}" -
 python3 "${script_path}"/topic/validate_topic.py "${trace_data}" --component_list_json="${component_list_json}" --expectation_csv_filename="${expectation_topic_csv_filename}" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/topic/make_report_topic.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
-# Top page
-python3 "${script_path}"/top/make_report_top.py "${report_dir_name}" --component_list_json="${component_list_json}" --note_text_top="${note_text_top}" --note_text_bottom="${note_text_bottom}"
+# Index page
+python3 "${script_path}"/index/make_report_index.py "${report_dir_name}" --component_list_json="${component_list_json}" --note_text_top="${note_text_top}" --note_text_bottom="${note_text_bottom}"
 
 echo "<<< OK. All report pages are created >>>"
