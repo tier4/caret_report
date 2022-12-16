@@ -44,13 +44,13 @@
             <th width="7%">Type</th>
             <th width="7%">Trigger</th>
             <th width="7%">Result</th>
-            <th width="8%">Avg</th>
-            <th width="8%">Min</th>
-            <th width="8%">Max</th>
-            <th width="9%">Min violation ratio</th>
-            <th width="9%">Max violation ratio</th>
-            <th width="9%">Min violation burst</th>
-            <th width="9%">Max violation burst</th>
+            <th width="8%" data-orderable="false">Avg</th>
+            <th width="8%" data-orderable="false">Min</th>
+            <th width="8%" data-orderable="false">Max</th>
+            <th width="9%" data-orderable="false">Min violation ratio</th>
+            <th width="9%" data-orderable="false">Max violation ratio</th>
+            <th width="9%" data-orderable="false">Min violation burst</th>
+            <th width="9%" data-orderable="false">Max violation burst</th>
           </tr>
         </thead>
 
@@ -64,7 +64,10 @@
             <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>
             <td>{{ callback_name }}</td>
             {% if metrics_name not in stats_metrics %}
-            <td>---</td>
+            {% for i in range(10) %}
+              <td>---</td>
+            {% endfor %}
+            </tr>
             {% continue %}
             {% endif %}
             {% set stats = stats_metrics[metrics_name] %}

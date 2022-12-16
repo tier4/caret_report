@@ -37,12 +37,13 @@
         <thead>
           <tr class="table-primary text-center">
             <th width="3%">#</th>
-            <th width="11%">Topic</th>
+            <th width="8%">Topic</th>
             <th width="8%">Publish</th>
             <th width="8%">Subscribe</th>
-            <th width="10%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></th>
-            <th width="10%"><a href="index_PERIOD.html">Period[ms]</a></th>
-            <th width="10%"><a href="index_LATENCY.html">Latency[ms]</a></th>
+            <th width="8%">Result</th>
+            <th width="12%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
+            <th width="12%"><a href="index_PERIOD.html">Period[ms]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
+            <th width="12%"><a href="index_LATENCY.html">Latency[ms]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
           </tr>
         </thead>
 
@@ -56,32 +57,30 @@
             <td><a href="{{ topic_filename_dict[topic_name] }}">{{ topic_name | safe }}</a></td>
             <td><a href="{{ stats_metrics[stats_metrics | first]['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a></td>
             <td><a href="{{ stats_metrics[stats_metrics | first]['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a></td>
+            <td>
+              {% if 'FREQUENCY' in stats_metrics %}
+                {% set stats = stats_metrics['FREQUENCY'] %}
+                {% if stats['result_status'] == 'PASS' %}
+                <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
+                {% elif stats['result_status'] == 'FAILED' %}
+                <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
+                {% elif stats['result_status'] == 'NOT_MEASURED' %}
+                <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
+                {% else %}
+                {{ stats['result_status']}}
+                {% endif %}
+              {% endif %}
+            </td>
             {% for metrics_name in metrics_list %}
-              <td>
-                {% if metrics_name not in stats_metrics %}
-                  </td>
-                {% continue %}
-                {% endif %}
-                {% set stats = stats_metrics[metrics_name] %}
-                {% if metrics_name == 'FREQUENCY' %}
-                  {% if stats['result_status'] == 'PASS' %}
-                  <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
-                  {% elif stats['result_status'] == 'FAILED' %}
-                  <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
-                  {% elif stats['result_status'] == 'NOT_MEASURED' %}
-                  <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
-                  {% else %}
-                  {{ stats['result_status']}}
-                  {% endif %}
-                {% endif %}
-                </br>
-                Avg: {{ stats['stats']['avg'] }}</br>
-                Std: {{ stats['stats']['std'] }}</br>
-                Min: {{ stats['stats']['min'] }}</br>
-                Max: {{ stats['stats']['max'] }}</br>
-                Avg(5%): {{ stats['stats']['percentile5_avg'] }}</br>
-                Min(5%): {{ stats['stats']['percentile5_min'] }}</br>
-                Max(5%): {{ stats['stats']['percentile5_max'] }}</br>
+              {% if metrics_name not in stats_metrics %}
+              <td data-order="-1"></td>
+              {% continue %}
+              {% endif %}
+              {% set stats = stats_metrics[metrics_name] %}
+              <td data-order="{{ (stats['stats']['avg'] | float) * 1000 }}">
+                {{ stats['stats']['avg'] }}</br>
+                ({{ stats['stats']['percentile5_min'] }} ~ {{ stats['stats']['percentile5_max'] }})</br>
+                ({{ stats['stats']['min'] }} ~ {{ stats['stats']['max'] }})
               </td>
             {% endfor %}
           </tr>
