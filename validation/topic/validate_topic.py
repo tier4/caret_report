@@ -49,9 +49,9 @@ _logger: logging.Logger = None
 def get_comm_plot(comm: Communication, metrics: Metrics):
     # todo: create_communication_frequency_plot doesn't work (it's stuck and consumes too much memory)
     if metrics == Metrics.FREQUENCY:
-        return Plot.create_publish_subscription_frequency_plot(comm.publisher)
+        return Plot.create_publish_subscription_frequency_plot([comm.publisher, comm.subscription])
     elif metrics == Metrics.PERIOD:
-        return Plot.create_publish_subscription_period_plot(comm.publisher)
+        return Plot.create_publish_subscription_period_plot([comm.publisher, comm.subscription])
     elif metrics == Metrics.LATENCY:
         return Plot.create_communication_latency_plot(comm)
 

@@ -30,7 +30,7 @@
       <ul>
         <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
         <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
-        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
+        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
         <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
       </ul>
 
@@ -60,21 +60,24 @@
           <tr>
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
-            <td><a href="{{ topic_filename_dict[topic_name] }}.html">{{ topic_name | safe }}</a></td>
+            <td><a href="{{ topic_filename_dict[topic_name] }}">{{ topic_name | safe }}</a></td>
+            {% if metrics_name not in stats_metrics %}
             <td>{{ pubsub[0] }}</td>
             <td>{{ pubsub[1] }}</td>
-            {% if metrics_name not in stats_metrics %}
             <td>---</td>
+            </tr>
             {% continue %}
             {% endif %}
             {% set stats = stats_metrics[metrics_name] %}
+            <td><a href="{{ stats['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a></td>
+            <td><a href="{{ stats['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a></td>
             <td>
               {% if stats['result_status'] == 'PASS' %}
               <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
               {% elif stats['result_status'] == 'FAILED' %}
               <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
               {% elif stats['result_status'] == 'NOT_MEASURED' %}
-              <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
+              <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
               {% else %}
               {{ stats['result_status']}}
               {% endif %}

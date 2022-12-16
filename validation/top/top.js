@@ -71,8 +71,8 @@ var cy = (window.cy = cytoscape({
       selector: ".not_measured",
       style: {
         "background-color": "#FF0",
-        "line-color": "#FF0",
-        "target-arrow-color": "#FF0",
+        "line-color": "#EE0",
+        "target-arrow-color": "#EE0",
       },
     },
   ],
@@ -250,6 +250,9 @@ for (let componentpair in summary_topic_dict_componentpair_metrics) {
         },
       },
     )
+    if (pub_component_name == 'localization') {
+      cy.getElementById(componentpair).style("source-text-offset", 100);
+    }
   } else if (pub_component_name == "external" && sub_component_name != "external") {
     ext = sub_component_name + "_ext"
     cy.getElementById(ext).style("visibility", "visible");

@@ -26,10 +26,11 @@
         <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
         <table class="table table-hover table-bordered" style="word-break:normal">
           <tr class="table-primary text-center">
+            <th width="2%">#</th>
             <th width="9%">Topic</th>
             <th width="9%">Publish</th>
             <th width="9%">Subscribe</th>
-            <th width="9%">Result</th>
+            <th width="8%">Result</th>
             <th width="9%">Avg</th>
             <th width="9%">Min</th>
             <th width="9%">Max</th>
@@ -46,16 +47,17 @@
               {% continue %}
             {% endif %}
             <tr>
+              <td>{{ loop.index0 }}</td>
               <td>{{ stats['stats']['topic_name'] }}</td>
-              <td>{{ stats['stats']['publish_node_name'] }}</td>
-              <td>{{ stats['stats']['subscribe_node_name'] }}</td>
+              <td><a href="{{ stats['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a></td>
+              <td><a href="{{ stats['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a></td>
               <td>
                 {% if stats['result_status'] == 'PASS' %}
                 <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
                 {% elif stats['result_status'] == 'FAILED' %}
                 <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
                 {% elif stats['result_status'] == 'NOT_MEASURED' %}
-                <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
+                <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
                 {% else %}
                 {{ stats['result_status']}}
                 {% endif %}
@@ -77,7 +79,8 @@
         {% for pubsub, stats_metrics in stats_pubsub_metrics.items() %}
           {% if metrics in stats_metrics %}
             {% set stats = stats_metrics[metrics] %}
-            <iframe src="{{ stats['stats']['graph_filename'] }}.html" width="1200" height="350" scrolling="no"></iframe>
+            <p>#{{ loop.index0 }}: {{ pubsub[0] }} -> {{ pubsub[1] }}</p>
+            <iframe src="{{ stats['stats']['graph_filename'] }}.html" width="1200" height="400" scrolling="no"></iframe>
           {% endif %}
         {% endfor %}
       {% endfor %}

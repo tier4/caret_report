@@ -54,7 +54,11 @@
                 {% if stats['stats']['period_ns'] != -1 %}
                 {{ stats['stats']['period_ns'] / 1e6 }} [ms]
                 {% else %}
-                <a href="todo: link to topic Hz">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
+                {% if stats['stats']['subscribe_topic_html'] != '' %}
+                <a href="{{ stats['stats']['subscribe_topic_html'] }}">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
+                {% else %}
+                {{ stats['stats']['subscribe_topic_name'] | safe }}
+                {% endif %}
                 {% endif %}
               </td>
               <td>
@@ -63,7 +67,7 @@
                 {% elif stats['result_status'] == 'FAILED' %}
                 <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
                 {% elif stats['result_status'] == 'NOT_MEASURED' %}
-                <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
+                <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
                 {% else %}
                 {{ stats['result_status']}}
                 {% endif %}

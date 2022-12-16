@@ -19,6 +19,7 @@ import os
 import sys
 from enum import Enum
 import shutil
+import glob
 import logging
 import re
 import itertools
@@ -171,6 +172,14 @@ class ComponentManager:
         return False
 
 
+def make_callback_detail_filename(node_name: str):
+    return node_name.replace('/', '_')[1:] + '.html'
+
+
+def make_topic_detail_filename(topic_name: str):
+    return topic_name.replace('/', '_')[1:] + '.html'
+
+
 def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
     stats_dict_node_callback_metrics: dict = {}
     for metrics in Metrics:
@@ -193,6 +202,17 @@ def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
                 if stats['stats']['avg'] == '---' and stats['expectation_value'] == '---':
                     # not measured(but added to stats file) and OUT_OF_SCOPE
                     continue
+
+                stats['stats']['subscribe_topic_html'] = ''
+                if stats['stats']['subscribe_topic_name'] != '':
+                    topic_html = make_topic_detail_filename(stats['stats']['subscribe_topic_name'])
+                    topic_html_list = glob.glob(f'{report_dir}/topic/*/{topic_html}', recursive=False)
+                    topic_html = [html for html in topic_html_list if '-' + stats['stats']['component_name'] in html]
+                    if len(topic_html) > 0:
+                        topic_html = topic_html[0]
+                        topic_html = topic_html.split('/')
+                        topic_html = '/'.join(topic_html[1:])
+                        stats['stats']['subscribe_topic_html'] = '../../' + topic_html
 
                 node_name = stats['stats']['node_name']
                 callback_name = stats['stats']['callback_name']
@@ -256,6 +276,14 @@ def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[
                 if stats['stats']['avg'] == '---' and stats['expectation_value'] == '---':
                     # not measured(but added to stats file) and OUT_OF_SCOPE
                     continue
+
+                stats['stats']['publish_node_html'] = '../../callback/' + \
+                    stats['stats']['pubilsh_component_name'] + '/' + \
+                    make_callback_detail_filename(stats['stats']['publish_node_name'])
+
+                stats['stats']['subscribe_node_html'] = '../../callback/' + \
+                    stats['stats']['subscribe_component_name'] + '/' + \
+                    make_callback_detail_filename(stats['stats']['subscribe_node_name'])
 
                 topic_name = stats['stats']['topic_name']
                 pubsub = (stats['stats']['publish_node_name'], stats['stats']['subscribe_node_name'])

@@ -20,7 +20,7 @@ import argparse
 from pathlib import Path
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result
+from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result, make_topic_detail_filename
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 
@@ -28,10 +28,6 @@ sub_title_list = ['Frequency [Hz]', 'Period [ms]', 'Latency [ms]']
 
 app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
-
-
-def make_topic_detail_filename(topic_name: str):
-    return topic_name.replace('/', '_')[1:]
 
 
 def make_report_topic_validation(dest_dir: str, trace_name: str, component_pair: tuple[str], stats_dict_topic_pubsub_metrics: dict, summary_dict_metrics: dict):
@@ -91,7 +87,7 @@ def make_report_topic_metrics(dest_dir: str, trace_name: str, component_pair: tu
 def make_report_topic_detail(dest_dir: str, trace_name: str, component_pair: tuple[str], stats_dict_topic_pubsub_metrics: dict):
     for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items():
         title = f'Topic details: {topic_name} ({component_pair[0]} -> {component_pair[1]})'
-        destination_path = f'{dest_dir}/{make_topic_detail_filename(topic_name)}.html'
+        destination_path = f'{dest_dir}/{make_topic_detail_filename(topic_name)}'
         template_path = f'{Path(__file__).resolve().parent}/template_topic_detail.html'
 
         with app.app_context():

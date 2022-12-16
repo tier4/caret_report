@@ -30,7 +30,7 @@
       <ul>
         <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
         <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
-        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
+        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
         <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
       </ul>
 
@@ -61,7 +61,7 @@
           <tr>
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
-            <td><a href="{{ node_filename_dict[node_name] }}.html">{{ node_name | safe }}</a></td>
+            <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>
             <td>{{ callback_name }}</td>
             {% if metrics_name not in stats_metrics %}
             <td>---</td>
@@ -73,7 +73,11 @@
               {% if stats['stats']['period_ns'] != -1 %}
               {{ stats['stats']['period_ns'] / 1e6 }} [ms]
               {% else %}
-              <a href="todo: link to topic Hz">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
+              {% if stats['stats']['subscribe_topic_html'] != '' %}
+              <a href="{{ stats['stats']['subscribe_topic_html'] }}">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
+              {% else %}
+              {{ stats['stats']['subscribe_topic_name'] | safe }}
+              {% endif %}
               {% endif %}
             </td>
             <td>
@@ -82,7 +86,7 @@
               {% elif stats['result_status'] == 'FAILED' %}
               <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
               {% elif stats['result_status'] == 'NOT_MEASURED' %}
-              <i class="bi bi-exclamation-triangle-fill" style = "color:#FFCC00;"></i> {{ stats['result_status']}}
+              <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
               {% else %}
               {{ stats['result_status']}}
               {% endif %}

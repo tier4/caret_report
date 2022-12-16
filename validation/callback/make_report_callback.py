@@ -21,7 +21,7 @@ from pathlib import Path
 import sys
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result
+from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result, make_callback_detail_filename
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 
@@ -29,10 +29,6 @@ sub_title_list = ['Frequency [Hz]', 'Period [ms]', 'Latency [ms]']
 
 app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
-
-
-def make_callback_detail_filename(node_name: str):
-    return node_name.replace('/', '_')[1:]
 
 
 def make_report_callback_validation(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
@@ -92,7 +88,7 @@ def make_report_callback_metrics(dest_dir: str, trace_name: str, component_name:
 def make_report_callback_detail(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict):
     for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
         title = f'Callback details: {node_name}'
-        destination_path = f'{dest_dir}/{make_callback_detail_filename(node_name)}.html'
+        destination_path = f'{dest_dir}/{make_callback_detail_filename(node_name)}'
         template_path = f'{Path(__file__).resolve().parent}/template_callback_detail.html'
 
         with app.app_context():
