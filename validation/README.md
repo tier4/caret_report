@@ -21,6 +21,8 @@ export start_strip=10                               # strip time at the start [s
 export end_strip=5                                  # strip time at the end [sec] for analysis
 export expectation_callback_csv_filename=${script_path}/experiment/expectation_callback.csv
 export expectation_topic_csv_filename=${script_path}/experiment/expectation_topic.csv
+export note_text_top=./note_text_top.txt
+export note_text_bottom=./note_text_bottom.txt
 
 # Run script
 sh ${script_path}/make_report.sh

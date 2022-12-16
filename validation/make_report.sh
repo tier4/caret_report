@@ -17,6 +17,6 @@ python3 "${script_path}"/topic/validate_topic.py "${trace_data}" --component_lis
 python3 "${script_path}"/topic/make_report_topic.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
 # Top page
-python3 "${script_path}"/top/make_report_top.py "${report_dir_name}" --component_list_json="${component_list_json}"
+python3 "${script_path}"/top/make_report_top.py "${report_dir_name}" --component_list_json="${component_list_json}" --note_text_top="${note_text_top}" --note_text_bottom="${note_text_bottom}"
 
 echo "<<< OK. All report pages are created >>>"
