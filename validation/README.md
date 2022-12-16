@@ -17,8 +17,8 @@ docker run -it --rm \
 export script_path=./CARET_report/validation        # Path to 'validation' directory in this repo cloned
 export component_list_json=./component_list.json    # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
-export start_time=20                                # start time[sec] for analysis
-export duration_time=9999                           # duration time[sec] for analysis
+export start_strip=10                               # strip time at the start [sec] for analysis
+export end_strip=5                                  # strip time at the end [sec] for analysis
 export expectation_callback_csv_filename=${script_path}/experiment/expectation_callback.csv
 export expectation_topic_csv_filename=${script_path}/experiment/expectation_topic.csv
 

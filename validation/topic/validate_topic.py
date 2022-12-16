@@ -329,10 +329,10 @@ def parse_arg():
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_topic.csv')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -348,11 +348,11 @@ def main():
     logger.debug(f'trace_data: {args.trace_data[0]}')
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
-    logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
+    logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
 
-    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 

@@ -66,19 +66,12 @@ def make_destination_dir(dest_dir: str, force: bool=False, logger: logging.Logge
             sys.exit(-1)
 
 
-def read_trace_data(trace_data: str, start_point: float, duration: float,
+def read_trace_data(trace_data: str, start_strip: float, end_strip: float,
                     force_conversion=False) -> Lttng:
     """Read LTTng trace data"""
-    if start_point > 0 and duration == 0:
-        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-            LttngEventFilter.strip_filter(start_point, None)
-        ])
-    elif start_point >= 0 and duration > 0:
-        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-            LttngEventFilter.duration_filter(duration, start_point)
-        ])
-    else:
-        return Lttng(trace_data, force_conversion=force_conversion)
+    return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+        LttngEventFilter.strip_filter(start_strip, end_strip)
+    ])
 
 
 def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
