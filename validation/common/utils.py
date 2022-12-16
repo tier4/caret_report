@@ -25,6 +25,7 @@ import re
 import itertools
 import json
 import yaml
+import pandas as pd
 from caret_analyze import Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase
 from caret_analyze.plot import Plot
@@ -83,6 +84,28 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
     # except:
     #     if logger:
     #         logger.warning('Unable to export png')
+
+
+def trail_df(df: pd.DataFrame, trail_val=0, start_strip_num=0, end_strip_num=0) -> pd.DataFrame:
+    cnt_trail = start_strip_num
+    for val in df:
+        if val == trail_val:
+            cnt_trail += 1
+        else:
+            break
+    if cnt_trail > 0:
+        df = df.iloc[cnt_trail:]
+
+    cnt_trail = end_strip_num
+    for val in df.iloc[::-1]:
+        if val == trail_val:
+            cnt_trail += 1
+        else:
+            break
+    if cnt_trail > 0:
+        df = df.iloc[:-cnt_trail]
+
+    return df
 
 
 class Metrics(Enum):
@@ -209,11 +232,16 @@ def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
 
                 node_name = stats['stats']['node_name']
                 callback_name = stats['stats']['callback_name']
-                if node_name not in stats_dict_node_callback_metrics:
-                    stats_dict_node_callback_metrics[node_name] = {}
-                if callback_name not in stats_dict_node_callback_metrics[node_name]:
-                    stats_dict_node_callback_metrics[node_name][callback_name] = {}
-                stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
+                if metrics == Metrics.FREQUENCY:
+                    if node_name not in stats_dict_node_callback_metrics:
+                        stats_dict_node_callback_metrics[node_name] = {}
+                    if callback_name not in stats_dict_node_callback_metrics[node_name]:
+                        stats_dict_node_callback_metrics[node_name][callback_name] = {}
+                    stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
+                else :
+                    if node_name in stats_dict_node_callback_metrics \
+                        and callback_name in stats_dict_node_callback_metrics[node_name]:
+                        stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
 
     return stats_dict_node_callback_metrics
 
@@ -280,11 +308,16 @@ def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[
 
                 topic_name = stats['stats']['topic_name']
                 pubsub = (stats['stats']['publish_node_name'], stats['stats']['subscribe_node_name'])
-                if topic_name not in stats_dict_topic_pubsub_metrics:
-                    stats_dict_topic_pubsub_metrics[topic_name] = {}
-                if pubsub not in stats_dict_topic_pubsub_metrics[topic_name]:
-                    stats_dict_topic_pubsub_metrics[topic_name][pubsub] = {}
-                stats_dict_topic_pubsub_metrics[topic_name][pubsub][metrics.name] = stats
+                if metrics == Metrics.FREQUENCY:
+                    if topic_name not in stats_dict_topic_pubsub_metrics:
+                        stats_dict_topic_pubsub_metrics[topic_name] = {}
+                    if pubsub not in stats_dict_topic_pubsub_metrics[topic_name]:
+                        stats_dict_topic_pubsub_metrics[topic_name][pubsub] = {}
+                    stats_dict_topic_pubsub_metrics[topic_name][pubsub][metrics.name] = stats
+                else :
+                    if topic_name in stats_dict_topic_pubsub_metrics \
+                        and pubsub in stats_dict_topic_pubsub_metrics[topic_name]:
+                        stats_dict_topic_pubsub_metrics[topic_name][pubsub][metrics.name] = stats
 
     return stats_dict_topic_pubsub_metrics
 

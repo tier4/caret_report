@@ -30,7 +30,7 @@ from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 # Supress log for CARET
@@ -89,6 +89,7 @@ class Expectation():
     def from_csv(expectation_csv_filename: str, component_name: Optional[str]) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
+            _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
             for row in csv.DictReader(csvfile, ['component_name', 'node_name', 'callback_name', 'callback_type', 'period_ns', 'topic_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
@@ -137,7 +138,9 @@ class Stats():
         stats.graph_filename = graph_filename
 
         df_callback = df_callback.dropna()
-        df_callback = df_callback.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
+        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
+        df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
+
         if len(df_callback) >= 2:
             stats.avg = float(df_callback.mean())
             stats.std = float(df_callback.std())
@@ -191,7 +194,9 @@ class Result():
 
     def validate(self, df_callback: pd.DataFrame, expectation: Expectation):
         df_callback = df_callback.dropna()
-        df_callback = df_callback.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
+        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
+        df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
+
         if len(df_callback) >= 2:
             self.result_status = ResultStatus.PASS.name
             self.ratio_lower_limit = float((df_callback <= expectation.lower_limit).sum() / len(df_callback))

@@ -35,7 +35,7 @@ from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.runtime.communication import Communication, Subscription, Publisher
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 # Supress log for CARET
@@ -86,6 +86,7 @@ class Expectation():
     def from_csv(expectation_csv_filename: str, pubilsh_component_name: Optional[str], subscribe_component_name: Optional[str]) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
+            _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
             for row in csv.DictReader(csvfile, ['topic_name', 'publish_node_name', 'pubilsh_component_name', 'subscribe_node_name', 'subscribe_component_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
@@ -130,7 +131,9 @@ class Stats():
         stats.graph_filename = graph_filename
 
         df_comm = df_comm.dropna()
-        df_comm = df_comm.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
+        df_comm = df_comm.iloc[:, 1]                  # get metrics value only
+        df_comm = trail_df(df_comm, end_strip_num=2)  # remove the last data because freq becomes small
+
         if len(df_comm) >= 2:
             stats.avg = float(df_comm.mean())
             stats.std = float(df_comm.std())
@@ -183,7 +186,9 @@ class Result():
 
     def validate(self, df_topic: pd.DataFrame, expectation: Expectation):
         df_topic = df_topic.dropna()
-        df_topic = df_topic.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
+        df_topic = df_topic.iloc[:, 1]                  # get metrics value only
+        df_topic = trail_df(df_topic, end_strip_num=2)  # remove the last data because freq becomes small
+
         if len(df_topic) >= 2:
             self.result_status = ResultStatus.PASS.name
             self.ratio_lower_limit = float((df_topic <= expectation.lower_limit).sum() / len(df_topic))
