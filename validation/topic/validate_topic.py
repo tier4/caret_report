@@ -191,11 +191,11 @@ class Result():
 
         if len(df_topic) >= 2:
             self.result_status = ResultStatus.PASS.name
-            self.ratio_lower_limit = float((df_topic <= expectation.lower_limit).sum() / len(df_topic))
-            self.ratio_upper_limit = float((df_topic >= expectation.upper_limit).sum() / len(df_topic))
-            if self.ratio_lower_limit >= expectation.ratio:
+            self.ratio_lower_limit = float((df_topic < expectation.lower_limit).sum() / len(df_topic))
+            self.ratio_upper_limit = float((df_topic > expectation.upper_limit).sum() / len(df_topic))
+            if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            if self.ratio_upper_limit >= expectation.ratio:
+            if self.ratio_upper_limit > expectation.ratio:
                 self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_topic, key=lambda x: x < expectation.lower_limit)]
@@ -204,9 +204,9 @@ class Result():
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_topic, key=lambda x: x > expectation.upper_limit)]
             group = [x[1] for x in flag_group if x[0]]
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
-            if self.burst_num_lower_limit >= expectation.burst_num:
+            if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            if self.burst_num_upper_limit >= expectation.burst_num:
+            if self.burst_num_upper_limit > expectation.burst_num:
                 self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
@@ -291,6 +291,10 @@ def validate_component_pair(app: Application, component_pair: tuple[str], dest_d
             continue
         pubilsh_component_name = ComponentManager().get_component_name(comm.publish_node_name)
         subscribe_component_name = ComponentManager().get_component_name(comm.subscribe_node_name)
+        if ComponentManager().check_if_external_in_topic(comm.topic_name):
+            pubilsh_component_name = 'external'
+        elif ComponentManager().check_if_external_out_topic(comm.topic_name):
+            subscribe_component_name = 'external'
         if pubilsh_component_name == component_pair[0] and subscribe_component_name == component_pair[1]:
             target_comm_list.append(comm)
 
@@ -321,7 +325,7 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
 
     make_destination_dir(dest_dir + '/topic', force, _logger)
 
-    for component_pair in ComponentManager().get_component_pair_list():
+    for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         validate_component_pair(app, component_pair, dest_dir, force, expectation_csv_filename)
 
     _logger.info(f'<<< Validate topic finish >>>')

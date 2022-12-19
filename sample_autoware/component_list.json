@@ -1,14 +1,26 @@
 {
   "component_dict": {
-    "external": "^/external_sensor",
     "sensing": "^/sensing",
     "localization": "^/localization",
     "perception": "^/perception",
     "planning": "^/planning",
     "control": "^/control",
     "system": "^/system",
-    "vehicle": "(^/pacmod|^/raw_vehicle_cmd_converter)"
+    "vehicle": "(^/vehicle|^/pacmod|^/raw_vehicle_cmd_converter)"
   },
+  "external_in_topic_list": [
+    "^/sensing/gnss/ublox/fix_velocity",
+    "^/sensing/gnss/ublox/nav_sat_fix",
+    "^/sensing/gnss/ublox/navpvt",
+    "^/sensing/.*/velodyne_packets",
+    "^/perception/object_recognition/detection/rois.*",
+    "^/sensing/camera/.*/camera_info",
+    "^/perception/traffic_light_recognition/traffic_signals",
+    "^/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/input/lateral_offset",
+    "^/control/external_cmd_selector/current_selector_mode",
+    "^/system/system_monitor/cpu_monitor/cpu_usage"
+  ],
+  "external_out_topic_list": [],
   "ignore_list": [
     "container"
   ]

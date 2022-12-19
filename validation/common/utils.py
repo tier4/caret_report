@@ -127,6 +127,8 @@ class ComponentManager:
         if not hasattr(cls, "_instance"):
             cls._instance = super(ComponentManager, cls).__new__(cls)
             cls.component_dict = {}  # pairs of component name and regular_exp
+            cls.external_in_topic_list = []
+            cls.external_out_topic_list = []
             cls.ignore_list = []
         return cls._instance
 
@@ -149,24 +151,38 @@ class ComponentManager:
             }
         else:
             self.component_dict = component_list_json['component_dict']
+            self.external_in_topic_list = component_list_json['external_in_topic_list']
+            self.external_out_topic_list = component_list_json['external_out_topic_list']
             self.ignore_list = component_list_json['ignore_list']
 
         if logger:
             logger.debug(f'component_dict = {self.component_dict}')
+            logger.debug(f'external_in_topic_list = {self.external_in_topic_list}')
+            logger.debug(f'external_out_topic_list = {self.external_out_topic_list}')
             logger.debug(f'ignore_list = {self.ignore_list}')
 
     def get_component_name(self, node_name: str) -> str:
-        external = 'external'
-        if external in self.component_dict:
-            if re.search(self.component_dict[external], node_name):
-                return external
         for component_name, regexp in self.component_dict.items():
             if re.search(regexp, node_name):
                 return component_name
         return 'other'
 
-    def get_component_pair_list(self) -> list[str, str]:
-        component_name_list = self.component_dict.keys()
+    def check_if_external_in_topic(self, topic_name: str) -> bool:
+        for external_regexp in self.external_in_topic_list:
+            if re.search(external_regexp, topic_name):
+                return True
+        return False
+
+    def check_if_external_out_topic(self, topic_name: str) -> bool:
+        for external_regexp in self.external_out_topic_list:
+            if re.search(external_regexp, topic_name):
+                return True
+        return False
+
+    def get_component_pair_list(self, with_external: bool=False) -> list[str, str]:
+        component_name_list = list(self.component_dict.keys())
+        if with_external:
+            component_name_list.append('external')
         component_pair_list = itertools.product(component_name_list, component_name_list)
         component_pair_list = [component_pair for component_pair in component_pair_list
                                 if component_pair[0] != component_pair[1]]

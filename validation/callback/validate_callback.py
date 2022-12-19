@@ -199,11 +199,11 @@ class Result():
 
         if len(df_callback) >= 2:
             self.result_status = ResultStatus.PASS.name
-            self.ratio_lower_limit = float((df_callback <= expectation.lower_limit).sum() / len(df_callback))
-            self.ratio_upper_limit = float((df_callback >= expectation.upper_limit).sum() / len(df_callback))
-            if self.ratio_lower_limit >= expectation.ratio:
+            self.ratio_lower_limit = float((df_callback < expectation.lower_limit).sum() / len(df_callback))
+            self.ratio_upper_limit = float((df_callback > expectation.upper_limit).sum() / len(df_callback))
+            if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            if self.ratio_upper_limit >= expectation.ratio:
+            if self.ratio_upper_limit > expectation.ratio:
                 self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x < expectation.lower_limit)]
@@ -212,9 +212,9 @@ class Result():
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x > expectation.upper_limit)]
             group = [x[1] for x in flag_group if x[0]]
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
-            if self.burst_num_lower_limit >= expectation.burst_num:
+            if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            if self.burst_num_upper_limit >= expectation.burst_num:
+            if self.burst_num_upper_limit > expectation.burst_num:
                 self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
