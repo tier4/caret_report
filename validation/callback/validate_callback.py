@@ -137,8 +137,7 @@ class Stats():
         stats.metrics = metrics.name
         stats.graph_filename = graph_filename
 
-        df_callback = df_callback.dropna()
-        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
+        df_callback = df_callback.iloc[:, 1].dropna()         # get metrics value only
         df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
 
         if len(df_callback) >= 2:
@@ -150,6 +149,9 @@ class Stats():
             stats.percentile5_max = float(df_callback.quantile(0.95))
             df_percentile5 = df_callback[(df_callback >= stats.percentile5_min) & (df_callback <= stats.percentile5_max)]
             stats.percentile5_avg = float(df_percentile5.mean()) if len(df_percentile5) > 2 else stats.avg
+        else:
+            _logger.info(f'This callback is not called: {node_name}: {callback.callback_name}')
+            return None
         return stats
 
     @staticmethod
@@ -193,8 +195,7 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_callback: pd.DataFrame, expectation: Expectation):
-        df_callback = df_callback.dropna()
-        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
+        df_callback = df_callback.iloc[:, 1].dropna()         # get metrics value only
         df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
 
         if len(df_callback) >= 2:
@@ -243,7 +244,8 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
     for callback in node.callbacks:
         df_callback = df_node[callback.callback_name]
         stats = Stats.from_df(component_name, node.node_name, callback, metrics, graph_filename, df_callback)
-        stats_list[callback.callback_name] = stats
+        if stats:
+            stats_list[callback.callback_name] = stats
     return stats_list
 
 

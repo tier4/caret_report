@@ -49,8 +49,20 @@
             <tr>
               <td>{{ loop.index0 }}</td>
               <td>{{ stats['stats']['topic_name'] }}</td>
-              <td><a href="{{ stats['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a></td>
-              <td><a href="{{ stats['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a></td>
+              <td>
+                {% if stats['stats']['publish_node_html'] != '' %}
+                <a href="{{ stats['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a>
+                {% else %}
+                {{ pubsub[0] }}
+                {% endif %}
+              </td>
+              <td>
+                {% if stats['stats']['subscribe_node_html'] != '' %}
+                <a href="{{ stats['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a>
+                {% else %}
+                {{ pubsub[1] }}
+                {% endif %}
+              </td>
               <td>
                 {% if stats['result_status'] == 'PASS' %}
                 <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}

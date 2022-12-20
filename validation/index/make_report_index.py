@@ -40,7 +40,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
         summary_callback_dict_component_metrics[component_name] = summarize_callback_result(stats_dict_node_callback_metrics)
 
     summary_topic_dict_componentpair_metrics = {}
-    for component_pair in ComponentManager().get_component_pair_list():
+    for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         stats_dict_node_callback_metrics: dict = make_stats_dict_topic_pubsub_metrics(report_dir, component_pair)
         if len(stats_dict_node_callback_metrics) == 0:
             continue

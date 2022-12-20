@@ -123,7 +123,7 @@ def make_report_topic(report_dir: str, component_pair: tuple[str]):
 def make_report(report_dir: str, component_list_json: str):
     ComponentManager().initialize(component_list_json)
 
-    for component_pair in ComponentManager().get_component_pair_list():
+    for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         make_report_topic(report_dir, component_pair)
 
 

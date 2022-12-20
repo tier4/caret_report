@@ -62,9 +62,10 @@ def make_destination_dir(dest_dir: str, force: bool=False, logger: logging.Logge
             shutil.rmtree(dest_dir)
             os.makedirs(dest_dir)
         else:
-            if logger:
-                logger.error('Destination has already existed')
-            sys.exit(-1)
+            pass
+            # if logger:
+            #     logger.error('Destination has already existed')
+            # sys.exit(-1)
 
 
 def read_trace_data(trace_data: str, start_strip: float, end_strip: float,
@@ -167,15 +168,19 @@ class ComponentManager:
                 return component_name
         return 'other'
 
-    def check_if_external_in_topic(self, topic_name: str) -> bool:
-        for external_regexp in self.external_in_topic_list:
-            if re.search(external_regexp, topic_name):
+    def check_if_external_in_topic(self, topic_name: str, sub_node_name: str='') -> bool:
+        for topic_regexp, node_regexp in self.external_in_topic_list:
+            if re.search(topic_regexp, topic_name):
+                if (sub_node_name != '') and (node_regexp != '') and (not re.search(node_regexp, sub_node_name)):
+                    continue
                 return True
         return False
 
-    def check_if_external_out_topic(self, topic_name: str) -> bool:
-        for external_regexp in self.external_out_topic_list:
-            if re.search(external_regexp, topic_name):
+    def check_if_external_out_topic(self, topic_name: str, pub_node_name: str='') -> bool:
+        for topic_regexp, node_regexp in self.external_out_topic_list:
+            if re.search(topic_regexp, topic_name):
+                if (pub_node_name != '') and (node_regexp != '') and (not re.search(node_regexp, pub_node_name)):
+                    continue
                 return True
         return False
 
@@ -215,7 +220,10 @@ def make_topic_detail_filename(topic_name: str):
 def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
     stats_dict_node_callback_metrics: dict = {}
     for metrics in Metrics:
-        with open(f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml', 'r', encoding='utf-8') as f_yaml:
+        stats_filename = f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml'
+        if not os.path.isfile(stats_filename):
+            continue
+        with open(stats_filename, 'r', encoding='utf-8') as f_yaml:
             stats_list = yaml.safe_load(f_yaml)
             for stats in stats_list:
                 # stats['stats']['node_name'] = stats['stats']['node_name'].replace('_', '_<wbr>')
@@ -314,13 +322,17 @@ def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[
                     # not measured(but added to stats file) and OUT_OF_SCOPE
                     continue
 
-                stats['stats']['publish_node_html'] = '../../callback/' + \
-                    stats['stats']['pubilsh_component_name'] + '/' + \
-                    make_callback_detail_filename(stats['stats']['publish_node_name'])
+                stats['stats']['publish_node_html'] = ''
+                if stats['stats']['pubilsh_component_name'] != 'external':
+                    stats['stats']['publish_node_html'] = '../../callback/' + \
+                        stats['stats']['pubilsh_component_name'] + '/' + \
+                        make_callback_detail_filename(stats['stats']['publish_node_name'])
 
-                stats['stats']['subscribe_node_html'] = '../../callback/' + \
-                    stats['stats']['subscribe_component_name'] + '/' + \
-                    make_callback_detail_filename(stats['stats']['subscribe_node_name'])
+                stats['stats']['subscribe_node_html'] = ''
+                if stats['stats']['subscribe_component_name'] != 'external':
+                    stats['stats']['subscribe_node_html'] = '../../callback/' + \
+                        stats['stats']['subscribe_component_name'] + '/' + \
+                        make_callback_detail_filename(stats['stats']['subscribe_node_name'])
 
                 topic_name = stats['stats']['topic_name']
                 pubsub = (stats['stats']['publish_node_name'], stats['stats']['subscribe_node_name'])
