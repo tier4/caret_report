@@ -1,20 +1,39 @@
-```sh
-docker image build --network host -t caret/caret_autoware_validation --build-arg CARET_VERSION="v0.3.3" ./docker
-```
+# Validation report
 
-```sh
-work_dir=`pwd`
-docker run -it --rm \
-    --user $(id -u):$(id -g) \
-    --net host \
-    -v ${work_dir}:/work \
-    -v /etc/localtime:/etc/localtime:ro \
-    caret/caret_autoware_validation
-```
+- This script evaluates if callbacks and topics run appropriately
+- (Currently only for Autoware validation)
+
+## What is created with this script?
+
+- Input:
+  - CARET trace data (CTF file)
+  - Expectation file (csv file)
+- Output (html pages):
+  - Index page (index.html)
+    - Summary
+    - Pass/Failed status for callbacks and topics per component
+  - Callback validation report
+    - Pass/Failed status for callbacks
+    - Callback details: frequency, period and latency
+  - Topic validation report
+    - Pass/Failed status for topics
+    - Topic details: frequency, period and communication latency
+
+## Requirements
+
+[Please refer to the top page](https://github.com/tier4/CARET_report#requirements)
+
+## How to use
+
+- Run the following commands
+  - Make sure to modify settings for your usage and environment
+  - Make sure to prepare setting files
+- `report_{dir_name_of_trace_data}` is created
+- Open `index.html` to see a report
 
 ```sh
 # Settings: modify for your usage and environment
-export script_path=./CARET_report/validation        # Path to 'validation' directory in this repo cloned
+export script_path=`pwd`/../validation        # Path to 'validation' directory in this repo cloned
 export component_list_json=./component_list.json    # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
 export start_strip=10                               # strip time at the start [sec] for analysis
