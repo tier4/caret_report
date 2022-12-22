@@ -4,7 +4,7 @@
 
 - [./report](./report)
   - create general analysis report
-- [./validation](./validation) (WIP)
+- [./validation](./validation)
   - create validation report
 
 ## Sample

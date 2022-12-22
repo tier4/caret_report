@@ -18,10 +18,9 @@ import os
 import sys
 import argparse
 from pathlib import Path
-import sys
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result, make_callback_detail_filename
+from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result, make_topic_detail_filename
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 
@@ -31,14 +30,14 @@ app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 
-def make_report_callback_validation(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
-    title = f'Callback validation result: {component_name}'
+def make_report_topic_validation(dest_dir: str, trace_name: str, component_pair: tuple[str], stats_dict_topic_pubsub_metrics: dict, summary_dict_metrics: dict):
+    title = f'Topic validation result: {component_pair[0]} -> {component_pair[1]}'
     destination_path = f'{dest_dir}/index.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_callback_validation.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_topic_validation.html'
 
-    node_filename_dict = {}
-    for node_name, _ in stats_dict_node_callback_metrics.items():
-        node_filename_dict[node_name] = make_callback_detail_filename(node_name)
+    topic_filename_dict = {}
+    for topic_name, _ in stats_dict_topic_pubsub_metrics.items():
+        topic_filename_dict[topic_name] = make_topic_detail_filename(topic_name)
 
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -48,24 +47,24 @@ def make_report_callback_validation(dest_dir: str, trace_name: str, component_na
                 title=title,
                 trace_name=trace_name,
                 metrics_list=[Metrics.FREQUENCY.name, Metrics.PERIOD.name, Metrics.LATENCY.name],
-                stats_node_callback_metrics=stats_dict_node_callback_metrics,
+                stats_dict_topic_pubsub_metrics=stats_dict_topic_pubsub_metrics,
                 summary_dict=summary_dict_metrics[Metrics.FREQUENCY.name],
-                node_filename_dict=node_filename_dict,
+                topic_filename_dict=topic_filename_dict,
             )
 
         with open(destination_path, 'w', encoding='utf-8') as f_html:
             f_html.write(rendered)
 
 
-def make_report_callback_metrics(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict, summary_dict_metrics: dict):
+def make_report_topic_metrics(dest_dir: str, trace_name: str, component_pair: tuple[str], stats_dict_topic_pubsub_metrics: dict, summary_dict_metrics: dict):
     for i, metrics in enumerate(Metrics):
-        title = f'Callback validation result ({metrics.name}): {component_name}'
+        title = f'Topic validation result ({metrics.name}): {component_pair[0]} -> {component_pair[1]}'
         destination_path = f'{dest_dir}/index_{metrics.name}.html'
-        template_path = f'{Path(__file__).resolve().parent}/template_callback_metrics.html'
+        template_path = f'{Path(__file__).resolve().parent}/template_topic_metrics.html'
 
-        node_filename_dict = {}
-        for node_name, _ in stats_dict_node_callback_metrics.items():
-            node_filename_dict[node_name] = make_callback_detail_filename(node_name)
+        topic_filename_dict = {}
+        for topic_name, _ in stats_dict_topic_pubsub_metrics.items():
+            topic_filename_dict[topic_name] = make_topic_detail_filename(topic_name)
 
         with app.app_context():
             with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -76,20 +75,20 @@ def make_report_callback_metrics(dest_dir: str, trace_name: str, component_name:
                     trace_name=trace_name,
                     metrics_name=metrics.name,
                     sub_title=sub_title_list[i],
-                    stats_node_callback_metrics=stats_dict_node_callback_metrics,
+                    stats_dict_topic_pubsub_metrics=stats_dict_topic_pubsub_metrics,
                     summary_dict=summary_dict_metrics[metrics.name],
-                    node_filename_dict=node_filename_dict,
+                    topic_filename_dict=topic_filename_dict,
                 )
 
             with open(destination_path, 'w', encoding='utf-8') as f_html:
                 f_html.write(rendered)
 
 
-def make_report_callback_detail(dest_dir: str, trace_name: str, component_name: str, stats_dict_node_callback_metrics: dict):
-    for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
-        title = f'Callback details: {node_name}'
-        destination_path = f'{dest_dir}/{make_callback_detail_filename(node_name)}'
-        template_path = f'{Path(__file__).resolve().parent}/template_callback_detail.html'
+def make_report_topic_detail(dest_dir: str, trace_name: str, component_pair: tuple[str], stats_dict_topic_pubsub_metrics: dict):
+    for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items():
+        title = f'Topic details: {topic_name} ({component_pair[0]} -> {component_pair[1]})'
+        destination_path = f'{dest_dir}/{make_topic_detail_filename(topic_name)}'
+        template_path = f'{Path(__file__).resolve().parent}/template_topic_detail.html'
 
         with app.app_context():
             with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -99,7 +98,7 @@ def make_report_callback_detail(dest_dir: str, trace_name: str, component_name: 
                     title=title,
                     trace_name=trace_name,
                     metrics_list=[Metrics.FREQUENCY.name, Metrics.PERIOD.name, Metrics.LATENCY.name],
-                    stats_callback_metrics=stats_dict_callback_metrics,
+                    stats_pubsub_metrics=stats_dict_pubsub_metrics,
                     sub_title_list=sub_title_list,
                 )
 
@@ -107,23 +106,25 @@ def make_report_callback_detail(dest_dir: str, trace_name: str, component_name: 
                 f_html.write(rendered)
 
 
-def make_report_callback(report_dir: str, component_name: str):
-    stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
-    summary_dict_metrics = summarize_callback_result(stats_dict_node_callback_metrics)
+def make_report_topic(report_dir: str, component_pair: tuple[str]):
+    stats_dict_topic_pubsub_metrics: dict = make_stats_dict_topic_pubsub_metrics(report_dir, component_pair)
+    if len(stats_dict_topic_pubsub_metrics)== 0:
+        return
+    summary_dict_metrics = summarize_topic_result(stats_dict_topic_pubsub_metrics)
 
-    dest_dir = f'{report_dir}/callback/{component_name}'
+    dest_dir = f'{report_dir}/topic/{component_pair[0]}-{component_pair[1]}'
     trace_name = report_dir.split('/')[-1]
 
-    make_report_callback_validation(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
-    make_report_callback_metrics(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
-    make_report_callback_detail(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics)
+    make_report_topic_validation(dest_dir, trace_name, component_pair, stats_dict_topic_pubsub_metrics, summary_dict_metrics)
+    make_report_topic_metrics(dest_dir, trace_name, component_pair, stats_dict_topic_pubsub_metrics, summary_dict_metrics)
+    make_report_topic_detail(dest_dir, trace_name, component_pair, stats_dict_topic_pubsub_metrics)
 
 
 def make_report(report_dir: str, component_list_json: str):
     ComponentManager().initialize(component_list_json)
 
-    for component_name, _ in ComponentManager().component_dict.items():
-        make_report_callback(report_dir, component_name)
+    for component_pair in ComponentManager().get_component_pair_list(with_external=True):
+        make_report_topic(report_dir, component_pair)
 
 
 def parse_arg():

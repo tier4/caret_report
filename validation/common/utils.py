@@ -19,10 +19,13 @@ import os
 import sys
 from enum import Enum
 import shutil
+import glob
 import logging
 import re
+import itertools
 import json
 import yaml
+import pandas as pd
 from caret_analyze import Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase
 from caret_analyze.plot import Plot
@@ -59,24 +62,18 @@ def make_destination_dir(dest_dir: str, force: bool=False, logger: logging.Logge
             shutil.rmtree(dest_dir)
             os.makedirs(dest_dir)
         else:
-            if logger:
-                logger.error('Destination has already existed')
-            sys.exit(-1)
+            pass
+            # if logger:
+            #     logger.error('Destination has already existed')
+            # sys.exit(-1)
 
 
-def read_trace_data(trace_data: str, start_point: float, duration: float,
+def read_trace_data(trace_data: str, start_strip: float, end_strip: float,
                     force_conversion=False) -> Lttng:
     """Read LTTng trace data"""
-    if start_point > 0 and duration == 0:
-        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-            LttngEventFilter.strip_filter(start_point, None)
-        ])
-    elif start_point >= 0 and duration > 0:
-        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-            LttngEventFilter.duration_filter(duration, start_point)
-        ])
-    else:
-        return Lttng(trace_data, force_conversion=force_conversion)
+    return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+        LttngEventFilter.strip_filter(start_strip, end_strip)
+    ])
 
 
 def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
@@ -88,6 +85,28 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
     # except:
     #     if logger:
     #         logger.warning('Unable to export png')
+
+
+def trail_df(df: pd.DataFrame, trail_val=0, start_strip_num=0, end_strip_num=0) -> pd.DataFrame:
+    cnt_trail = start_strip_num
+    for val in df:
+        if val == trail_val:
+            cnt_trail += 1
+        else:
+            break
+    if cnt_trail > 0:
+        df = df.iloc[cnt_trail:]
+
+    cnt_trail = end_strip_num
+    for val in df.iloc[::-1]:
+        if val == trail_val:
+            cnt_trail += 1
+        else:
+            break
+    if cnt_trail > 0:
+        df = df.iloc[:-cnt_trail]
+
+    return df
 
 
 class Metrics(Enum):
@@ -109,6 +128,8 @@ class ComponentManager:
         if not hasattr(cls, "_instance"):
             cls._instance = super(ComponentManager, cls).__new__(cls)
             cls.component_dict = {}  # pairs of component name and regular_exp
+            cls.external_in_topic_list = []
+            cls.external_out_topic_list = []
             cls.ignore_list = []
         return cls._instance
 
@@ -131,10 +152,14 @@ class ComponentManager:
             }
         else:
             self.component_dict = component_list_json['component_dict']
+            self.external_in_topic_list = component_list_json['external_in_topic_list']
+            self.external_out_topic_list = component_list_json['external_out_topic_list']
             self.ignore_list = component_list_json['ignore_list']
 
         if logger:
             logger.debug(f'component_dict = {self.component_dict}')
+            logger.debug(f'external_in_topic_list = {self.external_in_topic_list}')
+            logger.debug(f'external_out_topic_list = {self.external_out_topic_list}')
             logger.debug(f'ignore_list = {self.ignore_list}')
 
     def get_component_name(self, node_name: str) -> str:
@@ -142,6 +167,31 @@ class ComponentManager:
             if re.search(regexp, node_name):
                 return component_name
         return 'other'
+
+    def check_if_external_in_topic(self, topic_name: str, sub_node_name: str='') -> bool:
+        for topic_regexp, node_regexp in self.external_in_topic_list:
+            if re.search(topic_regexp, topic_name):
+                if (sub_node_name != '') and (node_regexp != '') and (not re.search(node_regexp, sub_node_name)):
+                    continue
+                return True
+        return False
+
+    def check_if_external_out_topic(self, topic_name: str, pub_node_name: str='') -> bool:
+        for topic_regexp, node_regexp in self.external_out_topic_list:
+            if re.search(topic_regexp, topic_name):
+                if (pub_node_name != '') and (node_regexp != '') and (not re.search(node_regexp, pub_node_name)):
+                    continue
+                return True
+        return False
+
+    def get_component_pair_list(self, with_external: bool=False) -> list[str, str]:
+        component_name_list = list(self.component_dict.keys())
+        if with_external:
+            component_name_list.append('external')
+        component_pair_list = itertools.product(component_name_list, component_name_list)
+        component_pair_list = [component_pair for component_pair in component_pair_list
+                                if component_pair[0] != component_pair[1]]
+        return component_pair_list
 
     def check_if_ignore(self, node_name: str) -> bool:
         for ignore in self.ignore_list:
@@ -154,23 +204,32 @@ class ComponentManager:
             return False
         if self.check_if_ignore(node_name):
             return False
-
-        regexp = self.component_dict[component_name]
-        if re.search(regexp, node_name):
+        if component_name == self.get_component_name(node_name):
             return True
         return False
+
+
+def make_callback_detail_filename(node_name: str):
+    return node_name.replace('/', '_')[1:] + '.html'
+
+
+def make_topic_detail_filename(topic_name: str):
+    return topic_name.replace('/', '_')[1:] + '.html'
 
 
 def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
     stats_dict_node_callback_metrics: dict = {}
     for metrics in Metrics:
-        with open(f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml', 'r', encoding='utf-8') as f_yaml:
+        stats_filename = f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml'
+        if not os.path.isfile(stats_filename):
+            continue
+        with open(stats_filename, 'r', encoding='utf-8') as f_yaml:
             stats_list = yaml.safe_load(f_yaml)
             for stats in stats_list:
-                stats['stats']['node_name'] = stats['stats']['node_name'].replace('_', '_<wbr>')
+                # stats['stats']['node_name'] = stats['stats']['node_name'].replace('_', '_<wbr>')
                 stats['stats']['callback_name'] = stats['stats']['callback_name'].split('/')[-1]
                 stats['stats']['callback_type'] = stats['stats']['callback_type'].split('_')[0]
-                stats['stats']['subscribe_topic_name'] = stats['stats']['subscribe_topic_name'].replace('_', '_<wbr>')
+                # stats['stats']['subscribe_topic_name'] = stats['stats']['subscribe_topic_name'].replace('_', '_<wbr>')
                 for key, value in stats.items():
                     if type(value) == float or type(value) == int:
                         rounded_value = value if 'num' in key else f'{round(value, 3): .01f}'.strip()
@@ -184,13 +243,29 @@ def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
                     # not measured(but added to stats file) and OUT_OF_SCOPE
                     continue
 
+                stats['stats']['subscribe_topic_html'] = ''
+                if stats['stats']['subscribe_topic_name'] != '':
+                    topic_html = make_topic_detail_filename(stats['stats']['subscribe_topic_name'])
+                    topic_html_list = glob.glob(f'{report_dir}/topic/*/{topic_html}', recursive=False)
+                    topic_html = [html for html in topic_html_list if '-' + stats['stats']['component_name'] in html]
+                    if len(topic_html) > 0:
+                        topic_html = topic_html[0]
+                        topic_html = topic_html.split('/')
+                        topic_html = '/'.join(topic_html[1:])
+                        stats['stats']['subscribe_topic_html'] = '../../' + topic_html
+
                 node_name = stats['stats']['node_name']
                 callback_name = stats['stats']['callback_name']
-                if node_name not in stats_dict_node_callback_metrics:
-                    stats_dict_node_callback_metrics[node_name] = {}
-                if callback_name not in stats_dict_node_callback_metrics[node_name]:
-                    stats_dict_node_callback_metrics[node_name][callback_name] = {}
-                stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
+                if metrics == Metrics.FREQUENCY:
+                    if node_name not in stats_dict_node_callback_metrics:
+                        stats_dict_node_callback_metrics[node_name] = {}
+                    if callback_name not in stats_dict_node_callback_metrics[node_name]:
+                        stats_dict_node_callback_metrics[node_name][callback_name] = {}
+                    stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
+                else :
+                    if node_name in stats_dict_node_callback_metrics \
+                        and callback_name in stats_dict_node_callback_metrics[node_name]:
+                        stats_dict_node_callback_metrics[node_name][callback_name][metrics.name] = stats
 
     return stats_dict_node_callback_metrics
 
@@ -208,6 +283,86 @@ def summarize_callback_result(stats_dict_node_callback_metrics: dict) -> dict:
     for metrics in Metrics:
         for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
             for callback_name, stats_dict_metrics in stats_dict_callback_metrics.items():
+                try:
+                    stats = stats_dict_metrics[metrics.name]
+                except:
+                    # print('This metrics is not measured: ', node_name, callback_name, metrics.name)
+                    continue
+
+                if stats['result_status'] == ResultStatus.PASS.name:
+                    summary_dict_metrics[metrics.name]['cnt_pass'] += 1
+                elif stats['result_status'] == ResultStatus.FAILED.name:
+                    summary_dict_metrics[metrics.name]['cnt_failed'] += 1
+                elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
+                    summary_dict_metrics[metrics.name]['cnt_not_measured'] += 1
+                else:
+                    summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
+    return summary_dict_metrics
+
+
+def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[str]):
+    stats_dict_topic_pubsub_metrics: dict = {}
+    for metrics in Metrics:
+        stats_filename = f'{report_dir}/topic/{component_pair[0]}-{component_pair[1]}/stats_{metrics.name}.yaml'
+        if not os.path.isfile(stats_filename):
+            continue
+        with open(stats_filename, 'r', encoding='utf-8') as f_yaml:
+            stats_list = yaml.safe_load(f_yaml)
+            for stats in stats_list:
+                for key, value in stats.items():
+                    if type(value) == float or type(value) == int:
+                        rounded_value = value if 'num' in key else f'{round(value, 3): .01f}'.strip()
+                        stats[key] = '---' if value == -1 else rounded_value
+                for key, value in stats['stats'].items():
+                    if key != 'period_ns' and (type(value) == float or type(value) == int):
+                        rounded_value = value if 'num' in key else f'{round(value, 3): .01f}'.strip()
+                        stats['stats'][key] = '---' if value == -1 else rounded_value
+
+                if stats['stats']['avg'] == '---' and stats['expectation_value'] == '---':
+                    # not measured(but added to stats file) and OUT_OF_SCOPE
+                    continue
+
+                stats['stats']['publish_node_html'] = ''
+                if stats['stats']['pubilsh_component_name'] != 'external':
+                    stats['stats']['publish_node_html'] = '../../callback/' + \
+                        stats['stats']['pubilsh_component_name'] + '/' + \
+                        make_callback_detail_filename(stats['stats']['publish_node_name'])
+
+                stats['stats']['subscribe_node_html'] = ''
+                if stats['stats']['subscribe_component_name'] != 'external':
+                    stats['stats']['subscribe_node_html'] = '../../callback/' + \
+                        stats['stats']['subscribe_component_name'] + '/' + \
+                        make_callback_detail_filename(stats['stats']['subscribe_node_name'])
+
+                topic_name = stats['stats']['topic_name']
+                pubsub = (stats['stats']['publish_node_name'], stats['stats']['subscribe_node_name'])
+                if metrics == Metrics.FREQUENCY:
+                    if topic_name not in stats_dict_topic_pubsub_metrics:
+                        stats_dict_topic_pubsub_metrics[topic_name] = {}
+                    if pubsub not in stats_dict_topic_pubsub_metrics[topic_name]:
+                        stats_dict_topic_pubsub_metrics[topic_name][pubsub] = {}
+                    stats_dict_topic_pubsub_metrics[topic_name][pubsub][metrics.name] = stats
+                else :
+                    if topic_name in stats_dict_topic_pubsub_metrics \
+                        and pubsub in stats_dict_topic_pubsub_metrics[topic_name]:
+                        stats_dict_topic_pubsub_metrics[topic_name][pubsub][metrics.name] = stats
+
+    return stats_dict_topic_pubsub_metrics
+
+
+def summarize_topic_result(stats_dict_topic_pubsub_metrics: dict) -> dict:
+    summary_dict_metrics = {}
+    for metrics in Metrics:
+        summary_dict_metrics[metrics.name] = {
+            'cnt_pass': 0,
+            'cnt_failed': 0,
+            'cnt_not_measured': 0,
+            'cnt_out_of_scope': 0,
+        }
+
+    for metrics in Metrics:
+        for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items():
+            for pubsub, stats_dict_metrics in stats_dict_pubsub_metrics.items():
                 try:
                     stats = stats_dict_metrics[metrics.name]
                 except:

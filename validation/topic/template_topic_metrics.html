@@ -39,10 +39,9 @@
         <thead>
           <tr class="table-primary text-center">
             <th width="3%">#</th>
-            <th width="7%">Node</th>
-            <th width="7%">Callback</th>
-            <th width="7%">Type</th>
-            <th width="7%">Trigger</th>
+            <th width="11%">Topic</th>
+            <th width="8%">Publish</th>
+            <th width="8%">Subscribe</th>
             <th width="7%">Result</th>
             <th width="8%" data-orderable="false">Avg</th>
             <th width="8%" data-orderable="false">Min</th>
@@ -56,31 +55,34 @@
 
         <tbody>
         {% set ns = namespace(index = 0) %}
-        {% for node_name, stats_callback_metrics in stats_node_callback_metrics.items() %}
-          {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
+        {% for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items() %}
+          {% for pubsub, stats_metrics in stats_dict_pubsub_metrics.items() %}
           <tr>
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
-            <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>
-            <td>{{ callback_name }}</td>
+            <td><a href="{{ topic_filename_dict[topic_name] }}">{{ topic_name | safe }}</a></td>
             {% if metrics_name not in stats_metrics %}
-            {% for i in range(10) %}
+            <td>{{ pubsub[0] }}</td>
+            <td>{{ pubsub[1] }}</td>
+            {% for i in range(8) %}
               <td>---</td>
             {% endfor %}
             </tr>
             {% continue %}
             {% endif %}
             {% set stats = stats_metrics[metrics_name] %}
-            <td>{{ stats['stats']['callback_type'] }}</td>
             <td>
-              {% if stats['stats']['period_ns'] != -1 %}
-              {{ stats['stats']['period_ns'] / 1e6 }} [ms]
+              {% if stats['stats']['publish_node_html'] != '' %}
+              <a href="{{ stats['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a>
               {% else %}
-              {% if stats['stats']['subscribe_topic_html'] != '' %}
-              <a href="{{ stats['stats']['subscribe_topic_html'] }}">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
-              {% else %}
-              {{ stats['stats']['subscribe_topic_name'] | safe }}
+              {{ pubsub[0] }}
               {% endif %}
+            </td>
+            <td>
+              {% if stats['stats']['subscribe_node_html'] != '' %}
+              <a href="{{ stats['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a>
+              {% else %}
+              {{ pubsub[1] }}
               {% endif %}
             </td>
             <td>

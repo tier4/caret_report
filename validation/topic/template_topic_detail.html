@@ -26,10 +26,11 @@
         <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
         <table class="table table-hover table-bordered" style="word-break:normal">
           <tr class="table-primary text-center">
-            <th width="8%">Name</th>
-            <th width="8%">Type</th>
-            <th width="10%">Trigger</th>
-            <th width="10%">Result</th>
+            <th width="2%">#</th>
+            <th width="9%">Topic</th>
+            <th width="9%">Publish</th>
+            <th width="9%">Subscribe</th>
+            <th width="8%">Result</th>
             <th width="9%">Avg</th>
             <th width="9%">Min</th>
             <th width="9%">Max</th>
@@ -39,26 +40,27 @@
             <th width="9%">Max violation burst</th>
           </tr>
 
-          {% set ns = namespace(graphfilename = none) %}
-          {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
+          {% for pubsub, stats_metrics in stats_pubsub_metrics.items() %}
             {% if metrics in stats_metrics %}
               {% set stats = stats_metrics[metrics] %}
-              {% set ns.graphfilename = stats['stats']['graph_filename'] %}
             {% else %}
               {% continue %}
             {% endif %}
             <tr>
-              <td>{{ stats['stats']['callback_name'] }}</td>
-              <td>{{ stats['stats']['callback_type'] }}</td>
+              <td>{{ loop.index0 }}</td>
+              <td>{{ stats['stats']['topic_name'] }}</td>
               <td>
-                {% if stats['stats']['period_ns'] != -1 %}
-                {{ stats['stats']['period_ns'] / 1e6 }} [ms]
+                {% if stats['stats']['publish_node_html'] != '' %}
+                <a href="{{ stats['stats']['publish_node_html'] }}">{{ pubsub[0] }}</a>
                 {% else %}
-                {% if stats['stats']['subscribe_topic_html'] != '' %}
-                <a href="{{ stats['stats']['subscribe_topic_html'] }}">{{ stats['stats']['subscribe_topic_name'] | safe }}</a>
-                {% else %}
-                {{ stats['stats']['subscribe_topic_name'] | safe }}
+                {{ pubsub[0] }}
                 {% endif %}
+              </td>
+              <td>
+                {% if stats['stats']['subscribe_node_html'] != '' %}
+                <a href="{{ stats['stats']['subscribe_node_html'] }}">{{ pubsub[1] }}</a>
+                {% else %}
+                {{ pubsub[1] }}
                 {% endif %}
               </td>
               <td>
@@ -86,9 +88,13 @@
             </tr>
           {% endfor %}
         </table>
-        {% if ns.graphfilename is not none%}
-          <iframe src="{{ ns.graphfilename }}.html" width="1100" height="350" scrolling="no"></iframe>
-        {% endif %}
+        {% for pubsub, stats_metrics in stats_pubsub_metrics.items() %}
+          {% if metrics in stats_metrics %}
+            {% set stats = stats_metrics[metrics] %}
+            <p>#{{ loop.index0 }}: {{ pubsub[0] }} -> {{ pubsub[1] }}</p>
+            <iframe src="{{ stats['stats']['graph_filename'] }}.html" width="1200" height="400" scrolling="no"></iframe>
+          {% endif %}
+        {% endfor %}
       {% endfor %}
     </div><!-- container -->
 

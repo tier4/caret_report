@@ -30,7 +30,7 @@ from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
 from common.utils import Metrics, ResultStatus, ComponentManager
 
 # Supress log for CARET
@@ -41,9 +41,13 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-metrics_dict = {Metrics.FREQUENCY: Plot.create_callback_frequency_plot,
-                Metrics.PERIOD: Plot.create_callback_period_plot,
-                Metrics.LATENCY: Plot.create_callback_latency_plot}
+def get_node_plot(node: Node, metrics: Metrics):
+    if metrics == Metrics.FREQUENCY:
+        return Plot.create_callback_frequency_plot(node.callbacks)
+    elif metrics == Metrics.PERIOD:
+        return Plot.create_callback_period_plot(node.callbacks)
+    elif metrics == Metrics.LATENCY:
+        return Plot.create_callback_latency_plot(node.callbacks)
 
 
 class Expectation():
@@ -84,6 +88,9 @@ class Expectation():
     @staticmethod
     def from_csv(expectation_csv_filename: str, component_name: Optional[str]) -> List:
         expectation_list: list[Expectation] = []
+        if not os.path.isfile(expectation_csv_filename):
+            _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
+            return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
             for row in csv.DictReader(csvfile, ['component_name', 'node_name', 'callback_name', 'callback_type', 'period_ns', 'topic_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
                 try:
@@ -130,8 +137,9 @@ class Stats():
         stats.metrics = metrics.name
         stats.graph_filename = graph_filename
 
-        df_callback = df_callback.dropna()
-        df_callback = df_callback.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
+        df_callback = df_callback.iloc[:, 1].dropna()         # get metrics value only
+        df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
+
         if len(df_callback) >= 2:
             stats.avg = float(df_callback.mean())
             stats.std = float(df_callback.std())
@@ -141,6 +149,9 @@ class Stats():
             stats.percentile5_max = float(df_callback.quantile(0.95))
             df_percentile5 = df_callback[(df_callback >= stats.percentile5_min) & (df_callback <= stats.percentile5_max)]
             stats.percentile5_avg = float(df_percentile5.mean()) if len(df_percentile5) > 2 else stats.avg
+        else:
+            _logger.info(f'This callback is not called: {node_name}: {callback.callback_name}')
+            return None
         return stats
 
     @staticmethod
@@ -184,15 +195,16 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_callback: pd.DataFrame, expectation: Expectation):
-        df_callback = df_callback.dropna()
-        df_callback = df_callback.iloc[:-1, 1]    # remove the last data because freq becomes small, get freq only
+        df_callback = df_callback.iloc[:, 1].dropna()         # get metrics value only
+        df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
+
         if len(df_callback) >= 2:
             self.result_status = ResultStatus.PASS.name
-            self.ratio_lower_limit = float((df_callback <= expectation.lower_limit).sum() / len(df_callback))
-            self.ratio_upper_limit = float((df_callback >= expectation.upper_limit).sum() / len(df_callback))
-            if self.ratio_lower_limit >= expectation.ratio:
+            self.ratio_lower_limit = float((df_callback < expectation.lower_limit).sum() / len(df_callback))
+            self.ratio_upper_limit = float((df_callback > expectation.upper_limit).sum() / len(df_callback))
+            if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            if self.ratio_upper_limit >= expectation.ratio:
+            if self.ratio_upper_limit > expectation.ratio:
                 self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x < expectation.lower_limit)]
@@ -201,9 +213,9 @@ class Result():
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x > expectation.upper_limit)]
             group = [x[1] for x in flag_group if x[0]]
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
-            if self.burst_num_lower_limit >= expectation.burst_num:
+            if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            if self.burst_num_upper_limit >= expectation.burst_num:
+            if self.burst_num_upper_limit > expectation.burst_num:
                 self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
@@ -216,14 +228,14 @@ class Result():
 def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str) -> dict[str, Stats]:
     stats_list = {}
     try:
-        timeseries_plot = metrics_dict[metrics](node.callbacks)
+        timeseries_plot = get_node_plot(node, metrics)
         figure = timeseries_plot.show('system_time', export_path='dummy.html')
         figure.y_range.start = 0
         figure.width = 1000
         figure.height = 350
         graph_filename = metrics.name + node.node_name.replace('/', '_')
         graph_filename = graph_filename[:250]
-        export_graph(figure, dest_dir + '/callback/' + component_name, graph_filename, _logger)
+        export_graph(figure, dest_dir, graph_filename, _logger)
         df_node = timeseries_plot.to_dataframe()
     except:
         _logger.info(f'This node is not called: {node.node_name}')
@@ -232,7 +244,8 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
     for callback in node.callbacks:
         df_callback = df_node[callback.callback_name]
         stats = Stats.from_df(component_name, node.node_name, callback, metrics, graph_filename, df_callback)
-        stats_list[callback.callback_name] = stats
+        if stats:
+            stats_list[callback.callback_name] = stats
     return stats_list
 
 
@@ -252,7 +265,7 @@ def validate_callback(component_name: str, target_node_list: list[Node], metrics
             if expectation:
                 # Measured and to be validated
                 try:
-                    df_node = metrics_dict[metrics](node.callbacks).to_dataframe()
+                    df_node = get_node_plot(node, metrics).to_dataframe()
                     df_callback = df_node[callback.callback_name]
                     expectation_list.remove(expectation)
                     result.validate(df_callback, expectation)
@@ -274,13 +287,14 @@ def save_stats(result_list: list[Result], component_name: str, dest_dir: str, me
         result_var_list.append(vars(result))
     result_var_list.sort(key=lambda x: x['stats']['node_name'])
     result_var_list.sort(key=lambda x: x['expectation_id'] if 'expectation_id' in x else 9999)
-    result_file_path = f'{dest_dir}/callback/{component_name}/stats_{metrics_str}.yaml'
+    result_file_path = f'{dest_dir}/stats_{metrics_str}.yaml'
     with open(result_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str):
     """Validate callback for each component"""
-    make_destination_dir(dest_dir + '/callback/' + component_name, force, _logger)
+    dest_dir = f'{dest_dir}/callback/{component_name}'
+    make_destination_dir(dest_dir, force, _logger)
 
     target_node_list: list[Node] = []
     for node in app.nodes:
@@ -323,10 +337,10 @@ def parse_arg():
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_callback.csv')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -342,11 +356,11 @@ def main():
     logger.debug(f'trace_data: {args.trace_data[0]}')
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
-    logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
+    logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
 
-    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 

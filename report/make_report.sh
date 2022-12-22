@@ -24,6 +24,6 @@ python3 "${script_path}"/check_callback_timer/check_callback_timer.py "${trace_d
 python3 "${script_path}"/check_callback_timer/make_report_timer.py "${report_dir_name}"
 
 # Make top page
-python3 "${script_path}"/top/make_report_top.py "${report_dir_name}" --note_text_top note_text_top.txt --note_text_bottom note_text_bottom.txt
+python3 "${script_path}"/top/make_report_top.py "${report_dir_name}" --note_text_top "${note_text_top}" --note_text_bottom "${note_text_bottom}"
 
 echo "<<< OK. All report pages are created >>>"

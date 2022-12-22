@@ -22,7 +22,11 @@
       <h1>{{ title }}</h1>
       <h3>Trace name: {{ trace_name }}</h3>
 
+      {% if note_text_top %} {{ note_text_top | safe }} {% endif %}
+
       <div id="cy" style="height: 600px;"></div>
+
+      {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}
 
     </div><!-- container -->
 
@@ -44,7 +48,8 @@
     ></script>
     <script type="text/javascript">
       let summary_callback_dict_component_metrics = {{ summary_callback_dict_component_metrics | tojson }};
+      let summary_topic_dict_componentpair_metrics = {{ summary_topic_dict_componentpair_metrics | tojson }};
     </script>
-    <script src="top.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>
