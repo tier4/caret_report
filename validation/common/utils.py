@@ -378,5 +378,3 @@ def summarize_topic_result(stats_dict_topic_pubsub_metrics: dict) -> dict:
                 else:
                     summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
     return summary_dict_metrics
-
-

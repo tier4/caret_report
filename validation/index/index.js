@@ -35,7 +35,7 @@ var cy = (window.cy = cytoscape({
         width: "10",
         height: "10",
         "background-color": "#333",
-        visibility: "hidden"
+        visibility: "hidden",
       },
     },
     {
@@ -228,7 +228,7 @@ for (let componentpair in summary_topic_dict_componentpair_metrics) {
   let cnt_pass = summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_pass;
   let cnt_failed = summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_failed;
   let cnt_not_measured =
-  summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_not_measured;
+    summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_not_measured;
   let cnt_total = cnt_pass + cnt_failed;
   let class_name = "pass";
   if (cnt_not_measured > 0) {
@@ -239,54 +239,47 @@ for (let componentpair in summary_topic_dict_componentpair_metrics) {
   }
 
   if (pub_component_name != "external" && sub_component_name != "external") {
-    cy.add(
-      {
-        group: "edges",
-        data: {
-          id: componentpair,
-          source: pub_component_name + "_box",
-          target: sub_component_name + "_box",
-          text: cnt_pass + " / " + cnt_total,
-        },
+    cy.add({
+      group: "edges",
+      data: {
+        id: componentpair,
+        source: pub_component_name + "_box",
+        target: sub_component_name + "_box",
+        text: cnt_pass + " / " + cnt_total,
       },
-    )
-    if (pub_component_name == 'localization') {
+    });
+    if (pub_component_name == "localization") {
       cy.getElementById(componentpair).style("source-text-offset", 100);
     }
   } else if (pub_component_name == "external" && sub_component_name != "external") {
-    ext = sub_component_name + "_ext"
+    ext = sub_component_name + "_ext";
     cy.getElementById(ext).style("visibility", "visible");
-    cy.add(
-      {
-        group: "edges",
-        data: {
-          id: componentpair,
-          source: ext,
-          target: sub_component_name + "_box",
-          text: cnt_pass + " / " + cnt_total,
-        },
+    cy.add({
+      group: "edges",
+      data: {
+        id: componentpair,
+        source: ext,
+        target: sub_component_name + "_box",
+        text: cnt_pass + " / " + cnt_total,
       },
-    )
+    });
   } else if (pub_component_name != "external" && sub_component_name == "external") {
-    ext = pub_component_name + "_ext"
+    ext = pub_component_name + "_ext";
     cy.getElementById(ext).style("visibility", "visible");
-    cy.add(
-      {
-        group: "edges",
-        data: {
-          id: componentpair,
-          source: pub_component_name + "_box",
-          target: ext,
-          text: cnt_pass + " / " + cnt_total,
-        },
+    cy.add({
+      group: "edges",
+      data: {
+        id: componentpair,
+        source: pub_component_name + "_box",
+        target: ext,
+        text: cnt_pass + " / " + cnt_total,
       },
-    )
+    });
   }
 
   cy.getElementById(componentpair).addClass(class_name);
   html = "topic/" + componentpair + "/index.html";
   cy.getElementById(componentpair).data("html", html);
-
 }
 
 cy.on("tap", "edge", function (evt) {
