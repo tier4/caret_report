@@ -137,7 +137,7 @@ class Stats():
         stats.metrics = metrics.name
         stats.graph_filename = graph_filename
 
-        df_comm = df_comm.iloc[:, 1].dropna()         # get metrics value only (use value of publish. df=|time|pub|time|sub|)
+        df_comm = df_comm.iloc[:, 1]                  # get metrics value only (use value of publish. df=|time|pub|time|sub|)
         df_comm = trail_df(df_comm, end_strip_num=2)  # remove the last data because freq becomes small
 
         if len(df_comm) >= 2:
@@ -193,7 +193,7 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_topic: pd.DataFrame, expectation: Expectation):
-        df_topic = df_topic.iloc[:, 1].dropna()         # get metrics value only (use value of publish. df=|time|pub|time|sub|)
+        df_topic = df_topic.iloc[:, 1]                  # get metrics value only (use value of publish. df=|time|pub|time|sub|)
         df_topic = trail_df(df_topic, end_strip_num=2)  # remove the last data because freq becomes small
 
         if len(df_topic) >= 2:

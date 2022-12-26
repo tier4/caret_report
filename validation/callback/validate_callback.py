@@ -137,7 +137,7 @@ class Stats():
         stats.metrics = metrics.name
         stats.graph_filename = graph_filename
 
-        df_callback = df_callback.iloc[:, 1].dropna()         # get metrics value only
+        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
         df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
 
         if len(df_callback) >= 2:
@@ -195,7 +195,7 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_callback: pd.DataFrame, expectation: Expectation):
-        df_callback = df_callback.iloc[:, 1].dropna()         # get metrics value only
+        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
         df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
 
         if len(df_callback) >= 2:
@@ -229,23 +229,31 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
     stats_list = {}
     try:
         timeseries_plot = get_node_plot(node, metrics)
-        figure = timeseries_plot.show('system_time', export_path='dummy.html')
-        figure.y_range.start = 0
-        figure.width = 1000
-        figure.height = 350
-        graph_filename = metrics.name + node.node_name.replace('/', '_')
-        graph_filename = graph_filename[:250]
-        export_graph(figure, dest_dir, graph_filename, _logger)
         df_node = timeseries_plot.to_dataframe()
     except:
         _logger.info(f'This node is not called: {node.node_name}')
         return stats_list
 
+    graph_filename = metrics.name + node.node_name.replace('/', '_')
+    graph_filename = graph_filename[:250]
+    has_valid_data = False
     for callback in node.callbacks:
         df_callback = df_node[callback.callback_name]
         stats = Stats.from_df(component_name, node.node_name, callback, metrics, graph_filename, df_callback)
         if stats:
+            has_valid_data = True
             stats_list[callback.callback_name] = stats
+
+    if has_valid_data:
+        try:
+            figure = timeseries_plot.show('system_time', export_path='dummy.html')
+            figure.y_range.start = 0
+            figure.width = 1000
+            figure.height = 350
+            export_graph(figure, dest_dir, graph_filename, _logger)
+        except:
+            _logger.info(f'Failed to export graph')
+
     return stats_list
 
 
