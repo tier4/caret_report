@@ -60,9 +60,11 @@
         <label class="form-check-label" for="checkbox_hist_{{ ns.cnt }}">Histogram</label>
       </div>
 
+      {% if node_info['filename_timeseries'][metrics] %}
       <a href="{{ node_info['filename_timeseries'][metrics] }}.html" target="_blank">
         <img src="{{ node_info['filename_timeseries'][metrics] }}.png" />
       </a>
+      {% endif %}
 
       <div class="collapse collapse_stats" id="collapse_stats_{{ ns.cnt }}">
         <table class="table table-hover table-bordered">

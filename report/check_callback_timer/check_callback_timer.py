@@ -59,8 +59,9 @@ def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool
     _logger.debug(f'Processing: {callback.callback_name}')
     freq_timer = 1e9 / float(callback.timer.period_ns)
     freq_threshold = freq_timer * (1 - args.gap_threshold_ratio)
-    p_timeseries = Plot.create_callback_frequency_plot([callback])
+
     try:
+        p_timeseries = Plot.create_callback_frequency_plot([callback])
         figure = p_timeseries.show('system_time', export_path='dummy.html')
     except:
         _logger.warning(f'This callback is not called: {callback.callback_name}')
@@ -68,7 +69,6 @@ def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool
     figure.y_range.start = 0
     graph_filename = callback.callback_name.replace("/", "_")[1:]
     graph_filename = graph_filename[:250]
-    export_graph(figure, dest_dir, graph_filename, _logger)
 
     measurement = p_timeseries.to_dataframe().dropna()
     freq_callback_list = measurement.iloc[:, 1]
@@ -80,6 +80,7 @@ def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool
     freq_callback_avg = round(float(statistics.mean(freq_callback_list)), 3)
     num_huge_gap = int(sum(freq_callback <= freq_threshold for freq_callback in freq_callback_list))
 
+    export_graph(figure, dest_dir, graph_filename, _logger)
     stats = create_stats(callback, freq_timer, freq_callback_avg, num_huge_gap, graph_filename)
 
     is_warning = False

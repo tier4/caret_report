@@ -21,6 +21,7 @@ import shutil
 import logging
 import re
 import json
+import pandas as pd
 from caret_analyze import Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase
 from bokeh.plotting import Figure, save
@@ -97,6 +98,29 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
     except:
         if logger:
             logger.warning('Unable to export png')
+
+
+def trail_df(df: pd.DataFrame, trail_val=0, start_strip_num=0, end_strip_num=0) -> pd.DataFrame:
+    df = df.dropna()
+    cnt_trail = start_strip_num
+    for val in df:
+        if val == trail_val:
+            cnt_trail += 1
+        else:
+            break
+    if cnt_trail > 0:
+        df = df.iloc[cnt_trail:]
+
+    cnt_trail = end_strip_num
+    for val in df.iloc[::-1]:
+        if val == trail_val:
+            cnt_trail += 1
+        else:
+            break
+    if cnt_trail > 0:
+        df = df.iloc[:-cnt_trail]
+
+    return df
 
 
 def round_yaml(filename):

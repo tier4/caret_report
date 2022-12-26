@@ -29,7 +29,7 @@ from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
 from common.utils import make_callback_displayname, round_yaml
 from common.utils import ComponentManager
 
@@ -103,36 +103,42 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
     node_stats['callbacks'] = {}
 
     for metrics, method in all_metrics_dict.items():
-        p_timeseries = method(node.callbacks)
-        filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
         try:
+            p_timeseries = method(node.callbacks)
             measurement = p_timeseries.to_dataframe()
-            p_timeseries = p_timeseries.show(export_path='dummy.html')
-            p_timeseries.frame_width = 1000
-            p_timeseries.frame_height = 350
-            p_timeseries.y_range.start = 0
-            export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
-            node_stats['filename_timeseries'][metrics] = filename_timeseries
         except:
             _logger.info(f'This node is not called: {node.node_name}')
             return None
 
+        has_valid_data = False
         for key, value in measurement.items():
             callback_name = key[0]
             metrics_str = key[1]
+            df_callback = value
             if 'callback_start_timestamp' in metrics_str:
                 continue
             callback_displayname = callback_name.split('/')[-1] + ': '
             callback_displayname += make_callback_displayname(node.get_callback(callback_name))
-            data = value.dropna()
-            if metrics == 'Frequency':
-                data = data[data > 0]     # Ignore data when the node is not running
-                data = data.iloc[1:-2]    # remove the first and last data because freq becomes small
+            df_callback = trail_df(df_callback, end_strip_num=2, start_strip_num=1)
+            if len(df_callback) > 0:
+                has_valid_data = True
             callback_stats = analyze_callback(callback_name, callback_displayname,
-                                              metrics_str, data, metrics, dest_dir)
+                                              metrics_str, df_callback, metrics, dest_dir)
             node_stats['callbacks'].setdefault(callback_name, {})
             node_stats['callbacks'][callback_name][metrics] = callback_stats
             node_stats['callbacks'][callback_name]['displayname'] = callback_displayname
+
+        if has_valid_data:
+            try:
+                p_timeseries = p_timeseries.show(export_path='dummy.html')
+                p_timeseries.frame_width = 1000
+                p_timeseries.frame_height = 350
+                p_timeseries.y_range.start = 0
+                filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
+                export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
+                node_stats['filename_timeseries'][metrics] = filename_timeseries
+            except:
+                _logger.info(f'Failed to export graph')
 
     return node_stats
 

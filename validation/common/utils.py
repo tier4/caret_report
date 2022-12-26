@@ -88,6 +88,7 @@ def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
 
 
 def trail_df(df: pd.DataFrame, trail_val=0, start_strip_num=0, end_strip_num=0) -> pd.DataFrame:
+    df = df.dropna()
     cnt_trail = start_strip_num
     for val in df:
         if val == trail_val:
