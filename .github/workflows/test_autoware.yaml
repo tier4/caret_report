@@ -73,19 +73,19 @@ jobs:
         if: ${{ matrix.do_test }}
 
         run: |
-          wget -nv https://github.com/tier4/CARET_report/releases/download/20220831/autoware_launch_trace_20220826-105249_universe_rosbag.zip
-          unzip autoware_launch_trace_20220826-105249_universe_rosbag.zip
+          wget -nv https://github.com/tier4/CARET_report/releases/download/20221227/autoware_launch_trace_20221227-150253_universe_rosbag.zip
+          unzip autoware_launch_trace_20221227-150253_universe_rosbag.zip
 
       - name: Create CARET report
         if: ${{ matrix.do_test }}
         run: |
           export script_path=`pwd`/report
-          export trace_data=`pwd`/autoware_launch_trace_20220826-105249_universe_rosbag
+          export trace_data=`pwd`/autoware_launch_trace_20221227-150253_universe_rosbag
           export work_dir=`pwd`/sample_autoware
-          export component_list_json=component_list_for_ci.json
-          export target_path_json=target_path_for_ci.json
+          export component_list_json=component_list.json
+          export target_path_json=target_path.json
 
-          export start_time=20
+          export start_time=25
           export duration_time=9999
           export max_node_depth=2
           export draw_all_message_flow=false
