@@ -61,8 +61,8 @@ def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool
     freq_threshold = freq_timer * (1 - args.gap_threshold_ratio)
 
     try:
-        p_timeseries = Plot.create_callback_frequency_plot([callback])
-        figure = p_timeseries.show('system_time', export_path='dummy.html')
+        p_timeseries = Plot.create_frequency_timeseries_plot([callback])
+        figure = p_timeseries.figure()
     except:
         _logger.warning(f'This callback is not called: {callback.callback_name}')
         return None, False

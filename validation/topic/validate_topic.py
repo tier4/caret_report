@@ -49,18 +49,18 @@ _logger: logging.Logger = None
 def get_comm_plot(comm: Communication, metrics: Metrics):
     # todo: create_communication_frequency_plot doesn't work (it's stuck and consumes too much memory)
     if metrics == Metrics.FREQUENCY:
-        return Plot.create_publish_subscription_frequency_plot([comm.publisher, comm.subscription])
+        return Plot.create_frequency_timeseries_plot([comm.publisher, comm.subscription])
     elif metrics == Metrics.PERIOD:
-        return Plot.create_publish_subscription_period_plot([comm.publisher, comm.subscription])
+        return Plot.create_period_timeseries_plot([comm.publisher, comm.subscription])
     elif metrics == Metrics.LATENCY:
-        return Plot.create_communication_latency_plot(comm)
+        return Plot.create_latency_timeseries_plot(comm)
 
 
 def get_callback_plot(callback: CallbackBase, metrics: Metrics):
     if metrics == Metrics.FREQUENCY:
-        return Plot.create_callback_frequency_plot([callback])
+        return Plot.create_frequency_timeseries_plot([callback])
     elif metrics == Metrics.PERIOD:
-        return Plot.create_callback_period_plot([callback])
+        return Plot.create_period_timeseries_plot([callback])
 
 
 class Expectation():
@@ -226,7 +226,7 @@ class Result():
 def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str) -> Stats:
     try:
         timeseries_plot = get_comm_plot(comm, metrics)
-        figure = timeseries_plot.show('system_time', export_path='dummy.html')
+        figure = timeseries_plot.figure()
         figure.y_range.start = 0
         figure.width = 1000
         figure.height = 350
@@ -280,7 +280,7 @@ def validate_topic(component_pair: tuple[str], target_comm_list: list[Communicat
 def create_stats_for_callback_as_topic(component_pair: tuple[str], callback: CallbackBase, metrics: Metrics, dest_dir: str) -> Stats:
     try:
         timeseries_plot = get_callback_plot(callback, metrics)
-        figure = timeseries_plot.show('system_time', export_path='dummy.html')
+        figure = timeseries_plot.figure()
         figure.y_range.start = 0
         figure.width = 1000
         figure.height = 350
