@@ -144,7 +144,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
 
     if args.message_flow:
         graph = message_flow(target_path, granularity='node',
-                            treat_drop_as_delay=False, export_path='dummy.html')
+                             treat_drop_as_delay=False, export_path='dummy.html')
         graph.width = graph_short.width
         graph.height = graph_short.height
         utils.export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name)

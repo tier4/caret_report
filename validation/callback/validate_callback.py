@@ -43,11 +43,11 @@ _logger: logging.Logger = None
 
 def get_node_plot(node: Node, metrics: Metrics):
     if metrics == Metrics.FREQUENCY:
-        return Plot.create_callback_frequency_plot(node.callbacks)
+        return Plot.create_frequency_timeseries_plot(node.callbacks)
     elif metrics == Metrics.PERIOD:
-        return Plot.create_callback_period_plot(node.callbacks)
+        return Plot.create_period_timeseries_plot(node.callbacks)
     elif metrics == Metrics.LATENCY:
-        return Plot.create_callback_latency_plot(node.callbacks)
+        return Plot.create_latency_timeseries_plot(node.callbacks)
 
 
 class Expectation():
@@ -246,7 +246,7 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
 
     if has_valid_data:
         try:
-            figure = timeseries_plot.show('system_time', export_path='dummy.html')
+            figure = timeseries_plot.figure()
             figure.y_range.start = 0
             figure.width = 1000
             figure.height = 350

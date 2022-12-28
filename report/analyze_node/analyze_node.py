@@ -95,9 +95,9 @@ def analyze_callback(callback_name: str, callback_displayname: str, metrics_str:
 
 def analyze_node(node: Node, dest_dir: str) -> dict:
     """Analyze a node"""
-    all_metrics_dict = {'Frequency': Plot.create_callback_frequency_plot,
-                        'Period': Plot.create_callback_period_plot,
-                        'Latency': Plot.create_callback_latency_plot}
+    all_metrics_dict = {'Frequency': Plot.create_frequency_timeseries_plot,
+                        'Period': Plot.create_period_timeseries_plot,
+                        'Latency': Plot.create_latency_timeseries_plot}
     node_stats = {}
     node_stats['filename_timeseries'] = {}
     node_stats['callbacks'] = {}
@@ -130,7 +130,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
 
         if has_valid_data:
             try:
-                p_timeseries = p_timeseries.show(export_path='dummy.html')
+                p_timeseries = p_timeseries.figure()
                 p_timeseries.frame_width = 1000
                 p_timeseries.frame_height = 350
                 p_timeseries.y_range.start = 0
