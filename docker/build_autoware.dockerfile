@@ -1,3 +1,4 @@
+# cspell:ignore libtracetools
 FROM osrf/ros:humble-desktop
 
 ARG CARET_VERSION="main"
