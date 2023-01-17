@@ -23,7 +23,6 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 - Note:
   - This explanation assumes you install CARET to `${caret_dir}` (e.g. `export caret_dir=~/ros2_caret_ws/` )
 
-
 ## 3. Download useful scripts for CARET
 
 - We will be downloading two components:
@@ -76,7 +75,6 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
  tier4_control_rviz_plugin
  localization_error_monitor
 ```
-
 
 ## 5. Run Autoware to record trace data
 
@@ -138,7 +136,7 @@ ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
 
 - The following command checks if trace data is valid
 - Please refer to the following explanation for warning messages
-  - https://tier4.github.io/CARET_doc/latest/recording/validating/
+  - <https://tier4.github.io/CARET_doc/latest/recording/validating/>
 - Also, the size of the trace data is usually 1 MByte per second. It's recommended to check trace data size, as well
 
 ```sh
@@ -166,7 +164,7 @@ sh ${script_path}/make_report.sh
 
 ### General
 
-https://tier4.github.io/CARET_doc/latest/faq/
+<https://tier4.github.io/CARET_doc/latest/faq/>
 
 ### Build
 
