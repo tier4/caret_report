@@ -4,9 +4,9 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 
 1. Get Autoware project
 2. Install CARET
-3. Modify Autoware code to work with CARET
+3. Download useful scripts for CARET
 4. Build Autoware with CARET
-5. Run Autoware to get trace data
+5. Run Autoware to record trace data
 6. Create analysis report
 
 ## 1. Get Autoware project
@@ -23,54 +23,22 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 - Note:
   - This explanation assumes you install CARET to `${caret_dir}` (e.g. `export caret_dir=~/ros2_caret_ws/` )
 
-## 3. Modify Autoware code to work with CARET
 
-- We will be making two types of modifications before building Autoware with CARET
-  - 3.a Add configuration for CARET
-  - 3.b Change code to avoid CARET restrictions
+## 3. Download useful scripts for CARET
 
-### 3.a Add configuration for CARET
-
-- Changes, and Why the change is needed:
-  - Add filter setting script
+- We will be downloading two components:
+  - filter setting script ( `caret_topic_filter.bash` )
     - Autoware uses lots of nodes and topics. If all nodes and communications are traced, it causes trace data lost
     - So, it's better to ignore nodes and topics which are not necessary for your analysis
-  - Add [caret_autoware_launch](https://github.com/tier4/caret_autoware_launch) package
+  - [caret_autoware_launch](https://github.com/tier4/caret_autoware_launch) package
     - Basically, you need to manually start trace session by yourself as described [here](https://tier4.github.io/CARET_doc/latest/recording/recording/)
     - It's handy to wrap Autoware launcher to automatically start CARET trace session
-- How to modify:
 
-  - Please refer to [this commit](https://github.com/takeshi-iwanari/autoware/commit/16fb26f365df64c4b7e279df35bdc41b72d7732b) , and make the same change
-    - Make sure you have `src/vendor/caret_autoware_launch/` by updating `src` ( `vcs import src < autoware.repos && vcs pull src` )
-  - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware/commit/b1e2f6ef5982ccbe9434bff49397b2783713cb98), so it may not be valid in the future )
-
-  ```sh
-  cd ${autoware_dir}
-  git remote add autoware_caret https://github.com/takeshi-iwanari/autoware
-  git fetch autoware_caret 16fb26f365df64c4b7e279df35bdc41b72d7732b
-  git cherry-pick -n 16fb26f365df64c4b7e279df35bdc41b72d7732b
-  ```
-
-### 3.b Change code to avoid CARET restrictions
-
-- Changes, and Why the change is needed:
-  - Keep a node you want to analyze within the following CARET restrictions:
-    - CARET cannot trace data, when a node has "two or more" timer callback functions whose timer period are the same
-    - CARET cannot trace data, when a node has "two or more" subscription callback functions whose topic name are the same
-  - Dependency on `rclcpp` needs to be written in package.xml
-  - Give more priority to CARET/rclcpp rather than ROS/rclcpp
-- How to modify:
-
-  - Please refer to [this commit](https://github.com/takeshi-iwanari/autoware.universe/commit/7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb) , and make the same change
-  - Or, cherry-pick this change ( Note: this change is made on [20220823](https://github.com/autowarefoundation/autoware.universe/commit/2d62bdf127b8215c73be6416c57861d4a812ef0b), so it may not be valid in the future )
-
-  ```sh
-  cd ${autoware_dir}
-  cd src/universe/autoware.universe/
-  git remote add autoware_universe_caret https://github.com/takeshi-iwanari/autoware.universe
-  git fetch autoware_universe_caret 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
-  git cherry-pick -n 7c1eaa08f19f9cf09d697069e1f8e48fd35bb4cb
-  ```
+```sh
+cd ${autoware_dir}
+git clone https://github.com/tier4/caret_autoware_launch.git
+cp caret_autoware_launch/scripts/caret_topic_filter.bash .
+```
 
 ## 4. Build Autoware with CARET
 
@@ -78,10 +46,12 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 
 - Note:
   - Before building Autoware, CARET needs to be enabled like the following commands
+  - It's also important to set `BUILD_TESTING=Off`
 
 ```sh
 cd ${autoware_dir}
 rm -rf build/ install/ log/
+
 source ${caret_dir}/install/local_setup.bash
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
 ```
@@ -94,6 +64,10 @@ The following command checks if Autoware is built with CARET. It outputs warning
 cd ${autoware_dir}
 ros2 caret check_caret_rclcpp -w ./
 
+# Expected result
+INFO    : 2023-01-17 14:12:28 | All packages are built using caret-rclcpp.
+
+# Acceptable result (these packages are not necessary to analyze performance)
 WARNING : 2022-08-25 18:14:31 | The following packages have not been built using caret-rclcpp:
  tier4_calibration_rviz_plugin
  initial_pose_button_panel
@@ -103,16 +77,47 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
  localization_error_monitor
 ```
 
-## 5. Run Autoware to get trace data
 
-### Run Autoware
+## 5. Run Autoware to record trace data
 
+- There are two ways to record trace data:
+  - Run Autoware and start recording via CLI
+  - Run Autoware and start recording via launch
 - Note:
   - Before running Autoware, some environmental settings need to be done like the following commands
-  - To run Autoware, `caret_autoware_launch` is used instead of `autoware_launch`
   - Please modify map_path and rosbag file for your environment
   - Make sure that object detection works and path is created when you set a 2D Goal Pose, so that you can analyze end-to-end path later
-  - The trace data will be created in `~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss`
+
+### Run Autoware and start recording via CLI
+
+- Recording can be started via CLI while autoware is running
+- The trace data will be created in `~/.ros/tracing/session-yyyymmddhhmmss`
+
+```sh
+cd ${autoware_dir}
+source ${caret_dir}/install/local_setup.bash
+source ./install/local_setup.bash
+export LD_PRELOAD=$(readlink -f ${caret_dir}/install/caret_trace/lib/libcaret.so)
+source ./caret_topic_filter.bash
+
+ros2 launch autoware_launch logging_simulator.launch.xml map_path:=$HOME/work/rosbag_map/universe/sample-map-rosbag vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit
+
+# on another terminal
+cd ${autoware_dir}
+source ./install/local_setup.bash
+ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
+
+# on another terminal
+source ${caret_dir}/install/local_setup.bash
+ros2 caret record -f 10000 --light
+## press enter to start recording, then press enter to stop recording
+```
+
+### Run Autoware and start recording via launch
+
+- Recording can be started automatically via launch file using `caret_autoware_launch` instead of `autoware_launch`
+- It's handy but record will start at the beginning of Autoware, so the first few seconds in trace data will be meaningless
+- The trace data will be created in `~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss`
 
 ```sh
 cd ${autoware_dir}
@@ -129,9 +134,11 @@ source ./install/local_setup.bash
 ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
 ```
 
-### Check trace data (optional)
+### Validate trace data (optional)
 
-- The following command checks if trace data is valid. You may see lots of warnings, but you can ignore them unless callback names which you want to analyze are included in the warning message
+- The following command checks if trace data is valid
+- Please refer to the following explanation for warning messages
+  - https://tier4.github.io/CARET_doc/latest/recording/validating/
 - Also, the size of the trace data is usually 1 MByte per second. It's recommended to check trace data size, as well
 
 ```sh
@@ -157,10 +164,17 @@ sh ${script_path}/make_report.sh
 
 ## FAQ
 
+### General
+
+https://tier4.github.io/CARET_doc/latest/faq/
+
 ### Build
 
-- Build for a package which uses `pcl_ros` fails. (e.g. `static_centerline_optimizer` , `map_loader` )
+- Build for a package which uses `pcl_ros` fails (e.g. `static_centerline_optimizer` , `map_loader` )
   - Please refer to [this issue](https://github.com/tier4/caret/issues/56)
+
+- Build fails due to `too few arguments to function ‘void ros_trace_rclcpp_publish(const void*, const void*, uint64_t)’`
+  - Please refer to [this issue](https://github.com/tier4/caret/issues/69)
 
 ### Recording
 
