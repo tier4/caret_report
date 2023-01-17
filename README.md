@@ -33,6 +33,8 @@ pip3 install selenium
 wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz
 tar xzvf geckodriver-v0.31.0-linux64.tar.gz
 sudo mv geckodriver /usr/local/bin/
+
+sudo apt install -y imagemagick
 ```
 
 ## FAQ and Troubleshooting
