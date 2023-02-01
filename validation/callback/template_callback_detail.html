@@ -43,7 +43,9 @@
           {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
             {% if metrics in stats_metrics %}
               {% set stats = stats_metrics[metrics] %}
-              {% set ns.graphfilename = stats['stats']['graph_filename'] %}
+              {% if stats['stats']['graph_filename'] != '' %}
+                {% set ns.graphfilename = stats['stats']['graph_filename'] %}
+              {% endif %}
             {% else %}
               {% continue %}
             {% endif %}

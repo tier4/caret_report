@@ -90,19 +90,20 @@ class Expectation():
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str, pubilsh_component_name: Optional[str], subscribe_component_name: Optional[str]) -> List:
+    def from_csv(expectation_csv_filename: str, pubilsh_component_name: Optional[str], subscribe_component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=2) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
-            for row in csv.DictReader(csvfile, ['topic_name', 'publish_node_name', 'pubilsh_component_name', 'subscribe_node_name', 'subscribe_component_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
+            for row in csv.DictReader(csvfile, ['topic_name', 'publish_node_name', 'pubilsh_component_name', 'subscribe_node_name', 'subscribe_component_name', 'value']):
                 try:
                     if (pubilsh_component_name is not None and row['pubilsh_component_name'] != pubilsh_component_name) \
                         or (subscribe_component_name is not None and row['subscribe_component_name'] != subscribe_component_name):
                         continue
+                    value = float(row['value'])
                     expectation = Expectation(row['topic_name'], row['publish_node_name'], row['pubilsh_component_name'],
-                        row['subscribe_node_name'], row['subscribe_component_name'], float(row['value']), float(row['lower_limit']), float(row['upper_limit']), float(row['ratio']), int(row['burst_num']))
+                        row['subscribe_node_name'], row['subscribe_component_name'], value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
                 except:
                     _logger.error(f"Error at reading: {row['topic_name']}")
                     return None
@@ -150,8 +151,8 @@ class Stats():
             df_percentile5 = df_comm[(df_comm >= stats.percentile5_min) & (df_comm <= stats.percentile5_max)]
             stats.percentile5_avg = float(df_percentile5.mean()) if len(df_percentile5) > 2 else stats.avg
         else:
-            return None
-        return stats
+            return None, None
+        return stats, df_comm
 
     @staticmethod
     def from_expectation(expectation: Expectation, metrics: Metrics):
@@ -193,17 +194,14 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_topic: pd.DataFrame, expectation: Expectation):
-        df_topic = df_topic.iloc[:, 1]                  # get metrics value only (use value of publish. df=|time|pub|time|sub|)
-        df_topic = trail_df(df_topic, end_strip_num=2)  # remove the last data because freq becomes small
-
         if len(df_topic) >= 2:
             self.result_status = ResultStatus.PASS.name
             self.ratio_lower_limit = float((df_topic < expectation.lower_limit).sum() / len(df_topic))
             self.ratio_upper_limit = float((df_topic > expectation.upper_limit).sum() / len(df_topic))
             if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            if self.ratio_upper_limit > expectation.ratio:
-                self.result_ratio_upper_limit = ResultStatus.FAILED.name
+            # if self.ratio_upper_limit > expectation.ratio:
+            #     self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_topic, key=lambda x: x < expectation.lower_limit)]
             group = [x[1] for x in flag_group if x[0]]
@@ -213,8 +211,8 @@ class Result():
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
             if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            if self.burst_num_upper_limit > expectation.burst_num:
-                self.result_burst_num_upper_limit = ResultStatus.FAILED.name
+            # if self.burst_num_upper_limit > expectation.burst_num:
+            #     self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
             or self.result_ratio_upper_limit == ResultStatus.FAILED.name \
@@ -223,7 +221,7 @@ class Result():
                 self.result_status = ResultStatus.FAILED.name
 
 
-def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str) -> Stats:
+def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str) -> Tuple[Stats, pd.DataFrame]:
     try:
         timeseries_plot = get_comm_plot(comm, metrics)
         figure = timeseries_plot.figure()
@@ -233,24 +231,55 @@ def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metri
         graph_filename = metrics.name + comm.topic_name.replace('/', '_') + comm.publish_node_name.replace('/', '_') + comm.subscribe_node_name.replace('/', '_')
         graph_filename = graph_filename[:250]
         df_comm = timeseries_plot.to_dataframe()
-        stats = Stats.from_df(component_pair, comm.topic_name, comm.publish_node_name, comm.subscribe_node_name, metrics, graph_filename, df_comm)
+        stats, df = Stats.from_df(component_pair, comm.topic_name, comm.publish_node_name, comm.subscribe_node_name, metrics, graph_filename, df_comm)
         if stats:
             export_graph(figure, dest_dir, graph_filename, _logger)
         else:
             raise Exception()
     except:
         _logger.info(f'This comm is invalid: {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
-        return None
+        return None, None
 
-    return stats
+    return stats, df
+
+def create_stats_for_callback_as_topic(app: Application, component_pair: tuple[str], expectation: Expectation, metrics: Metrics, dest_dir: str) -> Tuple[Stats, pd.DataFrame]:
+    try:
+        callback = None
+        for subscription in app.subscriptions:
+            if subscription.topic_name == expectation.topic_name:
+                callback = app.get_callback(subscription.callback_name)
+                break
+        if callback:
+            timeseries_plot = get_callback_plot(callback, metrics)
+            figure = timeseries_plot.figure()
+            figure.y_range.start = 0
+            figure.width = 1000
+            figure.height = 350
+            graph_filename = metrics.name + callback.subscribe_topic_name.replace('/', '_') + '_unknown' + callback.node_name.replace('/', '_')
+            graph_filename = graph_filename[:250]
+            df_comm = timeseries_plot.to_dataframe()
+
+            stats, df = Stats.from_df(component_pair, callback.subscribe_topic_name, expectation.publish_node_name, callback.node_name, metrics, graph_filename, df_comm)
+            if stats:
+                export_graph(figure, dest_dir, graph_filename, _logger)
+            else:
+                raise Exception()
+        else:
+            raise Exception
+    except:
+        _logger.info(f'This callback is invalid: {expectation.topic_name}')
+        return None, None
+
+    return stats, df
 
 
-def validate_topic(component_pair: tuple[str], target_comm_list: list[Communication], metrics: Metrics, dest_dir: str, expectation_list: List[Expectation] = []) -> list[Result]:
-
+def validate_topic(app: Application, component_pair: tuple[str], target_comm_list: list[Communication], metrics: Metrics, dest_dir: str, expectation_list: List[Expectation] = []) -> list[Result]:
+    expectation_validated_list = expectation_list.copy()   # keep original because there may be multiple callbacks with the same parameters in a node
     result_info_list: list[Result] = []
+
     for comm in target_comm_list:
         _logger.debug(f'Processing ({metrics.name}): {component_pair}, {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
-        stats = create_stats_for_comm(component_pair, comm, metrics, dest_dir)
+        stats, df = create_stats_for_comm(component_pair, comm, metrics, dest_dir)
         if stats is None:
             continue
 
@@ -259,71 +288,27 @@ def validate_topic(component_pair: tuple[str], target_comm_list: list[Communicat
         result = Result(stats, expectation)
         if expectation:
             # Measured and to be validated
-            try:
-                timeseries_plot = get_comm_plot(comm, metrics)
-                df_comm = timeseries_plot.to_dataframe()
-                expectation_list.remove(expectation)
-                result.validate(df_comm, expectation)
-            except:
-                _logger.info(f'This communication is invalid: {comm.topic_name}, {comm.publish_node_name} -> {comm.subscribe_node_name}')
-
+            result.validate(df, expectation)
+            if expectation in expectation_validated_list:
+                expectation_validated_list.remove(expectation)
         result_info_list.append(result)
 
-    for expectation in expectation_list:
-        # Not measured but should be validated
-        result = Result(Stats.from_expectation(expectation, metrics), expectation)
-        result_info_list.append(result)
-
-    return result_info_list
-
-
-def create_stats_for_callback_as_topic(component_pair: tuple[str], callback: CallbackBase, metrics: Metrics, dest_dir: str) -> Stats:
-    try:
-        timeseries_plot = get_callback_plot(callback, metrics)
-        figure = timeseries_plot.figure()
-        figure.y_range.start = 0
-        figure.width = 1000
-        figure.height = 350
-        graph_filename = metrics.name + callback.subscribe_topic_name.replace('/', '_') + '_external' + callback.node_name.replace('/', '_')
-        graph_filename = graph_filename[:250]
-        df_comm = timeseries_plot.to_dataframe()
-        stats = Stats.from_df(component_pair, callback.subscribe_topic_name, 'external', callback.node_name, metrics, graph_filename, df_comm)
-        if stats:
-            export_graph(figure, dest_dir, graph_filename, _logger)
-        else:
-            raise Exception()
-    except:
-        _logger.info(f'This callback is invalid: {callback.subscribe_topic_name}: external -> {callback.node_name}')
-        return None
-
-    return stats
-
-
-def validate_callback_as_topic(component_pair: tuple[str], callback_list: list[CallbackBase], metrics: Metrics, dest_dir: str, expectation_list: List[Expectation] = []) -> list[Result]:
-    _logger.debug(f'Processing ({metrics.name}): {component_pair[0]}-{component_pair[1]}')
-    result_info_list: list[Result] = []
-
-    for callback in callback_list:
-        stats = create_stats_for_callback_as_topic(component_pair, callback, metrics, dest_dir)
-
+    for expectation in expectation_validated_list.copy():
+        # Comm was invalid. Try to validate using subscription callback
+        if metrics == Metrics.LATENCY:
+            continue
+        _logger.debug(f'Processing as callback({metrics.name}): {component_pair}, {expectation.topic_name}: {expectation.publish_node_name} -> {expectation.subscribe_node_name}')
+        stats, df = create_stats_for_callback_as_topic(app, component_pair, expectation, metrics, dest_dir)
         if stats is None:
-            _logger.info(f'This callback is not called: {callback.callback_name}')
-            continue    # Not measured
+            continue
 
-        # Measured
-        expectation = Expectation.find_expectation(expectation_list, callback.subscribe_topic_name, 'external', callback.node_name)
+        # Measured and to be validated
         result = Result(stats, expectation)
-        if expectation:
-            # Measured and to be validated
-            try:
-                df_callback = get_callback_plot(callback, metrics).to_dataframe()
-                expectation_list.remove(expectation)
-                result.validate(df_callback, expectation)
-            except:
-                _logger.info(f'This callback is not called: {callback.callback_name}')
+        result.validate(df, expectation)
+        expectation_validated_list.remove(expectation)
         result_info_list.append(result)
 
-    for expectation in expectation_list:
+    for expectation in expectation_validated_list:
         # Not measured but should be validated
         result = Result(Stats.from_expectation(expectation, metrics), expectation)
         result_info_list.append(result)
@@ -366,63 +351,16 @@ def validate_component_pair(app: Application, component_pair: tuple[str], dest_d
         if pubilsh_component_name == component_pair[0] and subscribe_component_name == component_pair[1]:
             target_comm_list.append(comm)
 
-    if len(target_comm_list) == 0:
-        return
-
     make_destination_dir(dest_dir, force, _logger)
 
-    result_list = validate_topic(component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_pair[0], component_pair[1]))
+    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_pair[0], component_pair[1]))
     save_stats(result_list, Metrics.FREQUENCY.name, dest_dir)
 
-    result_list = validate_topic(component_pair, target_comm_list, Metrics.PERIOD, dest_dir)
+    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.PERIOD, dest_dir)
     save_stats(result_list, Metrics.PERIOD.name, dest_dir)
 
-    result_list = validate_topic(component_pair, target_comm_list, Metrics.LATENCY, dest_dir)
+    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.LATENCY, dest_dir)
     save_stats(result_list, Metrics.LATENCY.name, dest_dir)
-
-
-def validate_external_in(app: Application, dest_dir: str, expectation_csv_filename: str):
-    """Validate callback from external
-    note: validate_component_pair uses app.communications and it can get only communications b/w existing nodes.
-          So that, topics from external were not analyzed. This method analyzes topics from external using subscription callback info. (So, it's not actual topic information)
-    """
-    external_in_topic_node_list = []    # Topic from external (not from driver node)
-    for callback in app.callbacks:
-        if callback.subscribe_topic_name and ComponentManager().check_if_external_in_topic(callback.subscribe_topic_name, callback.node_name):
-            external_in_topic_node_list.append((callback.subscribe_topic_name, callback.node_name))
-
-    # Remove topics which are published from driver nodes and already analyzed
-    for comm in app.communications:
-        if (comm.topic_name, comm.subscribe_node_name) in external_in_topic_node_list:
-            # external_in_topic_node_list.remove((comm.topic_name, comm.subscribe_node_name))
-            # todo: remove the followings. At the moment, len(df) becomes 0 even if there is communication in some cases
-            try:
-                plot = get_comm_plot(comm, Metrics.FREQUENCY)
-                df = plot.to_dataframe()
-                df = df.iloc[:, 1].dropna()  # get metrics value only (use value of publish. df=|time|pub|time|sub|)
-                if len(df) >= 2:
-                    external_in_topic_node_list.remove((comm.topic_name, comm.subscribe_node_name))
-            except:
-                # this comm is invalid and not analyzed yet
-                pass
-
-    external_in_callback_dict = {}
-    for callback in app.callbacks:
-        if (callback.subscribe_topic_name, callback.node_name) in external_in_topic_node_list:
-            component_pair = ('external', ComponentManager().get_component_name(callback.node_name))
-            if component_pair not in external_in_callback_dict:
-                external_in_callback_dict[component_pair] = []
-            external_in_callback_dict[component_pair].append(callback)
-
-    for component_pair, callback_list in external_in_callback_dict.items():
-        dest_dir_for_topic = f'{dest_dir}/topic/{component_pair[0]}-{component_pair[1]}'
-        make_destination_dir(dest_dir_for_topic, False, _logger)
-
-        result_list = validate_callback_as_topic(component_pair, callback_list, Metrics.FREQUENCY, dest_dir_for_topic, Expectation.from_csv(expectation_csv_filename, component_pair[0], component_pair[1]))
-        save_stats(result_list, Metrics.FREQUENCY.name, dest_dir_for_topic, True)
-
-        result_list = validate_callback_as_topic(component_pair, callback_list, Metrics.PERIOD, dest_dir_for_topic)
-        save_stats(result_list, Metrics.PERIOD.name, dest_dir_for_topic, True)
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
@@ -439,8 +377,6 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
 
     for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         validate_component_pair(app, component_pair, dest_dir, force, expectation_csv_filename)
-
-    validate_external_in(app, dest_dir, expectation_csv_filename)
 
     _logger.info(f'<<< Validate topic finish >>>')
 
