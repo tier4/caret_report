@@ -45,12 +45,8 @@
             <th width="7%">Trigger</th>
             <th width="7%">Result</th>
             <th width="8%" data-orderable="false">Avg</th>
-            <th width="8%" data-orderable="false">Min</th>
-            <th width="8%" data-orderable="false">Max</th>
-            <th width="9%" data-orderable="false">Min violation ratio</th>
-            <th width="9%" data-orderable="false">Max violation ratio</th>
-            <th width="9%" data-orderable="false">Min violation burst</th>
-            <th width="9%" data-orderable="false">Max violation burst</th>
+            <th width="9%" data-orderable="false">Violation ratio</th>
+            <th width="9%" data-orderable="false">Violation burst</th>
           </tr>
         </thead>
 
@@ -95,16 +91,10 @@
               {% endif %}
             </td>
             <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
-            <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
-            <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
             <td {% if stats['result_ratio_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
               {{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
-            <td {% if stats['result_ratio_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
-              {{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
             <td {% if stats['result_burst_num_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
               {{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
-            <td {% if stats['result_burst_num_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
-              {{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
           </tr>
           {% endfor %}
         {% endfor %}

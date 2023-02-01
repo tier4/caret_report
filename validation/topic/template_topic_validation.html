@@ -41,9 +41,9 @@
             <th width="8%">Publish</th>
             <th width="8%">Subscribe</th>
             <th width="8%">Result</th>
-            <th width="12%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
-            <th width="12%"><a href="index_PERIOD.html">Period[ms]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
-            <th width="12%"><a href="index_LATENCY.html">Latency[ms]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
+            <th width="12%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></br>Avg</br>(5%~95%)</th>
+            <th width="12%"><a href="index_PERIOD.html">Period[ms]</a></br>Avg</br>(5%~95%)</th>
+            <th width="12%"><a href="index_LATENCY.html">Latency[ms]</a></br>Avg</br>(5%~95%)</th>
           </tr>
         </thead>
 
@@ -91,8 +91,7 @@
               {% set stats = stats_metrics[metrics_name] %}
               <td data-order="{{ (stats['stats']['avg'] | float) * 1000 }}">
                 {{ stats['stats']['avg'] }}</br>
-                ({{ stats['stats']['percentile5_min'] }} ~ {{ stats['stats']['percentile5_max'] }})</br>
-                ({{ stats['stats']['min'] }} ~ {{ stats['stats']['max'] }})
+                ({{ stats['stats']['percentile5_min'] }} ~ {{ stats['stats']['percentile5_max'] }})
               </td>
             {% endfor %}
           </tr>
