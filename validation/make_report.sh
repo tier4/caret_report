@@ -8,6 +8,9 @@ set -e
 trace_data_name=$(basename "${trace_data}")
 report_dir_name=report_${trace_data_name}
 
+# # Generate topic expectation list
+# python3 "${script_path}"/topic/generate_expectation_list.py "${trace_data}" --topic_list_filename=topic_list.csv --expectation_csv_filename="${expectation_topic_csv_filename}"
+
 # Callback
 python3 "${script_path}"/callback/validate_callback.py "${trace_data}" --component_list_json="${component_list_json}" --expectation_csv_filename="${expectation_callback_csv_filename}" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/callback/make_report_callback.py "${report_dir_name}" --component_list_json="${component_list_json}"

@@ -345,7 +345,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('--component_list_json', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='component_list.json')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_callback.csv')
     parser.add_argument('--start_strip', type=float, default=0.0,
                         help='Start strip [sec] to load trace data')
