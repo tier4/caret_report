@@ -121,7 +121,7 @@ class ResultStatus(Enum):
     FAILED = 2
     OUT_OF_SCOPE = 3
     NOT_MEASURED = 4
-    NOT_MEASURED_OUT_OF_SCOPE = 5
+    DONT_CARE = 5
 
 
 class ComponentManager:
@@ -279,6 +279,7 @@ def summarize_callback_result(stats_dict_node_callback_metrics: dict) -> dict:
             'cnt_failed': 0,
             'cnt_not_measured': 0,
             'cnt_out_of_scope': 0,
+            'cnt_dont_care': 0,
         }
 
     for metrics in Metrics:
@@ -296,8 +297,10 @@ def summarize_callback_result(stats_dict_node_callback_metrics: dict) -> dict:
                     summary_dict_metrics[metrics.name]['cnt_failed'] += 1
                 elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
                     summary_dict_metrics[metrics.name]['cnt_not_measured'] += 1
-                else:
+                elif stats['result_status'] == ResultStatus.OUT_OF_SCOPE.name:
                     summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
+                elif stats['result_status'] == ResultStatus.DONT_CARE.name:
+                    summary_dict_metrics[metrics.name]['cnt_dont_care'] += 1
     return summary_dict_metrics
 
 
@@ -359,6 +362,7 @@ def summarize_topic_result(stats_dict_topic_pubsub_metrics: dict) -> dict:
             'cnt_failed': 0,
             'cnt_not_measured': 0,
             'cnt_out_of_scope': 0,
+            'cnt_dont_care': 0,
         }
 
     for metrics in Metrics:
@@ -376,6 +380,8 @@ def summarize_topic_result(stats_dict_topic_pubsub_metrics: dict) -> dict:
                     summary_dict_metrics[metrics.name]['cnt_failed'] += 1
                 elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
                     summary_dict_metrics[metrics.name]['cnt_not_measured'] += 1
-                else:
+                elif stats['result_status'] == ResultStatus.OUT_OF_SCOPE.name:
                     summary_dict_metrics[metrics.name]['cnt_out_of_scope'] += 1
+                elif stats['result_status'] == ResultStatus.DONT_CARE.name:
+                    summary_dict_metrics[metrics.name]['cnt_dont_care'] += 1
     return summary_dict_metrics

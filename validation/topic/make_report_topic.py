@@ -18,6 +18,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
+import csv
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result, make_topic_detail_filename
@@ -127,6 +128,33 @@ def make_report(report_dir: str, component_list_json: str):
         make_report_topic(report_dir, component_pair)
 
 
+def make_unused_list(report_dir: str, component_list_json: str):
+    ComponentManager().initialize(component_list_json)
+
+    topic_list_new = []
+    topic_list_deleted = []
+
+    for component_pair in ComponentManager().get_component_pair_list(with_external=True):
+        stats_dict_topic_pubsub_metrics: dict = make_stats_dict_topic_pubsub_metrics(report_dir, component_pair)
+        for topic_name, stats_dict_pubsub_metrics in stats_dict_topic_pubsub_metrics.items():
+            for pubsub, stats_dict_metrics in stats_dict_pubsub_metrics.items():
+                stats = stats_dict_metrics[Metrics.FREQUENCY.name]
+                if stats['result_status'] == ResultStatus.OUT_OF_SCOPE.name:
+                    if len([x for x in topic_list_new if topic_name in x]) == 0:
+                        topic_list_new.append([topic_name, stats['stats']['avg']])
+                elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
+                    if len([x for x in topic_list_deleted if topic_name in x]) == 0:
+                        topic_list_deleted.append([topic_name])
+
+    with open('topic_list_new.csv', 'w', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(topic_list_new)
+
+    with open('topic_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(topic_list_deleted)
+
+
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
@@ -143,6 +171,7 @@ def main():
 
     report_dir = args.report_directory[0]
     make_report(report_dir, args.component_list_json)
+    make_unused_list(report_dir, args.component_list_json)
     print('<<< OK. report page is created >>>')
 
 

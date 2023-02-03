@@ -101,7 +101,10 @@ class Expectation():
                     if (pubilsh_component_name is not None and row['pubilsh_component_name'] != pubilsh_component_name) \
                         or (subscribe_component_name is not None and row['subscribe_component_name'] != subscribe_component_name):
                         continue
-                    value = float(row['value'])
+                    try:
+                        value = float(row['value'])
+                    except ValueError:
+                        value = 0
                     expectation = Expectation(row['topic_name'], row['publish_node_name'], row['pubilsh_component_name'],
                         row['subscribe_node_name'], row['subscribe_component_name'], value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
                 except:
@@ -194,6 +197,10 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_topic: pd.DataFrame, expectation: Expectation):
+        if expectation.value <= 0:
+            # it's not expected to be tested but don't use OUT_OF_SCOPE
+            self.result_status = ResultStatus.DONT_CARE.name
+            return
         if len(df_topic) >= 2:
             self.result_status = ResultStatus.PASS.name
             self.ratio_lower_limit = float((df_topic < expectation.lower_limit).sum() / len(df_topic))
@@ -309,9 +316,10 @@ def validate_topic(app: Application, component_pair: tuple[str], target_comm_lis
         result_info_list.append(result)
 
     for expectation in expectation_validated_list:
-        # Not measured but should be validated
-        result = Result(Stats.from_expectation(expectation, metrics), expectation)
-        result_info_list.append(result)
+        if expectation.value > 0:
+            # Not measured but should be validated
+            result = Result(Stats.from_expectation(expectation, metrics), expectation)
+            result_info_list.append(result)
 
     return result_info_list
 
@@ -386,6 +394,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('--report_directory', type=str, default='')
     parser.add_argument('--component_list_json', type=str, default='component_list.json')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_topic.csv')
     parser.add_argument('--start_strip', type=float, default=0.0,
@@ -408,7 +417,7 @@ def main():
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
     logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
+    dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
 
     lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)

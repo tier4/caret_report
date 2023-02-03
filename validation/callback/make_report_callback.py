@@ -18,7 +18,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
-import sys
+import csv
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result, make_callback_detail_filename
@@ -130,6 +130,35 @@ def make_report(report_dir: str, component_list_json: str):
         make_report_callback(report_dir, component_name)
 
 
+def make_unused_list(report_dir: str, component_list_json: str):
+    ComponentManager().initialize(component_list_json)
+
+    callback_list_new = []
+    callback_list_deleted = []
+
+    for component_name, _ in ComponentManager().component_dict.items():
+        stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
+        for node_name, stats_dict_callback_metrics in stats_dict_node_callback_metrics.items():
+            for callback_name, stats_dict_metrics in stats_dict_callback_metrics.items():
+                stats = stats_dict_metrics[Metrics.FREQUENCY.name]
+                info = [stats['stats']['node_name'],
+                        stats['stats']['callback_type'] + '_callback',
+                        stats['stats']['period_ns'] if stats['stats']['period_ns'] != -1 else stats['stats']['subscribe_topic_name'],
+                        stats['stats']['avg']]
+                if stats['result_status'] == ResultStatus.OUT_OF_SCOPE.name:
+                    callback_list_new.append(info)
+                elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
+                    callback_list_deleted.append(info[:-1])
+
+    with open('callback_list_new.csv', 'w', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(callback_list_new)
+
+    with open('callback_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(callback_list_deleted)
+
+
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
@@ -146,6 +175,7 @@ def main():
 
     report_dir = args.report_directory[0]
     make_report(report_dir, args.component_list_json)
+    make_unused_list(report_dir, args.component_list_json)
     print('<<< OK. report page is created >>>')
 
 

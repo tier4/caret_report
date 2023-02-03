@@ -43,6 +43,8 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
     if not os.path.isfile(topic_list_filename):
         _logger.error(f"Unable to read expectation csv: {topic_list_filename}")
 
+    unknown_topic_name_list = []
+
     with open(topic_list_filename, 'r', encoding='utf-8') as csvfile:
         all_comms = arch.communications
         expectation_list = []
@@ -55,10 +57,8 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
                 continue
 
             _logger.debug(f"=== {topic_name} ===")
-            try:
-                comms = [comm for comm in all_comms if comm.topic_name == topic_name]
-                if len(comms) == 0:
-                    raise Exception
+            comms = [comm for comm in all_comms if comm.topic_name == topic_name]
+            if len(comms) > 0:
                 for comm in comms:
                     # plt = Plot.create_frequency_timeseries_plot(comm)
                     # df = plt.to_dataframe()
@@ -78,7 +78,7 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
                     if expectation['pubilsh_component_name'] == expectation['subscribe_component_name']:
                         continue
                     expectation_list.append(expectation)
-            except:
+            else:
                 found_as_callback = False
                 if ComponentManager().check_if_external_in_topic(topic_name):
                     for callback in arch.callbacks:
@@ -95,6 +95,7 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
                             expectation_list.append(expectation)
                 if not found_as_callback:
                     _logger.warning(f'get_communications() fails for {topic_name}')
+                    unknown_topic_name_list.append(topic_name)
 
     for expectation in expectation_list:
         if ComponentManager().check_if_ignore(expectation['publish_node_name']) or \
@@ -105,79 +106,10 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
         writer = csv.DictWriter(csvfile, fieldnames=expectation_list[0].keys())
         writer.writerows(expectation_list)
 
+    with open('topic_list_unknown.csv', 'w', encoding='utf-8') as csvfile:
+        csvfile.writelines('\n'.join(unknown_topic_name_list))
+
     _logger.info(f'<<< Generate topic list finish >>>')
-
-
-def generate_deleted_topic_list(logger, arch: Architecture, component_list_json: str, topic_list_filename: str):
-    """Generate topic list"""
-    global _logger
-    _logger = logger
-    _logger.info(f'<<< Generate deleted topic list start >>>')
-
-    ComponentManager().initialize(component_list_json, _logger)
-
-    if not os.path.isfile(topic_list_filename):
-        _logger.error(f"Unable to read expectation csv: {topic_list_filename}")
-
-    topic_list = []
-    with open(topic_list_filename, 'r', encoding='utf-8') as csvfile:
-        for row in csv.DictReader(csvfile, ['topic_name', 'value']):
-            try:
-                topic_name = row['topic_name']
-            except:
-                _logger.error(f"Error at reading: {row}")
-                continue
-            if topic_name not in topic_list:
-                topic_list.append(topic_name)
-
-    comm_topic_list = []
-    for comm in arch.communications:
-        topic_name = comm.topic_name
-        publish_node_name = comm.publish_node_name
-        pubilsh_component_name = ComponentManager().get_component_name(publish_node_name)
-        subscribe_node_name = comm.subscribe_node_name
-        subscribe_component_name = ComponentManager().get_component_name(subscribe_node_name)
-        if ComponentManager().check_if_external_in_topic(topic_name, subscribe_node_name):
-            pubilsh_component_name = 'external'
-        if ComponentManager().check_if_external_out_topic(topic_name, publish_node_name):
-            subscribe_component_name = 'external'
-
-        if comm.topic_name == '/pacmod/to_can_bus':
-            print(publish_node_name)
-            print(pubilsh_component_name)
-            print(subscribe_node_name)
-            print(subscribe_component_name)
-
-
-        if (pubilsh_component_name != subscribe_component_name) \
-            and not(ComponentManager().check_if_ignore(publish_node_name) or ComponentManager().check_if_ignore(subscribe_node_name)):
-            if topic_name not in comm_topic_list:
-                comm_topic_list.append(topic_name)
-
-    # check if expected topic is used in current arch
-    topic_list_deleted = topic_list.copy()
-    for topic_name in comm_topic_list:
-        if topic_name in topic_list_deleted:
-            topic_list_deleted.remove(topic_name)
-    for topic_name in topic_list_deleted.copy():
-        if ComponentManager().check_if_external_in_topic(topic_name):
-            for callback in arch.callbacks:
-                if callback.subscribe_topic_name and callback.subscribe_topic_name == topic_name:
-                    topic_list_deleted.remove(topic_name)
-
-    # check if topic in current arch is in expected topic list
-    topic_list_new = comm_topic_list.copy()
-    for topic_name in topic_list:
-        if topic_name in topic_list_new:
-            topic_list_new.remove(topic_name)
-
-    with open('topic_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
-        csvfile.write('\n'.join(topic_list_deleted))
-
-    with open('topic_list_new.csv', 'w', encoding='utf-8') as csvfile:
-        csvfile.write('\n'.join(topic_list_new))
-
-    _logger.info(f'<<< Generate deleted topic list finish >>>')
 
 
 def parse_arg():
@@ -208,7 +140,6 @@ def main():
     # app = Application(arch, lttng)
 
     generate_list(logger, arch, args.component_list_json, args.topic_list_filename, args.expectation_csv_filename)
-    generate_deleted_topic_list(logger, arch, args.component_list_json, args.topic_list_filename)
 
 
 if __name__ == '__main__':
