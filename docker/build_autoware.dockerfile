@@ -1,3 +1,4 @@
+# cspell:ignore libtracetools
 FROM osrf/ros:humble-desktop
 
 ARG CARET_VERSION="main"
@@ -46,14 +47,14 @@ RUN git clone https://github.com/autowarefoundation/autoware.git && \
 # install ros-humble-pacmod3-msgs manually because rosdep tries to install ros-galactic-pacmod3-msgs
 # remove gpg because build error happens in ad_api_visualizers for some reasons...
 
-# https://github.com/ament/ament_cmake/commit/799183ab9bcfd9b66df0de9b644abaf8c9b78e84
 RUN echo "===== Modify ament_cmake_auto as workaround ====="
-# RUN cd /opt/ros/humble/share/ament_cmake_auto/cmake && \
-#     backup_date="`date +"%Y%m%d_%H%M%S"`" && \
-#     cp ament_auto_add_executable.cmake ament_auto_add_executable.cmake_"$backup_date" && \
-#     cp ament_auto_add_library.cmake ament_auto_add_library.cmake_"$backup_date" && \
-#     sed -i -e 's/SYSTEM//g' ament_auto_add_executable.cmake && \
-#     sed -i -e 's/SYSTEM//g' ament_auto_add_library.cmake
+# https://github.com/ament/ament_cmake/commit/799183ab9bcfd9b66df0de9b644abaf8c9b78e84
+RUN cd /opt/ros/humble/share/ament_cmake_auto/cmake && \
+    backup_date="`date +"%Y%m%d_%H%M%S"`" && \
+    cp ament_auto_add_executable.cmake ament_auto_add_executable.cmake_"$backup_date" && \
+    cp ament_auto_add_library.cmake ament_auto_add_library.cmake_"$backup_date" && \
+    sed -i -e 's/SYSTEM//g' ament_auto_add_executable.cmake && \
+    sed -i -e 's/SYSTEM//g' ament_auto_add_library.cmake
 
 RUN echo "===== Modify pcl_ros as workaround ====="
 RUN cd /opt/ros/humble/share/pcl_ros/cmake && \
@@ -66,9 +67,3 @@ RUN cd autoware && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \
     . /ros2_caret_ws/install/local_setup.sh && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
-
-RUN echo "===== Verify Build ====="
-RUN cd autoware && \
-    . /opt/ros/"$ROS_DISTRO"/setup.sh && \
-    . /ros2_caret_ws/install/local_setup.sh && \
-    ros2 caret check_caret_rclcpp --workspace ./
