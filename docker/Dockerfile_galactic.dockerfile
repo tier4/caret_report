@@ -17,7 +17,7 @@ RUN apt-get update -y && \
         wget=1.20.3-1ubuntu2 \
         nano=4.8-1ubuntu1 \
         firefox \
-        python3-pip=20.0.2-5ubuntu1.6 \
+        python3-pip=20.0.2-5ubuntu1.7 \
         fonts-urw-base35=20170801.1-3 \
         && \
     apt-get clean && \
