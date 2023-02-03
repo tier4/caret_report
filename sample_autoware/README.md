@@ -160,6 +160,8 @@ export draw_all_message_flow=false
 sh ${script_path}/make_report.sh
 ```
 
+- Note: Setting files in this directory are just a sample, and may not work with your trace data. Please modify them as you want
+
 ## FAQ
 
 ### General

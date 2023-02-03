@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # export script_path=../report
 # export component_list_json=./component_list.json
 # export target_path_json=./target_path.json
