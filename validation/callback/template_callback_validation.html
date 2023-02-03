@@ -38,7 +38,6 @@
           <tr class="table-primary text-center">
             <th width="3%">#</th>
             <th width="11%">Node</th>
-            <th width="8%">Callback</th>
             <th width="8%">Type</th>
             <th width="16%">Trigger</th>
             <th width="10%">Result</th>
@@ -56,7 +55,6 @@
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
             <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>
-            <td>{{ callback_name }}</td>
             <td>{{ stats_metrics[stats_metrics | first]['stats']['callback_type'] }}</td>
             <td>
               {% if stats_metrics[stats_metrics | first]['stats']['period_ns'] != -1 %}

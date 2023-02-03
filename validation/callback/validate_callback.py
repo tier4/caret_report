@@ -290,10 +290,33 @@ def validate_callback(component_name: str, target_node_list: list[Node], metrics
     return result_info_list
 
 
-def save_stats(result_list: list[Result], component_name: str, dest_dir: str, metrics_str: str):
+def get_callback_legend(app: Application, node_name: str, callback_name: str) -> str:
+    try:
+        callback_legend_dict = {}
+        node = app.get_node(node_name)
+        cnt_timer = 0
+        cnt_subscription = 0
+        for callback in node.callbacks:
+            if callback.callback_type == CallbackType.TIMER:
+                callback_legend_dict[callback.callback_name] = f'timer_{cnt_timer}'
+                cnt_timer += 1
+            else:
+                callback_legend_dict[callback.callback_name] = f'subscription_{cnt_subscription}'
+                cnt_subscription += 1
+
+        callback_legend = callback_legend_dict[callback_name]
+    except:
+        _logger.warning(f'Failed to get legend name. {node_name}, {callback_name}')
+        callback_legend = callback_name
+    return callback_legend
+
+
+def save_stats(app: Application, result_list: list[Result], component_name: str, dest_dir: str, metrics_str: str):
     result_var_list = []
     for result in result_list:
+        callback_legend = get_callback_legend(app, result.stats.node_name, result.stats.callback_name)
         result.stats = vars(result.stats)
+        result.stats['callback_legend'] = callback_legend
         result_var_list.append(vars(result))
     result_var_list.sort(key=lambda x: x['stats']['node_name'])
     result_var_list.sort(key=lambda x: x['expectation_id'] if 'expectation_id' in x else 9999)
@@ -313,13 +336,13 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
             target_node_list.append(node)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_name))
-    save_stats(result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
+    save_stats(app, result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.PERIOD, dest_dir)
-    save_stats(result_list, component_name, dest_dir, Metrics.PERIOD.name)
+    save_stats(app, result_list, component_name, dest_dir, Metrics.PERIOD.name)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir)
-    save_stats(result_list, component_name, dest_dir, Metrics.LATENCY.name)
+    save_stats(app, result_list, component_name, dest_dir, Metrics.LATENCY.name)
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,

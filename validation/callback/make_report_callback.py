@@ -91,6 +91,10 @@ def make_report_callback_detail(dest_dir: str, trace_name: str, component_name: 
         destination_path = f'{dest_dir}/{make_callback_detail_filename(node_name)}'
         template_path = f'{Path(__file__).resolve().parent}/template_callback_detail.html'
 
+        # sort by callback_name
+        stats_dict_callback_metrics = sorted(stats_dict_callback_metrics.items())
+        stats_dict_callback_metrics = dict((x, y) for x, y in stats_dict_callback_metrics)
+
         with app.app_context():
             with open(template_path, 'r', encoding='utf-8') as f_html:
                 template_string = f_html.read()

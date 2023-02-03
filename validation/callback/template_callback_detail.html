@@ -27,7 +27,6 @@
         <table class="table table-hover table-bordered" style="word-break:normal">
           <tr class="table-primary text-center">
             <th width="8%">Name</th>
-            <th width="8%">Type</th>
             <th width="10%">Trigger</th>
             <th width="10%">Result</th>
             <th width="9%">Avg</th>
@@ -46,8 +45,7 @@
               {% continue %}
             {% endif %}
             <tr>
-              <td>{{ stats['stats']['callback_name'] }}</td>
-              <td>{{ stats['stats']['callback_type'] }}</td>
+              <td>{{ stats['stats']['callback_legend'] }}</td>
               <td>
                 {% if stats['stats']['period_ns'] != -1 %}
                 {{ stats['stats']['period_ns'] / 1e6 }} [ms]
