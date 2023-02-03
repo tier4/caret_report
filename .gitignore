@@ -1,5 +1,6 @@
 # report
 report_*/
+val_*/
 architecture*.yaml
 dummy.html
 verify_work/

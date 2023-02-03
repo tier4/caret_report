@@ -1,0 +1,13 @@
+/sensing/lidar/top/velodyne_packets,10
+/sensing/lidar/top/outlier_filtered/pointcloud,10
+/sensing/imu/imu_data,28
+/sensing/vehicle_velocity_converter/twist_with_covariance,28
+/perception/obstacle_segmentation/pointcloud,10
+/perception/occupancy_grid_map/map,10
+/perception/object_recognition/objects,10
+/localization/kinematic_state,50
+/localization/acceleration,50
+/planning/scenario_planning/trajectory,10
+/control/command/control_cmd,33
+/control/current_gate_mode,10
+/system/emergency/control_cmd,10
