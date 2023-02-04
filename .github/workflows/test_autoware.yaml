@@ -87,7 +87,8 @@ jobs:
 
           export start_time=25
           export duration_time=9999
-          export max_node_depth=2
+          export max_node_depth=10
+          export timeout=30
           export draw_all_message_flow=false
 
           docker run --rm \
@@ -98,6 +99,7 @@ jobs:
               -e start_time \
               -e duration_time \
               -e max_node_depth \
+              -e timeout \
               -e draw_all_message_flow \
               -e component_list_json \
               -e target_path_json \

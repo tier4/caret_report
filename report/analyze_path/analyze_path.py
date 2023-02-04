@@ -139,7 +139,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
                 export_path='dummy.html')
 
     graph_short.width = 1400
-    graph_short.height = 800
+    graph_short.height = 15 * len(target_path.child_names) + 50
     utils.export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name)
 
     if args.message_flow:

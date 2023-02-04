@@ -42,6 +42,7 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
 
     if not os.path.isfile(topic_list_filename):
         _logger.error(f"Unable to read expectation csv: {topic_list_filename}")
+        return
 
     unknown_topic_name_list = []
 
@@ -51,7 +52,7 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
         for row in csv.DictReader(csvfile, ['topic_name', 'value']):
             try:
                 topic_name = row['topic_name']
-                value = float(row['value'])
+                value = row['value']
             except:
                 _logger.error(f"Error at reading: {row}")
                 continue

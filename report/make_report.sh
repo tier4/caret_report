@@ -9,7 +9,7 @@ trace_data_name=$(basename "${trace_data}")
 report_dir_name=report_${trace_data_name}
 
 # Path analysis
-python3 "${script_path}"/analyze_path/add_path_to_architecture.py "${trace_data}" "${target_path_json}" --architecture_file_path=architecture_path.yaml --max_node_depth="${max_node_depth}" -v
+python3 "${script_path}"/analyze_path/add_path_to_architecture.py "${trace_data}" "${target_path_json}" --architecture_file_path=architecture_path.yaml --max_node_depth="${max_node_depth}" --timeout="${timeout}" -v
 python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" --architecture_file_path=architecture_path.yaml -s "${start_time}" -d "${duration_time}" -f -v -m "${draw_all_message_flow}"
 python3 "${script_path}"/analyze_path/make_report_path.py "${report_dir_name}"
 
