@@ -32,6 +32,7 @@
         <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
         <li><i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
         <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
+        <li>DONT_CARE: {{ summary_dict['cnt_dont_care'] }}</li>
       </ul>
 
       <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
@@ -40,17 +41,12 @@
           <tr class="table-primary text-center">
             <th width="3%">#</th>
             <th width="7%">Node</th>
-            <th width="7%">Callback</th>
             <th width="7%">Type</th>
             <th width="7%">Trigger</th>
             <th width="7%">Result</th>
             <th width="8%" data-orderable="false">Avg</th>
-            <th width="8%" data-orderable="false">Min</th>
-            <th width="8%" data-orderable="false">Max</th>
-            <th width="9%" data-orderable="false">Min violation ratio</th>
-            <th width="9%" data-orderable="false">Max violation ratio</th>
-            <th width="9%" data-orderable="false">Min violation burst</th>
-            <th width="9%" data-orderable="false">Max violation burst</th>
+            <th width="9%" data-orderable="false">Violation ratio</th>
+            <th width="9%" data-orderable="false">Violation burst</th>
           </tr>
         </thead>
 
@@ -62,7 +58,6 @@
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
             <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>
-            <td>{{ callback_name }}</td>
             {% if metrics_name not in stats_metrics %}
             {% for i in range(10) %}
               <td>---</td>
@@ -95,16 +90,10 @@
               {% endif %}
             </td>
             <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
-            <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
-            <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
             <td {% if stats['result_ratio_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
               {{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
-            <td {% if stats['result_ratio_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
-              {{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
             <td {% if stats['result_burst_num_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
               {{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
-            <td {% if stats['result_burst_num_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
-              {{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
           </tr>
           {% endfor %}
         {% endfor %}

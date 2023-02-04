@@ -31,6 +31,7 @@
         <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
         <li><i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
         <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
+        <li>DONT_CARE: {{ summary_dict['cnt_dont_care'] }}</li>
       </ul>
 
       <table id="result_table" class="table table-hover table-bordered" style="word-break:normal">
@@ -38,13 +39,12 @@
           <tr class="table-primary text-center">
             <th width="3%">#</th>
             <th width="11%">Node</th>
-            <th width="8%">Callback</th>
             <th width="8%">Type</th>
             <th width="16%">Trigger</th>
             <th width="10%">Result</th>
-            <th width="10%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
-            <th width="10%"><a href="index_PERIOD.html">Period[ms]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
-            <th width="10%"><a href="index_LATENCY.html">Latency[ms]</a></br>Avg</br>(5%~95%)</br>(Min~Max)</th>
+            <th width="10%"><a href="index_FREQUENCY.html">Frequency[Hz]</a></br>Avg</br>(5%~95%)</th>
+            <th width="10%"><a href="index_PERIOD.html">Period[ms]</a></br>Avg</br>(5%~95%)</th>
+            <th width="10%"><a href="index_LATENCY.html">Latency[ms]</a></br>Avg</br>(5%~95%)</th>
           </tr>
         </thead>
 
@@ -56,7 +56,6 @@
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
             <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>
-            <td>{{ callback_name }}</td>
             <td>{{ stats_metrics[stats_metrics | first]['stats']['callback_type'] }}</td>
             <td>
               {% if stats_metrics[stats_metrics | first]['stats']['period_ns'] != -1 %}
@@ -91,8 +90,7 @@
               {% set stats = stats_metrics[metrics_name] %}
               <td data-order="{{ (stats['stats']['avg'] | float) * 1000 }}">
                 {{ stats['stats']['avg'] }}</br>
-                ({{ stats['stats']['percentile5_min'] }} ~ {{ stats['stats']['percentile5_max'] }})</br>
-                ({{ stats['stats']['min'] }} ~ {{ stats['stats']['max'] }})
+                ({{ stats['stats']['percentile5_min'] }} ~ {{ stats['stats']['percentile5_max'] }})
               </td>
             {% endfor %}
           </tr>

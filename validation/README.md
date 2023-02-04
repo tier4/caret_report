@@ -8,6 +8,8 @@
 - Input:
   - CARET trace data (CTF file)
   - Expectation file (csv file)
+    - callback_list.csv
+    - topic_list.csv
 - Output (html pages):
   - Index page (index.html)
     - Summary
@@ -28,7 +30,7 @@
 - Run the following commands
   - Make sure to modify settings for your usage and environment
   - Make sure to prepare setting files
-- `report_{dir_name_of_trace_data}` is created
+- `val_{dir_name_of_trace_data}` is created
 - Open `index.html` to see a report
 
 ```sh
@@ -38,11 +40,21 @@ export component_list_json=./component_list.json    # Path to setting file you p
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
 export start_strip=10                               # strip time at the start [sec] for analysis
 export end_strip=5                                  # strip time at the end [sec] for analysis
-export expectation_callback_csv_filename=${script_path}/experiment/expectation_callback.csv
-export expectation_topic_csv_filename=${script_path}/experiment/expectation_topic.csv
+export callback_list_csv=./callback_list.csv
+export topic_list_csv=./topic_list.csv
 export note_text_top=./note_text_top.txt
 export note_text_bottom=./note_text_bottom.txt
 
 # Run script
 sh ${script_path}/make_report.sh
 ```
+
+## How to update callback_list.csv and topic_list.csv
+
+- These lists should be updated as a target application changes
+- The following files will be generated to update these files easily
+  - callback_list_new.csv: callbacks which are used in the trace data but not listed in callback_list.csv
+  - callback_list_deleted.csv: callbacks which are not found or not used in the trace data
+  - topic_list_new.csv: topics which are used in the trace data but not listed in topic_list.csv
+  - topic_list_unknown.csv: topics which are not found in the trace data
+  - topic_list_deleted.csv: topics which are not found or not used in the trace data

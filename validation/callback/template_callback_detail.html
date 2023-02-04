@@ -27,29 +27,25 @@
         <table class="table table-hover table-bordered" style="word-break:normal">
           <tr class="table-primary text-center">
             <th width="8%">Name</th>
-            <th width="8%">Type</th>
             <th width="10%">Trigger</th>
             <th width="10%">Result</th>
             <th width="9%">Avg</th>
-            <th width="9%">Min</th>
-            <th width="9%">Max</th>
-            <th width="9%">Min violation ratio</th>
-            <th width="9%">Max violation ratio</th>
-            <th width="9%">Min violation burst</th>
-            <th width="9%">Max violation burst</th>
+            <th width="9%">Violation ratio</th>
+            <th width="9%">Violation burst</th>
           </tr>
 
           {% set ns = namespace(graphfilename = none) %}
           {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
             {% if metrics in stats_metrics %}
               {% set stats = stats_metrics[metrics] %}
-              {% set ns.graphfilename = stats['stats']['graph_filename'] %}
+              {% if stats['stats']['graph_filename'] != '' %}
+                {% set ns.graphfilename = stats['stats']['graph_filename'] %}
+              {% endif %}
             {% else %}
               {% continue %}
             {% endif %}
             <tr>
-              <td>{{ stats['stats']['callback_name'] }}</td>
-              <td>{{ stats['stats']['callback_type'] }}</td>
+              <td>{{ stats['stats']['callback_legend'] }}</td>
               <td>
                 {% if stats['stats']['period_ns'] != -1 %}
                 {{ stats['stats']['period_ns'] / 1e6 }} [ms]
@@ -73,16 +69,10 @@
                 {% endif %}
               </td>
               <td>{{ stats['stats']['avg'] }} / {{ stats['expectation_value'] }}</td>
-              <td>{{ stats['stats']['min'] }} / {{ stats['expectation_lower_limit'] }}</td>
-              <td>{{ stats['stats']['max'] }} / {{ stats['expectation_upper_limit'] }}</td>
               <td {% if stats['result_ratio_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
                 {{ stats['ratio_lower_limit'] }} / {{ stats['expectation_ratio'] }}</td>
-              <td {% if stats['result_ratio_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
-                {{ stats['ratio_upper_limit'] }} / {{ stats['expectation_ratio'] }}</td>
               <td {% if stats['result_burst_num_lower_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
                 {{ stats['burst_num_lower_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
-              <td {% if stats['result_burst_num_upper_limit'] == 'FAILED' %}class="text-danger"{% endif %}>
-                {{ stats['burst_num_upper_limit'] }} / {{ stats['expectation_burst_num'] }}</td>
             </tr>
           {% endfor %}
         </table>

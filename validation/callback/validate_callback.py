@@ -20,6 +20,7 @@ import os
 from pathlib import Path
 import argparse
 import logging
+import re
 from itertools import groupby
 import csv
 import yaml
@@ -79,28 +80,36 @@ class Expectation():
     @staticmethod
     def find_expectation(expectation_list: list, callback: CallbackBase):
         for expectation in expectation_list:
-            if expectation.node_name == callback.node_name and expectation.callback_type == callback.callback_type:
+            if re.search(expectation.node_name, callback.node_name) and expectation.callback_type == callback.callback_type:
                 if (callback.callback_type == CallbackType.TIMER and expectation.period_ns == callback.timer.period_ns) \
                     or (callback.callback_type == CallbackType.SUBSCRIPTION and expectation.topic_name == callback.subscription.topic_name):
                         return expectation
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str, component_name: Optional[str]) -> List:
+    def from_csv(expectation_csv_filename: str, component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=2) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
-            for row in csv.DictReader(csvfile, ['component_name', 'node_name', 'callback_name', 'callback_type', 'period_ns', 'topic_name', 'value', 'lower_limit', 'upper_limit', 'ratio', 'burst_num']):
+            for row in csv.DictReader(csvfile, ['node_name', 'callback_type', 'trigger', 'value']):
                 try:
-                    if component_name is not None and row['component_name'] != component_name:
+                    read_node_name = row['node_name']
+                    read_component_name = ComponentManager().get_component_name(read_node_name)
+                    if component_name is not None and read_component_name != component_name:
                         continue
-                    expectation = Expectation(row['component_name'], row['node_name'], row['callback_name'],
+                    try:
+                        value = float(row['value'])
+                    except ValueError:
+                        value = 0
+                    expectation = Expectation(read_component_name, read_node_name, '',
                         CallbackType.TIMER if row['callback_type'] == 'timer_callback' else CallbackType.SUBSCRIPTION,
-                        int(row['period_ns']), row['topic_name'], float(row['value']), float(row['lower_limit']), float(row['upper_limit']), float(row['ratio']), int(row['burst_num']))
+                        int(row['trigger']) if row['callback_type'] == 'timer_callback' else None,
+                        row['trigger'] if row['callback_type'] == 'subscription_callback' else None,
+                        value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
                 except:
-                    _logger.error(f"Error at reading: {row['callback_name']}")
+                    _logger.error(f"Error at reading: {row}")
                     return None
                 expectation_list.append(expectation)
         return expectation_list
@@ -151,8 +160,8 @@ class Stats():
             stats.percentile5_avg = float(df_percentile5.mean()) if len(df_percentile5) > 2 else stats.avg
         else:
             _logger.info(f'This callback is not called: {node_name}: {callback.callback_name}')
-            return None
-        return stats
+            return None, None
+        return stats, df_callback
 
     @staticmethod
     def from_expectation(component_name: str, expectation: Expectation, metrics: Metrics):
@@ -195,17 +204,18 @@ class Result():
             self.expectation_burst_num = expectation.burst_num
 
     def validate(self, df_callback: pd.DataFrame, expectation: Expectation):
-        df_callback = df_callback.iloc[:, 1]                  # get metrics value only
-        df_callback = trail_df(df_callback, end_strip_num=2)  # remove the last data because freq becomes small
-
+        if expectation.value <= 0:
+            # it's not expected to be tested but don't use OUT_OF_SCOPE
+            self.result_status = ResultStatus.DONT_CARE.name
+            return
         if len(df_callback) >= 2:
             self.result_status = ResultStatus.PASS.name
             self.ratio_lower_limit = float((df_callback < expectation.lower_limit).sum() / len(df_callback))
             self.ratio_upper_limit = float((df_callback > expectation.upper_limit).sum() / len(df_callback))
             if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            if self.ratio_upper_limit > expectation.ratio:
-                self.result_ratio_upper_limit = ResultStatus.FAILED.name
+            # if self.ratio_upper_limit > expectation.ratio:
+            #     self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x < expectation.lower_limit)]
             group = [x[1] for x in flag_group if x[0]]
@@ -215,8 +225,8 @@ class Result():
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
             if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            if self.burst_num_upper_limit > expectation.burst_num:
-                self.result_burst_num_upper_limit = ResultStatus.FAILED.name
+            # if self.burst_num_upper_limit > expectation.burst_num:
+            #     self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
             or self.result_ratio_upper_limit == ResultStatus.FAILED.name \
@@ -225,7 +235,7 @@ class Result():
                 self.result_status = ResultStatus.FAILED.name
 
 
-def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str) -> dict[str, Stats]:
+def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str) -> dict[str, Tuple[Stats, pd.DataFrame]]:
     stats_list = {}
     try:
         timeseries_plot = get_node_plot(node, metrics)
@@ -239,10 +249,10 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
     has_valid_data = False
     for callback in node.callbacks:
         df_callback = df_node[callback.callback_name]
-        stats = Stats.from_df(component_name, node.node_name, callback, metrics, graph_filename, df_callback)
+        stats, df = Stats.from_df(component_name, node.node_name, callback, metrics, graph_filename, df_callback)
         if stats:
             has_valid_data = True
-            stats_list[callback.callback_name] = stats
+            stats_list[callback.callback_name] = stats, df
 
     if has_valid_data:
         try:
@@ -258,6 +268,7 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
 
 
 def validate_callback(component_name: str, target_node_list: list[Node], metrics: Metrics, dest_dir: str,  expectation_list: List[Expectation] = []) -> list[Result]:
+    expectation_validated_list = expectation_list.copy()   # keep original because there may be multiple callbacks with the same parameters in a node
     result_info_list: list[Result] = []
     for node in target_node_list:
         _logger.debug(f'Processing ({metrics.name}): {node.node_name}')
@@ -269,29 +280,51 @@ def validate_callback(component_name: str, target_node_list: list[Node], metrics
                 continue
             # Measured
             expectation = Expectation.find_expectation(expectation_list, callback)
-            result = Result(stats_list[callback.callback_name], expectation)
+            stats = stats_list[callback.callback_name][0]
+            df_callback = stats_list[callback.callback_name][1]
+            result = Result(stats, expectation)
             if expectation:
                 # Measured and to be validated
-                try:
-                    df_node = get_node_plot(node, metrics).to_dataframe()
-                    df_callback = df_node[callback.callback_name]
-                    expectation_list.remove(expectation)
-                    result.validate(df_callback, expectation)
-                except:
-                    _logger.info(f'This node is not called: {node.node_name}')
+                result.validate(df_callback, expectation)
+                if expectation in expectation_validated_list:
+                    expectation_validated_list.remove(expectation)
             result_info_list.append(result)
 
-    for expectation in expectation_list:
-        # Not measured but should be validated
-        result = Result(Stats.from_expectation(component_name, expectation, metrics), expectation)
-        result_info_list.append(result)
+    for expectation in expectation_validated_list:
+        if expectation.value > 0:
+            # Not measured but should be validated
+            result = Result(Stats.from_expectation(component_name, expectation, metrics), expectation)
+            result_info_list.append(result)
     return result_info_list
 
 
-def save_stats(result_list: list[Result], component_name: str, dest_dir: str, metrics_str: str):
+def get_callback_legend(app: Application, node_name: str, callback_name: str) -> str:
+    try:
+        callback_legend_dict = {}
+        node = app.get_node(node_name)
+        cnt_timer = 0
+        cnt_subscription = 0
+        for callback in node.callbacks:
+            if callback.callback_type == CallbackType.TIMER:
+                callback_legend_dict[callback.callback_name] = f'timer_{cnt_timer}'
+                cnt_timer += 1
+            else:
+                callback_legend_dict[callback.callback_name] = f'subscription_{cnt_subscription}'
+                cnt_subscription += 1
+
+        callback_legend = callback_legend_dict[callback_name]
+    except:
+        _logger.warning(f'Failed to get legend name. {node_name}, {callback_name}')
+        callback_legend = callback_name
+    return callback_legend
+
+
+def save_stats(app: Application, result_list: list[Result], component_name: str, dest_dir: str, metrics_str: str):
     result_var_list = []
     for result in result_list:
+        callback_legend = get_callback_legend(app, result.stats.node_name, result.stats.callback_name)
         result.stats = vars(result.stats)
+        result.stats['callback_legend'] = callback_legend
         result_var_list.append(vars(result))
     result_var_list.sort(key=lambda x: x['stats']['node_name'])
     result_var_list.sort(key=lambda x: x['expectation_id'] if 'expectation_id' in x else 9999)
@@ -311,13 +344,13 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
             target_node_list.append(node)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_name))
-    save_stats(result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
+    save_stats(app, result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.PERIOD, dest_dir)
-    save_stats(result_list, component_name, dest_dir, Metrics.PERIOD.name)
+    save_stats(app, result_list, component_name, dest_dir, Metrics.PERIOD.name)
 
     result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir)
-    save_stats(result_list, component_name, dest_dir, Metrics.LATENCY.name)
+    save_stats(app, result_list, component_name, dest_dir, Metrics.LATENCY.name)
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
@@ -343,7 +376,8 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('--component_list_json', type=str, default='')
+    parser.add_argument('--report_directory', type=str, default='')
+    parser.add_argument('--component_list_json', type=str, default='component_list.json')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_callback.csv')
     parser.add_argument('--start_strip', type=float, default=0.0,
                         help='Start strip [sec] to load trace data')
@@ -365,7 +399,7 @@ def main():
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
     logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
+    dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
 
     lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
