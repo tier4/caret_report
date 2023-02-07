@@ -150,11 +150,11 @@ def make_unused_list(report_dir: str, component_list_json: str):
                 elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
                     callback_list_deleted.append(info[:-1])
 
-    with open('callback_list_new.csv', 'w', encoding='utf-8') as csvfile:
+    with open(f'{report_dir}/callback_list_new.csv', 'w', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(callback_list_new)
 
-    with open('callback_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
+    with open(f'{report_dir}/callback_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(callback_list_deleted)
 

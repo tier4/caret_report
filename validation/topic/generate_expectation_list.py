@@ -17,6 +17,7 @@ Generate expectation list for topic
 import sys
 import os
 import argparse
+from pathlib import Path
 import logging
 import csv
 from caret_analyze import Architecture, Application, Lttng
@@ -32,7 +33,7 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-def generate_list(logger, arch: Architecture, component_list_json: str, topic_list_filename: str, expectation_csv_filename: str):
+def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json: str, topic_list_filename: str, expectation_csv_filename: str):
     """Generate topic list"""
     global _logger
     _logger = logger
@@ -103,11 +104,13 @@ def generate_list(logger, arch: Architecture, component_list_json: str, topic_li
             ComponentManager().check_if_ignore(expectation['subscribe_node_name']):
             expectation_list.remove(expectation)
 
-    with open(expectation_csv_filename, 'w', encoding='utf-8') as csvfile:
+    make_destination_dir(dest_dir, False, _logger)
+
+    with open(f'{dest_dir}/{expectation_csv_filename}', 'w', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=expectation_list[0].keys())
         writer.writerows(expectation_list)
 
-    with open('topic_list_unknown.csv', 'w', encoding='utf-8') as csvfile:
+    with open(f'{dest_dir}/topic_list_unknown.csv', 'w', encoding='utf-8') as csvfile:
         csvfile.writelines('\n'.join(unknown_topic_name_list))
 
     _logger.info(f'<<< Generate topic list finish >>>')
@@ -118,6 +121,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to generate expectation list for topic validation')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('--report_directory', type=str, default='')
     parser.add_argument('--component_list_json', type=str, default='component_list.json')
     parser.add_argument('--topic_list_filename', type=str, default='topic_list.csv')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_topic.csv')
@@ -132,6 +136,8 @@ def main():
     logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     logger.debug(f'trace_data: {args.trace_data[0]}')
+    dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
+    logger.debug(f'dest_dir: {dest_dir}')
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'topic_list_filename: {args.topic_list_filename}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
@@ -140,7 +146,7 @@ def main():
     # lttng = read_trace_data(args.trace_data[0], 0, 0)
     # app = Application(arch, lttng)
 
-    generate_list(logger, arch, args.component_list_json, args.topic_list_filename, args.expectation_csv_filename)
+    generate_list(logger, arch, dest_dir, args.component_list_json, args.topic_list_filename, args.expectation_csv_filename)
 
 
 if __name__ == '__main__':

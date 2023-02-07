@@ -146,11 +146,11 @@ def make_unused_list(report_dir: str, component_list_json: str):
                     if len([x for x in topic_list_deleted if topic_name in x]) == 0:
                         topic_list_deleted.append([topic_name])
 
-    with open('topic_list_new.csv', 'w', encoding='utf-8') as csvfile:
+    with open(f'{report_dir}/topic_list_new.csv', 'w', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(topic_list_new)
 
-    with open('topic_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
+    with open(f'{report_dir}/topic_list_deleted.csv', 'w', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(topic_list_deleted)
 

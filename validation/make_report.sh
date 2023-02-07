@@ -9,14 +9,14 @@ trace_data_name=$(basename "${trace_data}")
 report_dir_name=val_${trace_data_name}
 
 # Generate topic expectation list
-python3 "${script_path}"/topic/generate_expectation_list.py "${trace_data}" --topic_list_filename="${topic_list_csv}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv"
+python3 "${script_path}"/topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --topic_list_filename="${topic_list_csv}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv"
 
 # Callback
 python3 "${script_path}"/callback/validate_callback.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${callback_list_csv}" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/callback/make_report_callback.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
 # Topic
-python3 "${script_path}"/topic/validate_topic.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
+python3 "${script_path}"/topic/validate_topic.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${report_dir_name}/${topic_list_csv}_pubsub.csv" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/topic/make_report_topic.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
 # Re-make html for Callback to generage link to topics
