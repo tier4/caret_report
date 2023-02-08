@@ -19,16 +19,25 @@
     "path": [
       "/sensing/lidar/concatenate_data",
       "/perception/object_recognition/prediction/map_based_prediction",
-      ["/planning/scenario_planning/parking/costmap_generator", "/perception/object_recognition/objects"]
+      [
+        "/planning/scenario_planning/parking/costmap_generator",
+        "/perception/object_recognition/objects"
+      ]
     ]
   },
   {
     "name": "component_planning",
     "path": [
       "/perception/object_recognition/prediction/map_based_prediction",
-      ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+      [
+        "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+        "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+      ],
       "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
-      ["/planning/scenario_planning/motion_velocity_smoother", "/planning/scenario_planning/scenario_selector/trajectory"],
+      [
+        "/planning/scenario_planning/motion_velocity_smoother",
+        "/planning/scenario_planning/scenario_selector/trajectory"
+      ],
       "/planning/planning_diagnostics/planning_error_monitor"
     ]
   },
