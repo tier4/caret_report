@@ -25,7 +25,7 @@ app = flask.Flask(__name__)
 
 
 def render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
-                stats_path, stats_cb_sub_warn, stats_cb_timer_warn, note_text_top, note_text_bottom):
+                stats_path, note_text_top, note_text_bottom):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -36,8 +36,6 @@ def render_page(destination_path, template_path, report_name, component_list, st
                 component_list=component_list,
                 stats_node_dict=stats_node_dict,
                 stats_path=stats_path,
-                stats_cb_sub_warn=stats_cb_sub_warn,
-                stats_cb_timer_warn=stats_cb_timer_warn,
                 note_text_top=note_text_top,
                 note_text_bottom=note_text_bottom
             )
@@ -70,24 +68,6 @@ def get_stats_path(report_dir: str):
     with open(report_dir + '/path/stats_path.yaml', 'r', encoding='utf-8') as f_yaml:
         stats = yaml.safe_load(f_yaml)
     return stats
-
-
-def get_stats_callback_subscription(report_dir: str):
-    """Read stats"""
-    with open(report_dir + '/check_callback_sub/stats_callback_subscription.yaml', 'r', encoding='utf-8') as f_yaml:
-        stats = yaml.safe_load(f_yaml)
-    with open(report_dir + '/check_callback_sub/stats_callback_subscription_warning.yaml', 'r', encoding='utf-8') as f_yaml:
-        stats_warn = yaml.safe_load(f_yaml)
-    return stats, stats_warn
-
-
-def get_stats_callback_timer(report_dir: str):
-    """Read stats"""
-    with open(report_dir + '/check_callback_timer/stats_callback_timer.yaml', 'r', encoding='utf-8') as f_yaml:
-        stats = yaml.safe_load(f_yaml)
-    with open(report_dir + '/check_callback_timer/stats_callback_timer_warning.yaml', 'r', encoding='utf-8') as f_yaml:
-        stats_warn = yaml.safe_load(f_yaml)
-    return stats, stats_warn
 
 
 def find_latency_topk(component_name, stats_node, numk=20) -> None:
@@ -132,15 +112,13 @@ def make_report(args, index_filename: str='index'):
         find_latency_topk(component_name, stats_node_dict[component_name])
 
     stats_path = get_stats_path(report_dir)
-    _, stats_cb_sub_warn = get_stats_callback_subscription(report_dir)
-    _, stats_cb_timer_warn = get_stats_callback_timer(report_dir)
 
     note_text_top, note_text_bottom = read_note_text(args)
 
     destination_path = f'{report_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_top.html'
     render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
-                stats_path, stats_cb_sub_warn, stats_cb_timer_warn, note_text_top, note_text_bottom)
+                stats_path, note_text_top, note_text_bottom)
 
 
 def parse_arg():

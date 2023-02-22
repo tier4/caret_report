@@ -44,26 +44,6 @@
         {% endfor %}
       </ul>
 
-      <h3>Node Problem Detection</h3>
-      <p>This report shows callback functions which don't wake up appropriately</p>
-      <ul>
-        <li>
-          Subscription Callback Health (Comparing frequency of callback function and topic
-          frequency)
-          <ul>
-            <li><a href="check_callback_sub/index_warning.html">Callbacks with warning</a></li>
-            <li><a href="check_callback_sub/index.html">All Callbacks</a></li>
-          </ul>
-        </li>
-        <li>
-          Timer Callback Health (Comparing frequency of callback function and timer setting)
-          <ul>
-            <li><a href="check_callback_timer/index_warning.html">Callbacks with warning</a></li>
-            <li><a href="check_callback_timer/index.html">All Callbacks</a></li>
-          </ul>
-        </li>
-      </ul>
-
       <hr />
       <hr />
       <h2>Summary</h2>
@@ -95,44 +75,6 @@
           {% endfor %}
         </tbody>
       </table>
-
-      <h4>Subscription Callback Warnings</h4>
-      {% if stats_cb_sub_warn | length > 0 %}
-      <div class="alert alert-danger" role="alert">
-        Please check: Some callback functions may not work!!
-      </div>
-      <ul>
-        {% for info in stats_cb_sub_warn %}
-        <li>
-          <a href="check_callback_sub/index_warning.html#{{ info.callback_name }}">
-            {{ info.callback_name }}
-          </a>
-          ({{ info.callback_displayname }})
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p>No warnings</p>
-      {% endif %}
-
-      <h4>Timer Callback Warnings</h4>
-      {% if stats_cb_timer_warn | length > 0 %}
-      <div class="alert alert-danger" role="alert">
-        Please check: Some callback functions may not work!!
-      </div>
-      <ul>
-        {% for info in stats_cb_timer_warn %}
-        <li>
-          <a href="check_callback_timer/index_warning.html#{{ info.callback_name }}">
-            {{ info.callback_name }}
-          </a>
-          ({{ info.callback_displayname }})
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p>No warnings</p>
-      {% endif %}
 
       <h3>Callback Latency</h3>
       <p>List of callback function latency time (Top k)</p>
