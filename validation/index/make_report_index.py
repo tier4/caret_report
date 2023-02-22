@@ -50,13 +50,13 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
         'cnt_pass': 0,
         'cnt_failed': 0,
     }
-    summary_topic_dict_componentpair_metrics = {}
+    summary_topic_dict_component_pair_metrics = {}
     for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         stats_dict_node_callback_metrics: dict = make_stats_dict_topic_pubsub_metrics(report_dir, component_pair)
         if len(stats_dict_node_callback_metrics) == 0:
             continue
         summary = summarize_topic_result(stats_dict_node_callback_metrics)
-        summary_topic_dict_componentpair_metrics[component_pair[0] + '-' + component_pair[1]] = summary
+        summary_topic_dict_component_pair_metrics[component_pair[0] + '-' + component_pair[1]] = summary
         summary_topic_dict['cnt_pass'] += summary[Metrics.FREQUENCY.name]['cnt_pass']
         summary_topic_dict['cnt_failed'] += summary[Metrics.FREQUENCY.name]['cnt_failed']
 
@@ -73,7 +73,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
                 title=title,
                 trace_name=trace_name,
                 summary_callback_dict_component_metrics=summary_callback_dict_component_metrics,
-                summary_topic_dict_componentpair_metrics=summary_topic_dict_componentpair_metrics,
+                summary_topic_dict_component_pair_metrics=summary_topic_dict_component_pair_metrics,
                 summary_callback_dict=summary_callback_dict,
                 summary_topic_dict=summary_topic_dict,
                 note_text_top=note_text_top,
