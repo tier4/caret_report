@@ -48,7 +48,9 @@
             <tr class="table-primary text-center">
               <th>Response Time</th>
               <th>Avg [ms]</th>
-              <th>Min [ms]</th>
+              <th>Median [ms]</th>
+              <th>95%ile [ms]</th>
+              <th>99%ile [ms]</th>
               <th>Max [ms]</th>
             </tr>
           </thead>
@@ -56,7 +58,9 @@
             <tr>
               <td>{{ path_info.target_path_name}}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_avg|float }}</td>
-              <td class="text-end">{{ '%0.3f' % path_info.best_min|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.best_p50|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.best_p95|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.best_p99|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_max|float }}</td>
             </tr>
           </tbody>
