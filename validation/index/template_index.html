@@ -24,6 +24,18 @@
 
       {% if note_text_top %} {{ note_text_top | safe }} {% endif %}
 
+      <ul>
+        <li>Result Summary</li>
+        <ul>
+          <li>
+            Topic: {{ summary_topic_dict["cnt_pass"] }} / {{ summary_topic_dict["cnt_pass"] + summary_topic_dict["cnt_failed"] }}
+          </li>
+          <li>
+            Callback: {{ summary_callback_dict["cnt_pass"] }} / {{ summary_callback_dict["cnt_pass"] + summary_callback_dict["cnt_failed"] }}
+          </li>
+        </ul>
+      </ul>
+
       <div id="cy" style="height: 600px;"></div>
 
       {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}
@@ -48,7 +60,7 @@
     ></script>
     <script type="text/javascript">
       let summary_callback_dict_component_metrics = {{ summary_callback_dict_component_metrics | tojson }};
-      let summary_topic_dict_componentpair_metrics = {{ summary_topic_dict_componentpair_metrics | tojson }};
+      let summary_topic_dict_component_pair_metrics = {{ summary_topic_dict_component_pair_metrics | tojson }};
     </script>
     <script src="index.js"></script>
   </body>

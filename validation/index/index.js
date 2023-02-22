@@ -222,13 +222,13 @@ cy.on("tap", "node", function (evt) {
 });
 
 // Update using topic validation result
-for (let componentpair in summary_topic_dict_componentpair_metrics) {
+for (let componentpair in summary_topic_dict_component_pair_metrics) {
   let pub_component_name = componentpair.split("-")[0];
   let sub_component_name = componentpair.split("-")[1];
-  let cnt_pass = summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_pass;
-  let cnt_failed = summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_failed;
+  let cnt_pass = summary_topic_dict_component_pair_metrics[componentpair][metrics].cnt_pass;
+  let cnt_failed = summary_topic_dict_component_pair_metrics[componentpair][metrics].cnt_failed;
   let cnt_not_measured =
-    summary_topic_dict_componentpair_metrics[componentpair][metrics].cnt_not_measured;
+    summary_topic_dict_component_pair_metrics[componentpair][metrics].cnt_not_measured;
   let cnt_total = cnt_pass + cnt_failed;
   let class_name = "pass";
   if (cnt_not_measured > 0) {

@@ -166,7 +166,7 @@ sh ${script_path}/make_report.sh
 
 ### General
 
-<https://tier4.github.io/CARET_doc/latest/faq/>
+<https://tier4.github.io/CARET_doc/latest/faq/faq>
 
 ### Build
 
