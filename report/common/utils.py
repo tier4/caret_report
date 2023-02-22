@@ -22,8 +22,9 @@ import logging
 import re
 import json
 import pandas as pd
-from caret_analyze import Lttng, LttngEventFilter
-from caret_analyze.runtime.callback import CallbackBase
+from caret_analyze import Application, Lttng, LttngEventFilter
+from caret_analyze.runtime.callback import CallbackBase, CallbackType
+from caret_analyze.runtime.node import Node
 from bokeh.plotting import Figure, save
 from bokeh.resources import CDN
 from bokeh.io import export_png
@@ -196,3 +197,25 @@ class ComponentManager:
         if re.search(regexp, node_name):
             return True
         return False
+
+
+def get_callback_legend(app: Application, node: Node, callback_name: str) -> str:
+    try:
+        callback_legend_dict = {}
+        cnt_timer = 0
+        cnt_subscription = 0
+        for callback in node.callbacks:
+            if callback.callback_type == CallbackType.TIMER:
+                period_ms = callback.timer.period_ns * 1e-6
+                callback_legend_dict[callback.callback_name] = f'timer_{cnt_timer}: {period_ms}ms'
+                cnt_timer += 1
+            else:
+                callback_legend_dict[callback.callback_name] = f'subscription_{cnt_subscription}: {callback.subscribe_topic_name}'
+                cnt_subscription += 1
+
+        callback_legend = callback_legend_dict[callback_name]
+    except:
+        print(f'Failed to get legend name. {node.node_name}, {callback_name}')
+        callback_legend = callback_name
+
+    return callback_legend

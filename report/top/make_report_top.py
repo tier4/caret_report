@@ -82,9 +82,12 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
                 'avg': callback_info['Latency']['avg'] if isinstance(callback_info['Latency']['avg'], (int, float)) else 0,
                 'min': callback_info['Latency']['min'] if isinstance(callback_info['Latency']['min'], (int, float)) else 0,
                 'max': callback_info['Latency']['max'] if isinstance(callback_info['Latency']['max'], (int, float)) else 0,
+                'p50': callback_info['Latency']['p50'] if isinstance(callback_info['Latency']['p50'], (int, float)) else 0,
+                'p95': callback_info['Latency']['p95'] if isinstance(callback_info['Latency']['p95'], (int, float)) else 0,
+                'p99': callback_info['Latency']['p99'] if isinstance(callback_info['Latency']['p99'], (int, float)) else 0,
             })
 
-    callback_latency_list = sorted(callback_latency_list, reverse=True, key=lambda x: x['avg'])
+    callback_latency_list = sorted(callback_latency_list, reverse=True, key=lambda x: x['p50'])
     callback_latency_list = callback_latency_list[:numk]
     stats_node['latency_topk'] = callback_latency_list
 

@@ -52,9 +52,11 @@
       <table class="table table-hover table-bordered">
         <thead>
           <tr class="table-primary text-center">
-            <th width="60%">Path Name</th>
+            <th width="50%">Path Name</th>
             <th width="10%">Avg [ms]</th>
-            <th width="10%">Min [ms]</th>
+            <th width="10%">Median [ms]</th>
+            <th width="10%">95%ile [ms]</th>
+            <th width="10%">99%ile [ms]</th>
             <th width="10%">Max [ms]</th>
           </tr>
         </thead>
@@ -69,7 +71,9 @@
               ({{ path_info["node_names"][0] }} ~ {{ path_info["node_names"][-1] }})
             </td>
             <td class="text-end">{{ '%0.3f' % path_info.best_avg|float }}</td>
-            <td class="text-end">{{ '%0.3f' % path_info.best_min|float }}</td>
+            <td class="text-end">{{ '%0.3f' % path_info.best_p50|float }}</td>
+            <td class="text-end">{{ '%0.3f' % path_info.best_p95|float }}</td>
+            <td class="text-end">{{ '%0.3f' % path_info.best_p99|float }}</td>
             <td class="text-end">{{ '%0.3f' % path_info.best_max|float }}</td>
           </tr>
           {% endfor %}
@@ -84,16 +88,20 @@
       <div style="height: calc(50vh); overflow: scroll">
         <table class="table table-hover table-bordered height">
           <tr class="table-primary text-center">
-            <th width="60%">Callback Name</th>
+            <th width="50%">Callback Name</th>
             <th width="10%">Avg [ms]</th>
-            <th width="10%">Min [ms]</th>
+            <th width="10%">Median [ms]</th>
+            <th width="10%">95%ile [ms]</th>
+            <th width="10%">99%ile [ms]</th>
             <th width="10%">Max [ms]</th>
           </tr>
           {% for info in stats_node_dict[component_name]['latency_topk'] %}
           <tr>
             <td><a href="{{ info['link'] }}">{{ info['displayname'] }}</a></td>
             <td class="text-end">{{ '%.3f' % info['avg']|float }}</td>
-            <td class="text-end">{{ '%.3f' % info['min']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['p50']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['p95']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['p99']|float }}</td>
             <td class="text-end">{{ '%.3f' % info['max']|float }}</td>
           </tr>
           {% endfor %}
