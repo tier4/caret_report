@@ -24,6 +24,18 @@
 
       {% if note_text_top %} {{ note_text_top | safe }} {% endif %}
 
+      <ul>
+        <li>Result Summary</li>
+        <ul>
+          <li>
+            Topic: {{ summary_topic_dict["cnt_pass"] }} / {{ summary_topic_dict["cnt_pass"] + summary_topic_dict["cnt_failed"] }}
+          </li>
+          <li>
+            Callback: {{ summary_callback_dict["cnt_pass"] }} / {{ summary_callback_dict["cnt_pass"] + summary_callback_dict["cnt_failed"] }}
+          </li>
+        </ul>
+      </ul>
+
       <div id="cy" style="height: 600px;"></div>
 
       {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}

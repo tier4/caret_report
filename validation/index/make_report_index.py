@@ -34,17 +34,31 @@ app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 def make_report(report_dir: str, component_list_json: str, note_text_top, note_text_bottom):
     ComponentManager().initialize(component_list_json)
 
+    summary_callback_dict = {
+        'cnt_pass': 0,
+        'cnt_failed': 0,
+    }
     summary_callback_dict_component_metrics = {}
     for component_name, _ in ComponentManager().component_dict.items():
         stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
-        summary_callback_dict_component_metrics[component_name] = summarize_callback_result(stats_dict_node_callback_metrics)
+        summary = summarize_callback_result(stats_dict_node_callback_metrics)
+        summary_callback_dict_component_metrics[component_name] = summary
+        summary_callback_dict['cnt_pass'] += summary[Metrics.FREQUENCY.name]['cnt_pass']
+        summary_callback_dict['cnt_failed'] += summary[Metrics.FREQUENCY.name]['cnt_failed']
 
+    summary_topic_dict = {
+        'cnt_pass': 0,
+        'cnt_failed': 0,
+    }
     summary_topic_dict_componentpair_metrics = {}
     for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         stats_dict_node_callback_metrics: dict = make_stats_dict_topic_pubsub_metrics(report_dir, component_pair)
         if len(stats_dict_node_callback_metrics) == 0:
             continue
-        summary_topic_dict_componentpair_metrics[component_pair[0] + '-' + component_pair[1]] = summarize_topic_result(stats_dict_node_callback_metrics)
+        summary = summarize_topic_result(stats_dict_node_callback_metrics)
+        summary_topic_dict_componentpair_metrics[component_pair[0] + '-' + component_pair[1]] = summary
+        summary_topic_dict['cnt_pass'] += summary[Metrics.FREQUENCY.name]['cnt_pass']
+        summary_topic_dict['cnt_failed'] += summary[Metrics.FREQUENCY.name]['cnt_failed']
 
     title = f'Validation result'
     trace_name = report_dir.split('/')[-1]
@@ -60,6 +74,8 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
                 trace_name=trace_name,
                 summary_callback_dict_component_metrics=summary_callback_dict_component_metrics,
                 summary_topic_dict_componentpair_metrics=summary_topic_dict_componentpair_metrics,
+                summary_callback_dict=summary_callback_dict,
+                summary_topic_dict=summary_topic_dict,
                 note_text_top=note_text_top,
                 note_text_bottom=note_text_bottom
             )
