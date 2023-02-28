@@ -78,7 +78,7 @@ def main():
     else:
         make_report(stats_all_path_list[0], 'index')
         make_report(stats_warning_path_list[0], 'index_warning')
-        print('<<< OK. report page is created >>>')
+        print('<<< OK. report_timer is created >>>')
 
 
 if __name__ == '__main__':
