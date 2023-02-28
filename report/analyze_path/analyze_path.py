@@ -32,7 +32,7 @@ from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.experiment import ResponseTime
 from caret_analyze.plot import message_flow
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, round_yaml
 
 # Supress log for CARET
 from logging import getLogger, FATAL
@@ -170,14 +170,14 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
 
     graph_short.width = 1400
     graph_short.height = 15 * len(target_path.child_names) + 50
-    utils.export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name)
+    export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name)
 
     if args.message_flow:
         graph = message_flow(target_path, granularity='node',
                              treat_drop_as_delay=False, export_path='dummy.html')
         graph.width = graph_short.width
         graph.height = graph_short.height
-        utils.export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name)
+        export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name)
 
     _logger.info('  Call ResponseTime')
     response_time = ResponseTime(records)
@@ -188,8 +188,8 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     offset = df_best[0][0]
     df_best = align_timeseries(df_best)
     p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_best, offset)
-    utils.export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name)
-    utils.export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name)
+    export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name)
+    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name)
 
     _logger.debug('    Draw histogram and timeseries (worst)')
     hist, bin_edges = response_time.to_worst_case_histogram(10**7)  # binsize = 10ms
@@ -197,8 +197,8 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     offset = df_worst[0][0]
     df_worst = align_timeseries(df_worst)
     p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_worst, offset)
-    utils.export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name)
-    utils.export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name)
+    export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name)
+    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name)
 
     stats.calc_stats(df_best[1], df_worst[1])
     stats.store_filename(target_path_name, args.message_flow)
@@ -212,9 +212,9 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     """Analyze paths"""
     global _logger
     if _logger is None:
-        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+        _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Paths: Start >>>')
-    utils.make_destination_dir(dest_dir, args.force, _logger)
+    make_destination_dir(dest_dir, args.force, _logger)
     shutil.copy(args.architecture_file_path, dest_dir)
 
     stats_list = []
@@ -238,7 +238,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     stat_file_path = f'{dest_dir}/stats_path.yaml'
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
-    utils.round_yaml(stat_file_path)
+    round_yaml(stat_file_path)
 
     _logger.info('<<< Analyze Paths: Finish >>>')
 
@@ -252,10 +252,10 @@ def parse_arg():
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('-m', '--message_flow', type=strtobool, default=False,
                         help='Output message flow graph')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -267,16 +267,16 @@ def main():
     """Main function"""
     global _logger
     args = parse_arg()
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
-    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     args.message_flow = True if args.message_flow == 1 else False
     _logger.debug(f'message_flow: {args.message_flow}')
 
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('yaml', args.architecture_file_path)
     app = Application(arch, lttng)
 

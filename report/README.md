@@ -34,14 +34,14 @@ export script_path=./CARET_report/report            # Path to 'report' directory
 export component_list_json=./component_list.json    # Path to setting file you prepare
 export target_path_json=./target_path.json          # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
-export start_time=25                                # start time[sec] for analysis
-export duration_time=9999                           # duration time[sec] for analysis
+export start_strip=15                               # strip time at the start [sec] for analysis
+export end_strip=0                                  # strip time at the end [sec] for analysis
 export max_node_depth=10                            # The number of depth to search path
 export timeout=60                                   # Timeout[sec] to search path
 export draw_all_message_flow=false                  # Flag to a create message flow graph for a whole time period (this will increase report creation time)
 
 # Run script
-sh ${script_path}/make_report.sh
+sh ${script_path}/report_analysis/make_report.sh
 ```
 
 ## Setting JSON files

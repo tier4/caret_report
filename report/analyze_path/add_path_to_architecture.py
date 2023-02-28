@@ -25,7 +25,7 @@ import json
 import yaml
 from caret_analyze import Architecture
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger
 
 # Supress log for CARET
 from logging import getLogger, FATAL
@@ -161,7 +161,7 @@ def add_path_to_architecture(args, arch: Architecture):
     """Add path information to architecture file"""
     global _logger
     if _logger is None:
-        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+        _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Add Path: Start >>>')
     # Read target path information from JSON
     try:
@@ -213,7 +213,7 @@ def main():
     """Main function"""
     global _logger
     args = parse_arg()
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'target_path_json: {args.target_path_json[0]}')

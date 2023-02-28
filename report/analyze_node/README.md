@@ -19,7 +19,8 @@
 ### `analyze_node.py`
 
 ```sh:usage
-usage: analyze_node.py [-h] [--component_list_json COMPONENT_LIST_JSON] [-s START_POINT] [-d DURATION] [-f] [-v]
+usage: analyze_node.py [-h] [--component_list_json COMPONENT_LIST_JSON]
+                       [--start_strip START_STRIP] [--end_strip END_STRIP] [-f] [-v]
                        trace_data report_directory
 
 ```

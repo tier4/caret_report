@@ -31,7 +31,7 @@ usage: add_path_to_architecture.py [-h]
 ### `analyze_path.py`
 
 ```sh:usage
-usage: analyze_path.py [-h] [-m MESSAGE_FLOW] [-s START_POINT] [-d DURATION] [-f] [-v]
+usage: analyze_path.py [-h] [-m MESSAGE_FLOW] [--start_strip START_STRIP] [--end_strip END_STRIP] [-f] [-v]
                        trace_data report_directory [architecture_file_path]
 ```
 

@@ -30,7 +30,7 @@ from caret_analyze.runtime.node import Node
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
-from common.utils import make_callback_displayname, round_yaml, get_callback_legend
+from common.utils import round_yaml, get_callback_legend
 from common.utils import ComponentManager
 
 # Supress log for CARET
@@ -120,7 +120,7 @@ def analyze_callback(callback_name: str, callback_displayname: str, metrics_str:
     return callback_stats
 
 
-def analyze_node(app: Application, node: Node, dest_dir: str) -> dict:
+def analyze_node(node: Node, dest_dir: str) -> dict:
     """Analyze a node"""
     all_metrics_dict = {'Frequency': Plot.create_frequency_timeseries_plot,
                         'Period': Plot.create_period_timeseries_plot,
@@ -143,7 +143,7 @@ def analyze_node(app: Application, node: Node, dest_dir: str) -> dict:
             if 'callback_start_timestamp' in metrics_str:
                 continue
 
-            callback_displayname = get_callback_legend(app, node, callback_name)
+            callback_displayname = get_callback_legend(node, callback_name)
             df_callback = trail_df(df_callback, end_strip_num=2, start_strip_num=1)
             if len(df_callback) > 0:
                 has_valid_data = True
@@ -166,13 +166,13 @@ def analyze_node(app: Application, node: Node, dest_dir: str) -> dict:
     return node_stats
 
 
-def analyze_component(app: Application, node_list: list[Node], dest_dir: str):
+def analyze_component(node_list: list[Node], dest_dir: str):
     """Analyze a component"""
     make_destination_dir(dest_dir, False, _logger)
 
     stats = {}
     for node in node_list:
-        node_stats = analyze_node(app, node, dest_dir)
+        node_stats = analyze_node(node, dest_dir)
         if node_stats:
             stats[node.node_name] = vars(node_stats)
 
@@ -209,7 +209,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
 
     for component_name, _ in ComponentManager().component_dict.items():
         node_list = get_node_list(lttng, app, component_name)
-        analyze_component(app, node_list, f'{dest_dir}/{component_name}')
+        analyze_component(node_list, f'{dest_dir}/{component_name}')
 
     _logger.info('<<< Analyze Nodes: Finish >>>')
 
@@ -221,10 +221,10 @@ def parse_arg():
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -241,9 +241,9 @@ def main():
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'component_list_json: {args.component_list_json}')
-    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
 
-    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 

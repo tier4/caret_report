@@ -28,7 +28,7 @@ from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.communication import Communication
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
-from common.utils import make_callback_displayname, round_yaml
+from common.utils import get_callback_legend, round_yaml
 from common.utils import ComponentManager
 
 # Supress log for CARET
@@ -165,13 +165,14 @@ def create_stats(title,  graph_filename, topic_name, publisher_name,
     return stats
 
 
-def analyze_communication(args, dest_dir, communication: Communication) -> tuple(dict, bool):
+def analyze_communication(args, dest_dir, app: Application, communication: Communication) -> tuple(dict, bool):
     """Analyze a subscription callback function"""
     title = f'{communication.topic_name} : {communication.publish_node_name} -> {communication.subscribe_node_name}'
     graph_filename = communication.topic_name.replace('/', '_')[1:] + communication.subscribe_node_name.replace('/', '_')
     graph_filename = graph_filename[:250]
+    node = app.get_node(communication.callback_subscription.node_name)
     callback_name = communication.callback_subscription.callback_name
-    display_name = make_callback_displayname(communication.callback_subscription)
+    display_name = get_callback_legend(node, callback_name)
     _logger.debug(f'Processing {title}')
 
     try:
@@ -241,7 +242,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
         for communication in communication_list:
             if ComponentManager().check_if_ignore(communication.callback_subscription.callback_name):
                 continue
-            stats, is_warning = analyze_communication(args, dest_dir, communication)
+            stats, is_warning = analyze_communication(args, dest_dir, app, communication)
             if stats:
                 stats_all_list.append(stats)
             if is_warning:
@@ -268,10 +269,10 @@ def parse_arg():
                 description='Script to check gap b/w publishment and subscription frequency')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-r', '--gap_threshold_ratio', type=float, default=0.2,
                         help='Warning when callback_freq is less than "gap_threshold_ratio" * timer_period for "count_threshold" times')
     parser.add_argument('-n', '--count_threshold', type=int, default=10,
@@ -291,13 +292,13 @@ def main():
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'component_list_json: {args.component_list_json}')
-    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     dest_dir = f'report_{Path(args.trace_data[0]).stem}'
     _logger.debug(f'dest_dir: {dest_dir}')
     _logger.debug(f'gap_threshold_ratio: {args.gap_threshold_ratio}')
     _logger.debug(f'count_threshold: {args.count_threshold}')
 
-    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 

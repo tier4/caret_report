@@ -152,12 +152,12 @@ export script_path=../report
 export component_list_json=./component_list.json
 export target_path_json=./target_path.json
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss    # modify for your environment
-export start_time=25
-export duration_time=9999
+export start_strip=15
+export end_strip=0
 export max_node_depth=2
 export draw_all_message_flow=false
 
-sh ${script_path}/make_report.sh
+sh ${script_path}/report_analysis/make_report.sh
 ```
 
 - Note: Setting files in this directory are just a sample, and may not work with your trace data. Please modify them as you want
