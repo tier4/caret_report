@@ -14,7 +14,7 @@ python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" --architec
 python3 "${script_path}"/analyze_path/make_report_path.py "${report_dir_name}"
 
 # # Track of response time
-# python3 "${script_path}"/track_response_time/make_track_report.py "${report_dir_name}" stats_path_list.csv
+# python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" stats_path_list.csv
 
 # Node analysis
 python3 "${script_path}"/analyze_node/analyze_node.py "${trace_data}" --component_list_json="${component_list_json}" -s "${start_time}" -d "${duration_time}" -f -v

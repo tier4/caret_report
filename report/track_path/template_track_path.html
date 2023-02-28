@@ -15,10 +15,10 @@
 
   <body>
     <div class="container">
-      {% for target_path_name, stats in stats_per_path.items() %}
+      {% for target_path_name, stats in stats_path_dict.items() %}
         <hr />
         <h2 id="{{ target_path_name }}">Path Name: {{ target_path_name }}</h2>
-        <iframe src="{{ filename_per_path[target_path_name] }}" width="1200" height="420" scrolling="no"></iframe>
+        <iframe src="{{ filename_path_dict[target_path_name] }}" width="1200" height="420" scrolling="no"></iframe>
         <div style="height: calc(20vh); overflow: scroll">
           <table class="table table-hover table-bordered">
             <thead>
@@ -30,11 +30,11 @@
               </tr>
             </thead>
             <tbody>
-              {% for version in version_list | reverse %}
+              {% for version, report_path in reportpath_version_dict.items() | reverse %}
                 <tr>
                   <td>
-                    {% if loop.index0 == 0 %}
-                      <a href="../path/index.html#{{ target_path_name }}">{{ version}}</a>
+                    {% if report_path != '' %}
+                      <a href="{{ report_path }}#{{ target_path_name }}">{{ version }}</a>
                     {% else %}
                       {{ version }}
                     {% endif %}
