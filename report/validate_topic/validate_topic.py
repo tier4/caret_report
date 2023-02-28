@@ -36,7 +36,9 @@ from caret_analyze.runtime.communication import Communication, Subscription, Pub
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
-from common.utils import Metrics, ResultStatus, ComponentManager
+from common.utils import ComponentManager
+from common.utils_validation import Metrics, ResultStatus
+
 
 # Supress log for CARET
 from logging import getLogger, FATAL
@@ -240,7 +242,7 @@ def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metri
         df_comm = timeseries_plot.to_dataframe()
         stats, df = Stats.from_df(component_pair, comm.topic_name, comm.publish_node_name, comm.subscribe_node_name, metrics, graph_filename, df_comm)
         if stats:
-            export_graph(figure, dest_dir, graph_filename, _logger)
+            export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
         else:
             raise Exception()
     except:
@@ -268,7 +270,7 @@ def create_stats_for_callback_as_topic(app: Application, component_pair: tuple[s
 
             stats, df = Stats.from_df(component_pair, callback.subscribe_topic_name, expectation.publish_node_name, callback.node_name, metrics, graph_filename, df_comm)
             if stats:
-                export_graph(figure, dest_dir, graph_filename, _logger)
+                export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
             else:
                 raise Exception()
         else:

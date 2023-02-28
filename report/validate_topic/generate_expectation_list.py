@@ -22,8 +22,8 @@ import logging
 import csv
 from caret_analyze import Architecture, Application, Lttng
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
-from common.utils import Metrics, ResultStatus, ComponentManager
+from common.utils import create_logger, make_destination_dir
+from common.utils import ComponentManager
 
 # Supress log for CARET
 from logging import getLogger, FATAL

@@ -32,7 +32,8 @@ from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
-from common.utils import Metrics, ResultStatus, ComponentManager
+from common.utils import ComponentManager
+from common.utils_validation import Metrics, ResultStatus
 
 # Supress log for CARET
 from logging import getLogger, FATAL
@@ -260,7 +261,7 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
             figure.y_range.start = 0
             figure.width = 1000
             figure.height = 350
-            export_graph(figure, dest_dir, graph_filename, _logger)
+            export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
         except:
             _logger.info(f'Failed to export graph')
 

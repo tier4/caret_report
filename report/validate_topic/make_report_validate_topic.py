@@ -21,8 +21,9 @@ from pathlib import Path
 import csv
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result, make_topic_detail_filename
-from common.utils import Metrics, ResultStatus, ComponentManager
+from common.utils import ComponentManager
+from common.utils_validation import make_stats_dict_topic_pubsub_metrics, summarize_topic_result, make_topic_detail_filename
+from common.utils_validation import Metrics, ResultStatus
 
 
 sub_title_list = ['Frequency [Hz]', 'Period [ms]', 'Latency [ms]']

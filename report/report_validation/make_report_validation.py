@@ -22,9 +22,10 @@ from pathlib import Path
 import sys
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import make_stats_dict_node_callback_metrics, summarize_callback_result
-from common.utils import make_stats_dict_topic_pubsub_metrics, summarize_topic_result
-from common.utils import Metrics, ResultStatus, ComponentManager
+from common.utils import ComponentManager
+from common.utils_validation import make_stats_dict_node_callback_metrics, summarize_callback_result
+from common.utils_validation import make_stats_dict_topic_pubsub_metrics, summarize_topic_result
+from common.utils_validation import Metrics, ResultStatus
 
 
 app = flask.Flask(__name__)
@@ -63,7 +64,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
     title = f'Validation result'
     trace_name = report_dir.split('/')[-1]
     destination_path = f'{report_dir}/index.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_index.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_report_validation.html'
 
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
