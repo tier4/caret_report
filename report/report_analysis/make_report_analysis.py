@@ -46,8 +46,8 @@ def render_page(destination_path, template_path, report_name, component_list, st
 
 def get_component_list(report_dir: str) -> list[str]:
     """Create component name list in node analysis"""
-    component_list = os.listdir(report_dir + '/node')
-    component_list = [f for f in component_list if os.path.isdir(os.path.join(report_dir + '/node', f))]
+    component_list = os.listdir(report_dir + '/analyze_node')
+    component_list = [f for f in component_list if os.path.isdir(os.path.join(report_dir + '/analyze_node', f))]
     component_list.sort()
     return component_list
 
@@ -57,7 +57,7 @@ def get_stats_node(report_dir: str) -> dict:
     stats_dict = {}
     component_list = get_component_list(report_dir)
     for component_name in component_list:
-        with open(report_dir + '/node/' + component_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
+        with open(report_dir + '/analyze_node/' + component_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
             stats = yaml.safe_load(f_yaml)
             stats_dict[component_name] = stats
     return stats_dict
@@ -65,7 +65,7 @@ def get_stats_node(report_dir: str) -> dict:
 
 def get_stats_path(report_dir: str):
     """Read stats"""
-    with open(report_dir + '/path/stats_path.yaml', 'r', encoding='utf-8') as f_yaml:
+    with open(report_dir + '/analyze_path/stats_path.yaml', 'r', encoding='utf-8') as f_yaml:
         stats = yaml.safe_load(f_yaml)
     return stats
 
@@ -77,7 +77,7 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
         callbacks = node_info['callbacks']
         for _, callback_info in callbacks.items():
             callback_latency_list.append({
-                'link': 'node/' + component_name + '/index.html#' + node_name,
+                'link': 'analyze_node/' + component_name + '/index.html#' + node_name,
                 'displayname': flask.Markup(node_name + '<br>' + callback_info['displayname']),
                 'avg': callback_info['Latency']['avg'] if isinstance(callback_info['Latency']['avg'], (int, float)) else 0,
                 'min': callback_info['Latency']['min'] if isinstance(callback_info['Latency']['min'], (int, float)) else 0,
@@ -106,20 +106,20 @@ def read_note_text(args) -> tuple[str, str]:
 
 def make_report(args, index_filename: str='index'):
     """Make report page"""
-    report_dir = str(Path(args.report_directory[0]))
-    report_name = report_dir.split('/')[-1]
+    dest_dir = str(Path(args.dest_dir[0]))
+    report_name = dest_dir.split('/')[-1]
 
-    component_list = get_component_list(report_dir)
-    stats_node_dict = get_stats_node(report_dir)
+    component_list = get_component_list(dest_dir)
+    stats_node_dict = get_stats_node(dest_dir)
     for component_name in component_list:
         find_latency_topk(component_name, stats_node_dict[component_name])
 
-    stats_path = get_stats_path(report_dir)
+    stats_path = get_stats_path(dest_dir)
 
     note_text_top, note_text_bottom = read_note_text(args)
 
-    destination_path = f'{report_dir}/{index_filename}.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_report_top.html'
+    destination_path = f'{dest_dir}/{index_filename}.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
     render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom)
 
@@ -128,7 +128,7 @@ def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
                 description='Script to make report page')
-    parser.add_argument('report_directory', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--note_text_top', type=str, default='')
     parser.add_argument('--note_text_bottom', type=str, default='')
     args = parser.parse_args()
@@ -139,7 +139,7 @@ def main():
     """Main function"""
     args = parse_arg()
     make_report(args, 'index')
-    print('<<< OK. report page is created >>>')
+    print('<<< OK. report_analysis is created >>>')
 
 
 if __name__ == '__main__':

@@ -10,10 +10,10 @@
 
 ## Scripts
 
-### `make_report_top.py`
+### `make_report_analysis.py`
 
 ```sh:usage
-usage: make_report_top.py [-h] [--note_text_top NOTE_TEXT_TOP]
+usage: make_report_analysis.py [-h] [--note_text_top NOTE_TEXT_TOP]
                           [--note_text_bottom NOTE_TEXT_BOTTOM]
                           report_directory
 ```

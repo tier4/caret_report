@@ -5,7 +5,7 @@
 set -e
 
 script_path="$(pwd)"/report
-work_dir="$(pwd)"/verify_work
+work_dir="$(pwd)"/work_verify
 
 . /opt/ros/"$ROS_DISTRO"/setup.sh
 . ~/ros2_caret_ws/install/local_setup.sh
@@ -34,7 +34,7 @@ timeout=30
 draw_all_message_flow=false
 export script_path trace_data component_list_json target_path_json start_time duration_time max_node_depth timeout draw_all_message_flow
 cd "${sample_autoware_dir}" || exit
-sh "${script_path}"/make_report.sh
+sh "${script_path}"/report_analysis/make_report.sh
 mv report_autoware_launch_trace_20221227-150253_universe_rosbag "${work_dir}"/.
 
 # Compare result

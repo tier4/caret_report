@@ -1,9 +1,9 @@
 # report
-report_*/
-val_*/
+output/
+work_report/
+work_verify/
 architecture*.yaml
 dummy.html
-verify_work/
 
 # colcon
 build/

@@ -219,6 +219,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('-s', '--start_point', type=float, default=0.0,
                         help='Start point[sec] to load trace data')
@@ -238,16 +239,16 @@ def main():
     _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'component_list_json: {args.component_list_json}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
-    _logger.debug(f'dest_dir: {dest_dir}')
 
     lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
-    analyze(args, lttng, arch, app, dest_dir + '/node')
+    dest_dir = args.dest_dir[0]
+    analyze(args, lttng, arch, app, dest_dir + '/analyze_node')
 
 
 if __name__ == '__main__':

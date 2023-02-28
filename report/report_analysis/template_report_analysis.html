@@ -26,7 +26,7 @@
       <ul>
         {% for path_info in stats_path %}
         <li>
-          <a href="path/index.html#{{ path_info['target_path_name'] }}">
+          <a href="analyze_path/index.html#{{ path_info['target_path_name'] }}">
             {{ path_info["target_path_name"] }}
           </a>
         </li>
@@ -40,7 +40,7 @@
       </p>
       <ul>
         {% for component_name in component_list %}
-        <li><a href="node/{{ component_name }}/index.html">{{ component_name }}</a></li>
+        <li><a href="analyze_node/{{ component_name }}/index.html">{{ component_name }}</a></li>
         {% endfor %}
       </ul>
 
@@ -64,7 +64,7 @@
           {% for path_info in stats_path %}
           <tr>
             <td>
-              <a href="path/index.html#{{ path_info['target_path_name'] }}">
+              <a href="analyze_path/index.html#{{ path_info['target_path_name'] }}">
                 {{ path_info["target_path_name"] }}
               </a>
               <br />

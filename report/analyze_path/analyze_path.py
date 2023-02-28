@@ -248,6 +248,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze path')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('-m', '--message_flow', type=strtobool, default=False,
                         help='Output message flow graph')
@@ -269,10 +270,9 @@ def main():
     _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{pathlib.Path(args.trace_data[0]).stem}'
-    _logger.debug(f'dest_dir: {dest_dir}')
     args.message_flow = True if args.message_flow == 1 else False
     _logger.debug(f'message_flow: {args.message_flow}')
 
@@ -280,7 +280,8 @@ def main():
     arch = Architecture('yaml', args.architecture_file_path)
     app = Application(arch, lttng)
 
-    analyze(args, lttng, arch, app, dest_dir + '/path')
+    dest_dir = args.dest_dir[0]
+    analyze(args, lttng, arch, app, dest_dir + '/analyze_path')
 
 
 if __name__ == '__main__':

@@ -32,16 +32,16 @@ usage: add_path_to_architecture.py [-h]
 
 ```sh:usage
 usage: analyze_path.py [-h] [-m MESSAGE_FLOW] [-s START_POINT] [-d DURATION] [-f] [-v]
-                       trace_data [architecture_file_path]
+                       trace_data report_directory [architecture_file_path]
 ```
 
 - This script creates message flow graph (html and image files) and statistics file (`stats_path.yaml`) for each target path
 - When `MESSAGE_FLOW` is yes, message flow graph is created for a whole time period. It will increase report creation time and the created graph file is very heavy
 
-### `make_report_path.py`
+### `make_report_analyze_path.py`
 
 ```sh:usage
-usage: make_report_path.py [-h] report_directory
+usage: make_report_analyze_path.py [-h] report_directory
 ```
 
 - This script creates a report html page
