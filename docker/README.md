@@ -35,28 +35,30 @@ docker image build -t caret/caret_report --build-arg CARET_VERSION="v0.3.3" ./do
 ```sh
 cd CARET_report
 # Settings: modify for your usage and environment
-export script_path=`pwd`/report
-export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
-export work_dir=`pwd`/sample_autoware
+script_path=`pwd`
+trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
+work_dir=`pwd`/sample_autoware
 export component_list_json=component_list.json
 export target_path_json=target_path.json
-
-export start_time=25
-export duration_time=9999
-export max_node_depth=2
+export start_strip=20
+export end_strip=5
+export max_node_depth=10
+export timeout=60
 export draw_all_message_flow=false
 
 # Run script
 docker run -it --rm \
     --user $(id -u):$(id -g) \
+    -v /etc/localtime:/etc/localtime:ro \
     -v ${script_path}:/CARET_report \
     -v ${trace_data}:/trace_data \
     -v ${work_dir}:/work \
-    -e start_time \
-    -e duration_time \
+    -e start_strip \
+    -e end_strip \
     -e max_node_depth \
+    -e timeout \
     -e draw_all_message_flow \
     -e component_list_json \
     -e target_path_json \
-    -v /etc/localtime:/etc/localtime:ro caret/caret_report
+    caret/caret_report
 ```

@@ -79,38 +79,38 @@ jobs:
       - name: Create CARET report
         if: ${{ matrix.do_test }}
         run: |
-          export script_path=`pwd`/report
-          export trace_data=`pwd`/autoware_launch_trace_20221227-150253_universe_rosbag
-          export work_dir=`pwd`/sample_autoware
+          script_path=`pwd`
+          trace_data=`pwd`/autoware_launch_trace_20221227-150253_universe_rosbag
+          work_dir=`pwd`/sample_autoware
           export component_list_json=component_list.json
           export target_path_json=target_path.json
-
-          export start_time=25
-          export duration_time=9999
+          export start_strip=20
+          export end_strip=5
           export max_node_depth=10
-          export timeout=30
+          export timeout=60
           export draw_all_message_flow=false
 
           docker run --rm \
               --user $(id -u):$(id -g) \
+              -v /etc/localtime:/etc/localtime:ro \
               -v ${script_path}:/CARET_report \
               -v ${trace_data}:/trace_data \
               -v ${work_dir}:/work \
-              -e start_time \
-              -e duration_time \
+              -e start_strip \
+              -e end_strip \
               -e max_node_depth \
               -e timeout \
               -e draw_all_message_flow \
               -e component_list_json \
               -e target_path_json \
-              -v /etc/localtime:/etc/localtime:ro ${{ env.TAGS }}
+              ${{ env.TAGS }}
 
       - name: Upload report
         if: ${{ matrix.do_test }}
         uses: actions/upload-artifact@v3
         with:
           name: report_trace_data
-          path: ./sample_autoware/report_trace_data
+          path: ./sample_autoware/output/report_trace_data
 
       - name: Compare report contents
         if: ${{ matrix.do_test }}
@@ -118,5 +118,5 @@ jobs:
           sudo apt-get install -y imagemagick
           git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
           export report_dir_1=`pwd`/reference_result
-          export report_dir_2=`pwd`/sample_autoware/report_trace_data
+          export report_dir_2=`pwd`/sample_autoware/output/report_trace_data
           sh `pwd`/report/compare/compare.sh

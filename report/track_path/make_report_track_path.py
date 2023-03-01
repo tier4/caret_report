@@ -163,7 +163,6 @@ def make_report(dest_dir: str, stats_list_file: str):
     destination_path = f'{dest_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_track_path.html'
     render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, destination_path, template_path)
-    return True
 
 
 def parse_arg():
@@ -186,9 +185,8 @@ def main():
     _logger.info(f'stats_list_file: {stats_list_file}')
     os.makedirs(dest_dir, exist_ok=True)
 
-    ret = make_report(dest_dir, stats_list_file)
-    if ret:
-        print('<<< OK. report_track_path is created >>>')
+    make_report(dest_dir, stats_list_file)
+    print('<<< OK. report_track_path is created >>>')
 
 
 if __name__ == '__main__':

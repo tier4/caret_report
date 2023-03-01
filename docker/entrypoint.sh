@@ -31,9 +31,8 @@ export target_path_json=/work/${target_path_json}
 # export max_node_depth=20
 # export draw_all_message_flow=false
 
-export script_path=/CARET_report
 export trace_data=/trace_data
 
-sh ${script_path}/make_report.sh
+sh /CARET_report/report/report_analysis/make_report.sh
 
 exec "$@"

@@ -22,6 +22,10 @@
     ],
     ["^/pacmod/from_can_bus", "^/pacmod/pacmod$"]
   ],
-  "external_out_topic_list": [["^/pacmod/to_can_bus", "^/pacmod/pacmod$"]],
-  "ignore_list": ["container"]
+  "external_out_topic_list": [
+    ["^/pacmod/to_can_bus", "^/pacmod/pacmod$"]
+  ],
+  "ignore_list": [
+    "container"
+  ]
 }

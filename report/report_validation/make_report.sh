@@ -7,8 +7,9 @@ set -e
 mkdir -p output
 
 # Variable settings
+script_path=$(dirname $0)/..
 trace_data_name=$(basename "${trace_data}")
-report_dir_name=output/val_${trace_data_name}
+report_dir_name=output/val_"${trace_data_name}"
 
 # Generate topic expectation list
 python3 "${script_path}"/validate_topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --topic_list_filename="${topic_list_csv}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv"

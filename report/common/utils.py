@@ -88,23 +88,28 @@ def read_trace_data(trace_data: str, start_strip: float, end_strip: float,
 #         return Lttng(trace_data, force_conversion=force_conversion)
 
 
-def get_callback_legend(node: Node, callback_name: str) -> str:
-    try:
-        callback_legend_dict = {}
-        cnt_timer = 0
-        cnt_subscription = 0
-        for callback in node.callbacks:
-            if callback.callback_type == CallbackType.TIMER:
-                period_ms = callback.timer.period_ns * 1e-6
-                callback_legend_dict[callback.callback_name] = f'timer_{cnt_timer}: {period_ms}ms'
-                cnt_timer += 1
-            else:
-                callback_legend_dict[callback.callback_name] = f'subscription_{cnt_subscription}: {callback.subscribe_topic_name}'
-                cnt_subscription += 1
+def get_callback_legend(node: Node, callback_name: str, with_trigger: bool=True) -> str:
+    callback_legend_dict = {}
+    cnt_timer = 0
+    cnt_subscription = 0
+    for callback in node.callbacks:
+        if callback.callback_type == CallbackType.TIMER:
+            period_ms = callback.timer.period_ns * 1e-6
+            legend = f'timer_{cnt_timer}'
+            if with_trigger:
+                legend += f': {period_ms}ms'
+            callback_legend_dict[callback.callback_name] = legend
+            cnt_timer += 1
+        else:
+            legend = f'subscription_{cnt_subscription}'
+            if with_trigger:
+                legend += f': {callback.subscribe_topic_name}'
+            callback_legend_dict[callback.callback_name] = legend
+            cnt_subscription += 1
 
+    if callback_name in callback_legend_dict:
         callback_legend = callback_legend_dict[callback_name]
-    except:
-        print(f'Failed to get legend name. {node.node_name}, {callback_name}')
+    else:
         callback_legend = callback_name
 
     return callback_legend

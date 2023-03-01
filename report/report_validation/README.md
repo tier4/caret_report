@@ -35,10 +35,9 @@
 
 ```sh
 # Settings: modify for your usage and environment
-export script_path=`pwd`/../validation        # Path to 'validation' directory in this repo cloned
-export component_list_json=./component_list.json    # Path to setting file you prepare
 export trace_data=~/.ros/tracing/caret_sample/      # Path to CARET trace data (CTF file)
-export start_strip=10                               # strip time at the start [sec] for analysis
+export component_list_json=./component_list.json    # Path to setting file you prepare
+export start_strip=20                               # strip time at the start [sec] for analysis
 export end_strip=5                                  # strip time at the end [sec] for analysis
 export callback_list_csv=./callback_list.csv
 export topic_list_csv=./topic_list.csv
@@ -46,7 +45,7 @@ export note_text_top=./note_text_top.txt
 export note_text_bottom=./note_text_bottom.txt
 
 # Run script
-sh ${script_path}/make_report.sh
+sh ../report/report_validation/make_report.sh
 ```
 
 ## How to update callback_list.csv and topic_list.csv

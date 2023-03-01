@@ -31,7 +31,7 @@ from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df, get_callback_legend
 from common.utils import ComponentManager
 from common.utils_validation import Metrics, ResultStatus
 
@@ -299,31 +299,14 @@ def validate_callback(component_name: str, target_node_list: list[Node], metrics
     return result_info_list
 
 
-def get_callback_legend(app: Application, node_name: str, callback_name: str) -> str:
-    try:
-        callback_legend_dict = {}
-        node = app.get_node(node_name)
-        cnt_timer = 0
-        cnt_subscription = 0
-        for callback in node.callbacks:
-            if callback.callback_type == CallbackType.TIMER:
-                callback_legend_dict[callback.callback_name] = f'timer_{cnt_timer}'
-                cnt_timer += 1
-            else:
-                callback_legend_dict[callback.callback_name] = f'subscription_{cnt_subscription}'
-                cnt_subscription += 1
-
-        callback_legend = callback_legend_dict[callback_name]
-    except:
-        _logger.warning(f'Failed to get legend name. {node_name}, {callback_name}')
-        callback_legend = callback_name
-    return callback_legend
-
-
 def save_stats(app: Application, result_list: list[Result], component_name: str, dest_dir: str, metrics_str: str):
     result_var_list = []
     for result in result_list:
-        callback_legend = get_callback_legend(app, result.stats.node_name, result.stats.callback_name)
+        if result.stats.node_name in app.node_names:
+            callback_legend = get_callback_legend(app.get_node(result.stats.node_name), result.stats.callback_name, False)
+        else:
+            _logger.warning(f'Failed to get legend name. {result.stats.node_name}, {result.stats.callback_name}')
+            callback_legend = result.stats.callback_name
         result.stats = vars(result.stats)
         result.stats['callback_legend'] = callback_legend
         result_var_list.append(vars(result))
@@ -332,6 +315,7 @@ def save_stats(app: Application, result_list: list[Result], component_name: str,
     result_file_path = f'{dest_dir}/stats_{metrics_str}.yaml'
     with open(result_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
+
 
 def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str):
     """Validate callback for each component"""

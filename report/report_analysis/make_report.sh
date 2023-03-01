@@ -7,8 +7,9 @@ set -e
 mkdir -p output
 
 # Variable settings
+script_path=$(dirname $0)/..
 trace_data_name=$(basename "${trace_data}")
-report_dir_name=output/report_${trace_data_name}
+report_dir_name=output/report_"${trace_data_name}"
 
 # Path analysis
 python3 "${script_path}"/analyze_path/add_path_to_architecture.py "${trace_data}" "${target_path_json}" --architecture_file_path=architecture_path.yaml --max_node_depth="${max_node_depth}" --timeout="${timeout}" -v

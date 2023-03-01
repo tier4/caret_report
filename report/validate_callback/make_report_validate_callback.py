@@ -177,7 +177,7 @@ def main():
     report_dir = args.report_directory[0]
     make_report(report_dir, args.component_list_json)
     make_unused_list(report_dir, args.component_list_json)
-    print('<<< OK. report page is created >>>')
+    print('<<< OK. report_validate_callback is created >>>')
 
 
 if __name__ == '__main__':
