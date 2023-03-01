@@ -33,10 +33,10 @@
               {% for version, report_path in reportpath_version_dict.items() | reverse %}
                 <tr>
                   <td>
+                    {{ version }}
                     {% if report_path != '' %}
-                      <a href="{{ report_path }}#{{ target_path_name }}">{{ version }}</a>
-                    {% else %}
-                      {{ version }}
+                      | link to report: <a href="{{ report_path }}/../../index.html">top</a>, 
+                      <a href="{{ report_path }}#{{ target_path_name }}">path</a>
                     {% endif %}
                   </td>
                   {% for value_name, value_list in stats.items() %}

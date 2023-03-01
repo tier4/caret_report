@@ -65,37 +65,39 @@ def render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, de
             f_html.write(rendered)
 
 
-def make_stats_file_list(stats_list_file: str) -> list[tuple[str,str]]:
+def make_stats_file_list(dest_dir: str, stats_list_file: str) -> list[tuple[str,str]]:
     """Make file list"""
     stats_file_list = []
     if not os.path.isfile(stats_list_file):
         _logger.error(f"Unable to read csv: {stats_list_file}")
         return []
-
     with open(stats_list_file, 'r', encoding='utf-8') as f_csv:
         for row in csv.DictReader(f_csv, ['version', 'stats_file']):
             stats_file = row['stats_file']
             stats_file_abs = Path(stats_file).expanduser()
+            stats_file_from_current = Path(stats_file).resolve()
+            stats_file_from_csv = Path.joinpath(Path(os.path.dirname(stats_list_file)).resolve(), stats_file)
+            stats_file_from_dest = Path.joinpath(Path(os.path.dirname(dest_dir)).resolve(), stats_file)
+            stats_file_from_dest_parent = Path.joinpath(Path(os.path.dirname(dest_dir)).resolve().parent, stats_file)
             if os.path.isfile(stats_file_abs):
-                # path is described as absolute paths or relative paths from home dir
                 stats_file_list.append((row['version'], stats_file_abs))
+            elif os.path.isfile(stats_file_from_current):
+                stats_file_list.append((row['version'], stats_file_from_current))
+            elif os.path.isfile(stats_file_from_csv):
+                stats_file_list.append((row['version'], stats_file_from_csv))
+            elif os.path.isfile(stats_file_from_dest):
+                stats_file_list.append((row['version'], stats_file_from_dest))
+            elif os.path.isfile(stats_file_from_dest_parent):
+                stats_file_list.append((row['version'], stats_file_from_dest_parent))
             else:
-                # path is described as relative paths from csv file
-                stats_file_abs = Path(stats_file).resolve()
-                if os.path.isfile(stats_file_abs):
-                    stats_file_list.append((row['version'], stats_file_abs))
-                else:
-                    _logger.error(f"Unable to read stats file: {row}")
-                    return []
-
+                _logger.error(f"Unable to read stats file: {row}")
+                continue
     return stats_file_list
 
 
 def make_stats(dest_dir: str, stats_list_file: str):
     """Make stats"""
-    stats_file_list = make_stats_file_list(stats_list_file)
-    if not stats_file_list:
-        return None
+    stats_file_list = make_stats_file_list(dest_dir, stats_list_file)
 
     reportpath_version_dict = {}   # key: version, value: path to report
     for version, stats_file in stats_file_list:
@@ -110,8 +112,10 @@ def make_stats(dest_dir: str, stats_list_file: str):
         with open(stats_file, 'r', encoding='utf-8') as f_yaml:
             stats_version_dict[version] = yaml.safe_load(f_yaml)
 
-    target_path_name_list = [
-        target_path_info['target_path_name'] for target_path_info in stats_version_dict[stats_file_list[0][0]]]
+    target_path_name_list = []
+    if len(stats_file_list)> 0:
+        target_path_name_list = [
+            target_path_info['target_path_name'] for target_path_info in stats_version_dict[stats_file_list[0][0]]]
 
     # Create dataframe for each target path (index=version, column=avg, max, min, etc.)
     df_per_path = pd.DataFrame(columns=pd.MultiIndex.from_product([target_path_name_list, value_name_list]), dtype=float)
@@ -156,10 +160,7 @@ def make_stats(dest_dir: str, stats_list_file: str):
 
 def make_report(dest_dir: str, stats_list_file: str):
     """Make report page"""
-    ret = make_stats(dest_dir, stats_list_file)
-    if ret is None:
-        return
-    reportpath_version_dict, stats_path_dict, filename_path_dict = ret
+    reportpath_version_dict, stats_path_dict, filename_path_dict = make_stats(dest_dir, stats_list_file)
     destination_path = f'{dest_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_track_path.html'
     render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, destination_path, template_path)
