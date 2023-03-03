@@ -344,7 +344,7 @@ def save_stats(result_list: list[Result], metrics_str: str, dest_dir: str, is_ap
 
 def validate_component_pair(app: Application, component_pair: tuple[str], dest_dir: str, force: bool, expectation_csv_filename: str):
     """Validate callback for component pair"""
-    dest_dir = f'{dest_dir}/topic/{component_pair[0]}-{component_pair[1]}'
+    dest_dir = f'{dest_dir}/validate_topic/{component_pair[0]}-{component_pair[1]}'
 
     target_comm_list: list[Communication] = []
     for comm in app.communications:
@@ -383,7 +383,7 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
 
     ComponentManager().initialize(component_list_json, _logger)
 
-    make_destination_dir(dest_dir + '/topic', force, _logger)
+    make_destination_dir(dest_dir + '/validate_topic', force, _logger)
 
     for component_pair in ComponentManager().get_component_pair_list(with_external=True):
         validate_component_pair(app, component_pair, dest_dir, force, expectation_csv_filename)

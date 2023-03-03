@@ -46,7 +46,7 @@ def make_topic_detail_filename(topic_name: str):
 def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
     stats_dict_node_callback_metrics: dict = {}
     for metrics in Metrics:
-        stats_filename = f'{report_dir}/callback/{component_name}/stats_{metrics.name}.yaml'
+        stats_filename = f'{report_dir}/validate_callback/{component_name}/stats_{metrics.name}.yaml'
         if not os.path.isfile(stats_filename):
             continue
         with open(stats_filename, 'r', encoding='utf-8') as f_yaml:
@@ -72,13 +72,13 @@ def make_stats_dict_node_callback_metrics(report_dir: str, component_name: str):
                 stats['stats']['subscribe_topic_html'] = ''
                 if stats['stats']['subscribe_topic_name'] != '':
                     topic_html = make_topic_detail_filename(stats['stats']['subscribe_topic_name'])
-                    topic_html_list = glob.glob(f'{report_dir}/topic/*/{topic_html}', recursive=False)
+                    topic_html_list = glob.glob(f'{report_dir}/validate_topic/*/{topic_html}', recursive=False)
                     topic_html = [html for html in topic_html_list if '-' + stats['stats']['component_name'] in html]
                     if len(topic_html) > 0:
                         topic_html = topic_html[0]
                         topic_html = topic_html.split('/')
-                        topic_html = '/'.join(topic_html[1:])
-                        stats['stats']['subscribe_topic_html'] = '../../' + topic_html
+                        topic_html = '/'.join(topic_html[-2:])
+                        stats['stats']['subscribe_topic_html'] = '../../validate_topic/' + topic_html
 
                 node_name = stats['stats']['node_name']
                 callback_name = stats['stats']['callback_name']
@@ -132,7 +132,7 @@ def summarize_callback_result(stats_dict_node_callback_metrics: dict) -> dict:
 def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[str]):
     stats_dict_topic_pubsub_metrics: dict = {}
     for metrics in Metrics:
-        stats_filename = f'{report_dir}/topic/{component_pair[0]}-{component_pair[1]}/stats_{metrics.name}.yaml'
+        stats_filename = f'{report_dir}/validate_topic/{component_pair[0]}-{component_pair[1]}/stats_{metrics.name}.yaml'
         if not os.path.isfile(stats_filename):
             continue
         with open(stats_filename, 'r', encoding='utf-8') as f_yaml:
@@ -153,13 +153,13 @@ def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[
 
                 stats['stats']['publish_node_html'] = ''
                 if stats['stats']['pubilsh_component_name'] != 'external':
-                    stats['stats']['publish_node_html'] = '../../callback/' + \
+                    stats['stats']['publish_node_html'] = '../../validate_callback/' + \
                         stats['stats']['pubilsh_component_name'] + '/' + \
                         make_callback_detail_filename(stats['stats']['publish_node_name'])
 
                 stats['stats']['subscribe_node_html'] = ''
                 if stats['stats']['subscribe_component_name'] != 'external':
-                    stats['stats']['subscribe_node_html'] = '../../callback/' + \
+                    stats['stats']['subscribe_node_html'] = '../../validate_callback/' + \
                         stats['stats']['subscribe_component_name'] + '/' + \
                         make_callback_detail_filename(stats['stats']['subscribe_node_name'])
 

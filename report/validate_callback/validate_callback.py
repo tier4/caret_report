@@ -319,7 +319,7 @@ def save_stats(app: Application, result_list: list[Result], component_name: str,
 
 def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str):
     """Validate callback for each component"""
-    dest_dir = f'{dest_dir}/callback/{component_name}'
+    dest_dir = f'{dest_dir}/validate_callback/{component_name}'
     make_destination_dir(dest_dir, force, _logger)
 
     target_node_list: list[Node] = []
@@ -346,7 +346,7 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
 
     _logger.info(f'<<< Validate callback start >>>')
 
-    make_destination_dir(dest_dir + '/callback', force, _logger)
+    make_destination_dir(dest_dir + '/validate_callback', force, _logger)
     arch.export(dest_dir + '/architecture.yaml', force=True)
     ComponentManager().initialize(component_list_json, _logger)
 

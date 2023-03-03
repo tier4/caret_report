@@ -208,7 +208,7 @@ for (let component_name in summary_callback_dict_component_metrics) {
     component_name + "\n" + cnt_pass + " / " + cnt_total,
   );
   cy.getElementById(component_name).addClass(class_name);
-  html = "callback/" + component_name + "/index.html";
+  html = "validate_callback/" + component_name + "/index.html";
   cy.getElementById(component_name).data("html", html);
   cy.getElementById(component_name + "_box").data("html", html);
 }
@@ -278,7 +278,7 @@ for (let componentpair in summary_topic_dict_component_pair_metrics) {
   }
 
   cy.getElementById(componentpair).addClass(class_name);
-  html = "topic/" + componentpair + "/index.html";
+  html = "validate_topic/" + componentpair + "/index.html";
   cy.getElementById(componentpair).data("html", html);
 }
 

@@ -116,7 +116,7 @@ def make_report_callback(report_dir: str, component_name: str):
     stats_dict_node_callback_metrics: dict = make_stats_dict_node_callback_metrics(report_dir, component_name)
     summary_dict_metrics = summarize_callback_result(stats_dict_node_callback_metrics)
 
-    dest_dir = f'{report_dir}/callback/{component_name}'
+    dest_dir = f'{report_dir}/validate_callback/{component_name}'
     trace_name = report_dir.split('/')[-1]
 
     make_report_callback_validation(dest_dir, trace_name, component_name, stats_dict_node_callback_metrics, summary_dict_metrics)
