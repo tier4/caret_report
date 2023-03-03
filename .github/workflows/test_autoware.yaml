@@ -82,13 +82,14 @@ jobs:
           script_path=`pwd`
           trace_data=`pwd`/autoware_launch_trace_20221227-150253_universe_rosbag
           work_dir=`pwd`/sample_autoware
-          export component_list_json=component_list.json
-          export target_path_json=target_path.json
           export start_strip=20
           export end_strip=5
+          export component_list_json=component_list.json
+          export target_path_json=target_path.json
           export max_node_depth=10
           export timeout=60
           export draw_all_message_flow=false
+          export stats_path_list_csv=stats_path_list.csv
 
           docker run --rm \
               --user $(id -u):$(id -g) \
@@ -98,11 +99,12 @@ jobs:
               -v ${work_dir}:/work \
               -e start_strip \
               -e end_strip \
+              -e component_list_json \
+              -e target_path_json \
               -e max_node_depth \
               -e timeout \
               -e draw_all_message_flow \
-              -e component_list_json \
-              -e target_path_json \
+              -e stats_path_list_csv \
               ${{ env.TAGS }}
 
       - name: Upload report

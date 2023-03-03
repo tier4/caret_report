@@ -26,6 +26,7 @@
             <thead>
               <tr class="table-primary text-center">
                 <th>Version</th>
+                <th>Link to report</th>
                 {% for value_name, value_list in stats.items() %}
                 <th>{{ value_name}} [ms]</th>
                 {% endfor %}
@@ -34,13 +35,10 @@
             <tbody>
               {% for version, report_path in reportpath_version_dict.items() | reverse %}
                 <tr>
+                  <td>{{ version }}</td>
                   <td>
-                    {{ version }}
-                    {% if report_path[0] != '' or report_path[1] != '' %}
-                      | link to report:
-                    {% endif %}
                     {% if report_path[0] != '' %}
-                      <a href="{{ report_path[0] }}#{{ target_path_name }}" target="_blank"> path</a>
+                      <a href="{{ report_path[0] }}#{{ target_path_name }}" target="_blank">path</a>
                     {% endif %}
                     {% if report_path[1] != '' %}
                       <a href="{{ report_path[1] }}" target="_blank">, top</a>

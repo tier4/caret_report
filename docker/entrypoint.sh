@@ -25,6 +25,7 @@ sudo chmod u-s /usr/sbin/groupadd
 cd /work
 export component_list_json=/work/${component_list_json}
 export target_path_json=/work/${target_path_json}
+export stats_path_list_csv=/work/${stats_path_list_csv}
 
 # export start_time=15
 # export duration_time=600

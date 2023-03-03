@@ -107,9 +107,8 @@ def make_stats(dest_dir: str, stats_list_file: str):
             path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
         else:
             path_report_file = ''
-        if top_report_file.exists():
+        if top_report_file.exists() or True:  # do not check top_report_file because it's created later
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
-            pass
         else:
             top_report_file = ''
         reportpath_version_dict[version] = (path_report_file, top_report_file)
@@ -127,7 +126,8 @@ def make_stats(dest_dir: str, stats_list_file: str):
     # Create dataframe for each target path (index=version, column=avg, max, min, etc.)
     df_per_path = pd.DataFrame(columns=pd.MultiIndex.from_product([target_path_name_list, value_name_list]), dtype=float)
     for version, stats in stats_version_dict.items():
-        df_per_path.loc[version] = np.nan
+        if len(target_path_name_list) > 0:
+            df_per_path.loc[version] = np.nan
         for target_path_name in target_path_name_list:
             for target_path_info in stats:
                 if target_path_info['target_path_name'] == target_path_name:

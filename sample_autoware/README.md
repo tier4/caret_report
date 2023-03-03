@@ -148,13 +148,15 @@ ros2 caret check_ctf -d ~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 ```sh
 cd ${path-to-this-repo}/sample_autoware
 
-export component_list_json=./component_list.json
-export target_path_json=./target_path.json
 export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss    # modify for your environment
 export start_strip=20
 export end_strip=5
-export max_node_depth=2
+export component_list_json=./component_list.json
+export target_path_json=./target_path.json
+export max_node_depth=10
+export timeout=60
 export draw_all_message_flow=false
+export stats_path_list_csv=./stats_path_list.csv
 
 sh ../report/report_analysis/make_report.sh
 ```

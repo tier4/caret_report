@@ -31,7 +31,7 @@ python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" "${report_
 python3 "${script_path}"/analyze_path/make_report_analyze_path.py "${report_dir_name}"
 
 # Track of response time
-python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" stats_path_list.csv
+python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" "${stats_path_list_csv}"
 
 # Index page
 python3 "${script_path}"/report_validation/make_report_validation.py "${report_dir_name}" --component_list_json="${component_list_json}" --note_text_top="${note_text_top}" --note_text_bottom="${note_text_bottom}"

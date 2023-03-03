@@ -38,13 +38,14 @@ cd CARET_report
 script_path=`pwd`
 trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 work_dir=`pwd`/sample_autoware
-export component_list_json=component_list.json
-export target_path_json=target_path.json
 export start_strip=20
 export end_strip=5
+export component_list_json=component_list.json
+export target_path_json=target_path.json
 export max_node_depth=10
 export timeout=60
 export draw_all_message_flow=false
+export stats_path_list_csv=stats_path_list.csv
 
 # Run script
 docker run -it --rm \
@@ -55,10 +56,11 @@ docker run -it --rm \
     -v ${work_dir}:/work \
     -e start_strip \
     -e end_strip \
+    -e component_list_json \
+    -e target_path_json \
     -e max_node_depth \
     -e timeout \
     -e draw_all_message_flow \
-    -e component_list_json \
-    -e target_path_json \
+    -e stats_path_list_csv \
     caret/caret_report
 ```
