@@ -22,7 +22,7 @@
 
       {% for path_info in stats %}
       <hr />
-      <h2 id="{{ path_info.target_path_name }}">Path Name: {{ path_info.target_path_name }}</h2>
+      <h2 id="{{ path_info.target_path_name }}">{{ path_info.target_path_name }}</h2>
 
       {% if path_info.best_avg == "---" %}
       <div class="alert alert-danger" role="alert">There are no-traffic communications !!</div>

@@ -25,6 +25,14 @@ python3 "${script_path}"/validate_topic/make_report_validate_topic.py "${report_
 # Re-make html for Callback to generage link to topics
 python3 "${script_path}"/validate_callback/make_report_validate_callback.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
+# Path analysis
+python3 "${script_path}"/analyze_path/add_path_to_architecture.py "${trace_data}" "${target_path_json}" --architecture_file_path=architecture_path.yaml --max_node_depth="${max_node_depth}" --timeout="${timeout}" -v
+python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" "${report_dir_name}" --architecture_file_path=architecture_path.yaml --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v -m "${draw_all_message_flow}"
+python3 "${script_path}"/analyze_path/make_report_analyze_path.py "${report_dir_name}"
+
+# Track of response time
+python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" stats_path_list.csv
+
 # Index page
 python3 "${script_path}"/report_validation/make_report_validation.py "${report_dir_name}" --component_list_json="${component_list_json}" --note_text_top="${note_text_top}" --note_text_bottom="${note_text_bottom}"
 

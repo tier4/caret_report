@@ -37,6 +37,11 @@
       </ul>
 
       <div id="cy" style="height: 600px;"></div>
+      <hr />
+
+      <h3>Component Latency</h3>
+      <iframe id="track_path" src="track_path/index.html" frameborder="0" width="100%" scrolling="no"></iframe>
+      <hr />
 
       {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}
 
@@ -63,5 +68,17 @@
       let summary_topic_dict_component_pair_metrics = {{ summary_topic_dict_component_pair_metrics | tojson }};
     </script>
     <script src="index.js"></script>
+    <script type="text/javascript">
+      window.addEventListener('message', function(e) {
+        var eventName = e.data[0];
+        var data = e.data[1];
+        switch(eventName) {
+          case 'setHeightTrackPath':
+            var iframe = document.getElementById("track_path");
+            iframe.style.height = data + "px";
+            break;
+          }
+      }, false);
+    </script>
   </body>
 </html>

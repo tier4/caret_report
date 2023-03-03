@@ -101,11 +101,18 @@ def make_stats(dest_dir: str, stats_list_file: str):
 
     reportpath_version_dict = {}   # key: version, value: path to report
     for version, stats_file in stats_file_list:
-        report_path = os.path.relpath(os.path.dirname(stats_file), Path(dest_dir).resolve()) + '/index.html'
-        if os.path.isfile(os.path.dirname(stats_file) + '/index.html'):
-            reportpath_version_dict[version] = report_path
+        path_report_file = Path(stats_file).parent.joinpath('index.html')
+        top_report_file = Path(stats_file).parent.parent.joinpath('index.html')
+        if path_report_file.exists():
+            path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
         else:
-            reportpath_version_dict[version] = ''
+            path_report_file = ''
+        if top_report_file.exists():
+            top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
+            pass
+        else:
+            top_report_file = ''
+        reportpath_version_dict[version] = (path_report_file, top_report_file)
 
     stats_version_dict = {}  # key: version, value: stats
     for version, stats_file in stats_file_list:
