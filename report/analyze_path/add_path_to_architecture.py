@@ -132,13 +132,13 @@ def find_path(arch: Architecture, target_path_json: list, max_node_depth: int, t
         if len(found_path_list) > 0:
             break
 
-    if len(found_path_list) > 0:
+    if found_path_list is not None and len(found_path_list) > 0:
         for found_path in found_path_list:
             _logger.debug(found_path.summary)
         return found_path_list
     else:
         _logger.error('Path not found. Check target_path.json, or consider to increase max_node_depth and timeout.')
-        return found_path_list
+        return []
 
 
 def convert_context_type_to_use_latest_message(filename_src, filename_dst):
