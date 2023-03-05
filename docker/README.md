@@ -38,12 +38,12 @@ cd CARET_report
 script_path=`pwd`
 trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 work_dir=`pwd`/sample_autoware
-export start_strip=20
-export end_strip=5
+export start_strip=25
+export end_strip=0
 export component_list_json=component_list.json
 export target_path_json=target_path.json
-export max_node_depth=10
-export timeout=60
+export max_node_depth=20
+export timeout=120
 export draw_all_message_flow=false
 export stats_path_list_csv=stats_path_list.csv
 

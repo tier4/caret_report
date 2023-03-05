@@ -25,12 +25,12 @@ git clone https://github.com/tier4/CARET_report.git -b gh-pages reference_result
 # Create report
 trace_data="$(pwd)"/autoware_launch_trace_20221227-150253_universe_rosbag
 sample_autoware_dir="${script_path}"/sample_autoware
-start_strip=20
-end_strip=5
+start_strip=25
+end_strip=0
 component_list_json=component_list.json
 target_path_json=target_path.json
-max_node_depth=10
-timeout=30
+max_node_depth=20
+timeout=120
 draw_all_message_flow=false
 stats_path_list_csv=stats_path_list.csv
 export trace_data start_strip end_strip component_list_json target_path_json  max_node_depth timeout draw_all_message_flow stats_path_list_csv

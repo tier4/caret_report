@@ -85,7 +85,7 @@
           {% if metrics in stats_metrics %}
             {% set stats = stats_metrics[metrics] %}
             <p>#{{ loop.index0 }}: {{ pubsub[0] }} -> {{ pubsub[1] }}</p>
-            <iframe src="{{ stats['stats']['graph_filename'] }}.html" width="1200" height="400" scrolling="no"></iframe>
+            <iframe src="{{ stats['stats']['graph_filename'] }}.html" width="100%" height="400" scrolling="no"></iframe>
           {% endif %}
         {% endfor %}
       {% endfor %}
