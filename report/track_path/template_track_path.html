@@ -1,0 +1,71 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    <div class="container">
+      {% set data_num = reportpath_version_dict.keys()|length %}
+      {% set table_heght = [(1 + data_num) * 3, 5* 3] | min %}
+      {% for target_path_name, stats in stats_path_dict.items() %}
+        <hr />
+        <h2 id="{{ target_path_name }}">{{ target_path_name }}</h2>
+        <iframe src="{{ filename_path_dict[target_path_name] }}" width="1200" height="420" scrolling="no"></iframe>
+        <div style="height: calc({{ table_heght }}em); overflow: scroll">
+          <table class="table table-hover table-bordered">
+            <thead>
+              <tr class="table-primary text-center">
+                <th>Version</th>
+                <th>Link to report</th>
+                {% for value_name, value_list in stats.items() %}
+                <th>{{ value_name}} [ms]</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for version, report_path in reportpath_version_dict.items() | reverse %}
+                <tr>
+                  <td>{{ version }}</td>
+                  <td>
+                    {% if report_path[0] != '' %}
+                      <a href="{{ report_path[0] }}#{{ target_path_name }}" target="_blank">path</a>
+                    {% endif %}
+                    {% if report_path[1] != '' %}
+                      <a href="{{ report_path[1] }}" target="_blank">, top</a>
+                    {% endif %}
+                  </td>
+                  {% for value_name, value_list in stats.items() %}
+                  <td>{{ '%0.3f' % value_list[version] | float }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endfor %}
+    </div><!-- container -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        var height = document.getElementsByTagName("html")[0].scrollHeight;
+        window.parent.postMessage(["setHeightTrackPath", height], "*");
+      }
+    </script>
+
+  </body>
+</html>

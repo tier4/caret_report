@@ -21,9 +21,11 @@ import shutil
 import logging
 import re
 import json
+import itertools
 import pandas as pd
-from caret_analyze import Lttng, LttngEventFilter
-from caret_analyze.runtime.callback import CallbackBase
+from caret_analyze import Application, Lttng, LttngEventFilter
+from caret_analyze.runtime.callback import CallbackBase, CallbackType
+from caret_analyze.runtime.node import Node
 from bokeh.plotting import Figure, save
 from bokeh.resources import CDN
 from bokeh.io import export_png
@@ -57,44 +59,69 @@ def make_destination_dir(dest_dir: str, force: bool=False, logger: logging.Logge
             shutil.rmtree(dest_dir)
             os.makedirs(dest_dir)
         else:
-            if logger:
-                logger.error('Destination has already existed')
-            sys.exit(-1)
+            pass
+            # if logger:
+            #     logger.error('Destination has already existed')
+            # sys.exit(-1)
 
 
-def read_trace_data(trace_data: str, start_point: float, duration: float,
+def read_trace_data(trace_data: str, start_strip: float, end_strip: float,
                     force_conversion=False) -> Lttng:
     """Read LTTng trace data"""
-    if start_point > 0 and duration == 0:
-        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-            LttngEventFilter.strip_filter(start_point, None)
-        ])
-    elif start_point >= 0 and duration > 0:
-        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-            LttngEventFilter.duration_filter(duration, start_point)
-        ])
+    return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+        LttngEventFilter.strip_filter(start_strip, end_strip)
+    ])
+
+
+# def read_trace_data(trace_data: str, start_point: float, duration: float,
+#                     force_conversion=False) -> Lttng:
+#     """Read LTTng trace data"""
+#     if start_point > 0 and duration == 0:
+#         return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+#             LttngEventFilter.strip_filter(start_point, None)
+#         ])
+#     elif start_point >= 0 and duration > 0:
+#         return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+#             LttngEventFilter.duration_filter(duration, start_point)
+#         ])
+#     else:
+#         return Lttng(trace_data, force_conversion=force_conversion)
+
+
+def get_callback_legend(node: Node, callback_name: str, with_trigger: bool=True) -> str:
+    callback_legend_dict = {}
+    cnt_timer = 0
+    cnt_subscription = 0
+    for callback in node.callbacks:
+        if callback.callback_type == CallbackType.TIMER:
+            period_ms = callback.timer.period_ns * 1e-6
+            legend = f'timer_{cnt_timer}'
+            if with_trigger:
+                legend += f': {period_ms}ms'
+            callback_legend_dict[callback.callback_name] = legend
+            cnt_timer += 1
+        else:
+            legend = f'subscription_{cnt_subscription}'
+            if with_trigger:
+                legend += f': {callback.subscribe_topic_name}'
+            callback_legend_dict[callback.callback_name] = legend
+            cnt_subscription += 1
+
+    if callback_name in callback_legend_dict:
+        callback_legend = callback_legend_dict[callback_name]
     else:
-        return Lttng(trace_data, force_conversion=force_conversion)
+        callback_legend = callback_name
 
-
-def make_callback_displayname(callback: CallbackBase) -> str:
-    """Make callback name to be displayed"""
-    displayname = callback.callback_name.split('/')[-1]
-    callback_type = callback.callback_type.type_name
-    if 'timer' in callback_type:
-        period_ms = callback.timer.period_ns * 1e-6
-        displayname = f'Timer_{period_ms}ms'
-    elif 'subscription' in callback_type:
-        displayname = 'Sub_' + str(callback.subscribe_topic_name)
-    return displayname
+    return callback_legend
 
 
 def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
-                 logger: logging.Logger = None) -> None:
+                 with_png=True, logger: logging.Logger = None) -> None:
     """Export graph as html and image"""
     save(figure, filename=f'{dest_dir}/{filename}.html', title=title, resources=CDN)
     try:
-        export_png(figure, filename=f'{dest_dir}/{filename}.png')
+        if with_png:
+            export_png(figure, filename=f'{dest_dir}/{filename}.png')
     except:
         if logger:
             logger.warning('Unable to export png')
@@ -146,6 +173,8 @@ class ComponentManager:
         if not hasattr(cls, "_instance"):
             cls._instance = super(ComponentManager, cls).__new__(cls)
             cls.component_dict = {}  # pairs of component name and regular_exp
+            cls.external_in_topic_list = []
+            cls.external_out_topic_list = []
             cls.ignore_list = []
         return cls._instance
 
@@ -167,18 +196,51 @@ class ComponentManager:
                 'all': r'.*'
             }
         else:
-            self.component_dict = component_list_json['component_dict']
-            self.ignore_list = component_list_json['ignore_list']
+            if 'component_dict' in component_list_json:
+                self.component_dict = component_list_json['component_dict']
+            if 'external_in_topic_list' in component_list_json:
+                self.external_in_topic_list = component_list_json['external_in_topic_list']
+            if 'external_out_topic_list' in component_list_json:
+                self.external_out_topic_list = component_list_json['external_out_topic_list']
+            if 'ignore_list' in component_list_json:
+                self.ignore_list = component_list_json['ignore_list']
 
         if logger:
             logger.debug(f'component_dict = {self.component_dict}')
+            logger.debug(f'external_in_topic_list = {self.external_in_topic_list}')
+            logger.debug(f'external_out_topic_list = {self.external_out_topic_list}')
             logger.debug(f'ignore_list = {self.ignore_list}')
 
     def get_component_name(self, node_name: str) -> str:
         for component_name, regexp in self.component_dict.items():
             if re.search(regexp, node_name):
                 return component_name
-        return ''
+        return 'other'
+
+    def check_if_external_in_topic(self, topic_name: str, sub_node_name: str='') -> bool:
+        for topic_regexp, node_regexp in self.external_in_topic_list:
+            if re.search(topic_regexp, topic_name):
+                if (sub_node_name != '') and (node_regexp != '') and (not re.search(node_regexp, sub_node_name)):
+                    continue
+                return True
+        return False
+
+    def check_if_external_out_topic(self, topic_name: str, pub_node_name: str='') -> bool:
+        for topic_regexp, node_regexp in self.external_out_topic_list:
+            if re.search(topic_regexp, topic_name):
+                if (pub_node_name != '') and (node_regexp != '') and (not re.search(node_regexp, pub_node_name)):
+                    continue
+                return True
+        return False
+
+    def get_component_pair_list(self, with_external: bool=False) -> list[str, str]:
+        component_name_list = list(self.component_dict.keys())
+        if with_external:
+            component_name_list.append('external')
+        component_pair_list = itertools.product(component_name_list, component_name_list)
+        component_pair_list = [component_pair for component_pair in component_pair_list
+                                if component_pair[0] != component_pair[1]]
+        return component_pair_list
 
     def check_if_ignore(self, node_name: str) -> bool:
         for ignore in self.ignore_list:
@@ -191,8 +253,6 @@ class ComponentManager:
             return False
         if self.check_if_ignore(node_name):
             return False
-
-        regexp = self.component_dict[component_name]
-        if re.search(regexp, node_name):
+        if component_name == self.get_component_name(node_name):
             return True
         return False

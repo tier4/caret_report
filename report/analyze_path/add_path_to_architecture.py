@@ -25,9 +25,9 @@ import json
 import yaml
 from caret_analyze import Architecture
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -132,13 +132,13 @@ def find_path(arch: Architecture, target_path_json: list, max_node_depth: int, t
         if len(found_path_list) > 0:
             break
 
-    if len(found_path_list) > 0:
+    if found_path_list is not None and len(found_path_list) > 0:
         for found_path in found_path_list:
             _logger.debug(found_path.summary)
         return found_path_list
     else:
         _logger.error('Path not found. Check target_path.json, or consider to increase max_node_depth and timeout.')
-        return found_path_list
+        return []
 
 
 def convert_context_type_to_use_latest_message(filename_src, filename_dst):
@@ -161,7 +161,7 @@ def add_path_to_architecture(args, arch: Architecture):
     """Add path information to architecture file"""
     global _logger
     if _logger is None:
-        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+        _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Add Path: Start >>>')
     # Read target path information from JSON
     try:
@@ -213,7 +213,7 @@ def main():
     """Main function"""
     global _logger
     args = parse_arg()
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'target_path_json: {args.target_path_json[0]}')

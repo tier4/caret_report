@@ -2,9 +2,9 @@
 
 # Report creation scripts for CARET
 
-- [./report](./report)
+- [./report/report_analysis](./report/report_analysis)
   - create general analysis report
-- [./validation](./validation)
+- [./report/report_validation](./report/report_validation)
   - create validation report
 
 ## Sample

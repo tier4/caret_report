@@ -20,7 +20,8 @@
 ### `check_callback_sub.py`
 
 ```sh:usage
-usage: check_callback_sub.py [-h] [--component_list_json COMPONENT_LIST_JSON] [-s START_POINT] [-d DURATION]
+usage: check_callback_sub.py [-h] [--component_list_json COMPONENT_LIST_JSON]
+                             [--start_strip START_STRIP] [--end_strip END_STRIP]
                              [-r GAP_THRESHOLD_RATIO] [-n COUNT_THRESHOLD] [-v] [-f]
                              trace_data
 ```

@@ -19,8 +19,9 @@
 ### `analyze_node.py`
 
 ```sh:usage
-usage: analyze_node.py [-h] [--component_list_json COMPONENT_LIST_JSON] [-s START_POINT] [-d DURATION] [-f] [-v]
-                       trace_data
+usage: analyze_node.py [-h] [--component_list_json COMPONENT_LIST_JSON]
+                       [--start_strip START_STRIP] [--end_strip END_STRIP] [-f] [-v]
+                       trace_data report_directory
 
 ```
 
@@ -28,10 +29,10 @@ usage: analyze_node.py [-h] [--component_list_json COMPONENT_LIST_JSON] [-s STAR
   - Timeseries graph and histogram graph (html and image files)
   - statistics file (`stats_node.yaml`)
 
-### `make_report_node.py`
+### `make_report_analyze_node.py`
 
 ```sh:usage
-usage: make_report_node.py [-h] report_directory
+usage: make_report_analyze_node.py [-h] report_directory
 ```
 
 - This script creates a report html page

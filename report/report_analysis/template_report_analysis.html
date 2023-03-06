@@ -1,0 +1,102 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- <div> -->
+      <h1>{{ title }}</h1>
+
+      {% if note_text_top %} {{ note_text_top | safe }} {% endif %}
+
+      <hr />
+      <h2>Path Analysis Report</h2>
+      <p>This report shows message_flow and response_time for each target path.</p>
+      <ul>
+        {% for path_info in stats_path %}
+        <li>
+          <a href="analyze_path/index.html#{{ path_info['target_path_name'] }}">
+            {{ path_info["target_path_name"] }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <h2>Node Analysis Report</h2>
+      <p>
+        This report shows detailed information (Frequency, Period and Latency) for callback
+        functions in each package.
+      </p>
+      <ul>
+        {% for component_name in component_list %}
+        <li><a href="analyze_node/{{ component_name }}/index.html">{{ component_name }}</a></li>
+        {% endfor %}
+      </ul>
+
+      <hr />
+      <hr />
+
+      <h2>Path History</h2>
+      <iframe id="track_path" src="track_path/index.html" frameborder="0" width="100%" scrolling="no"></iframe>
+      <hr />
+
+      <h2>Callback Latency</h2>
+      <p>List of callback function latency time (Top k)</p>
+      {% for component_name in component_list %}
+      <br />
+      <h4>{{ component_name }}</h4>
+      <div style="height: calc(50vh); overflow: scroll">
+        <table class="table table-hover table-bordered height">
+          <tr class="table-primary text-center">
+            <th width="50%">Callback Name</th>
+            <th width="10%">max [ms]</th>
+            <th width="10%">99%ile [ms]</th>
+            <th width="10%">avg [ms]</th>
+            <th width="10%">median [ms]</th>
+          </tr>
+          {% for info in stats_node_dict[component_name]['latency_topk'] %}
+          <tr>
+            <td><a href="{{ info['link'] }}">{{ info['displayname'] }}</a></td>
+            <td class="text-end">{{ '%.3f' % info['max']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['p99']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['avg']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['p50']|float }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% endfor %}
+      <br />
+      {% if note_text_bottom %} {{ note_text_bottom | safe }} {% endif %}
+    </div>
+    <!-- container -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript">
+      window.addEventListener('message', function(e) {
+        var eventName = e.data[0];
+        var data = e.data[1];
+        switch(eventName) {
+          case 'setHeightTrackPath':
+            var iframe = document.getElementById("track_path");
+            iframe.style.height = data + "px";
+            break;
+          }
+      }, false);
+    </script>
+  </body>
+</html>

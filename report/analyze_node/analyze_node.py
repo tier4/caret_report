@@ -30,10 +30,10 @@ from caret_analyze.runtime.node import Node
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
-from common.utils import make_callback_displayname, round_yaml
+from common.utils import round_yaml, get_callback_legend
 from common.utils import ComponentManager
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -41,21 +41,48 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-def calculate_stats(data: pd.DataFrame) -> dict:
-    """Calculate stats"""
-    stats = {
-        'avg': '-',
-        'min': '-',
-        'max': '-',
-        'std': '-',
-    }
-    if len(data) > 1:
-        stats['avg'] = round(float(data.mean()), 3)
-        stats['std'] = round(float(data.std()), 3)
-    if len(data) > 0:
-        stats['min'] = round(float(data.min()), 3)
-        stats['max'] = round(float(data.max()), 3)
-    return stats
+class StatsCallback():
+    """Statistics of callback"""
+    def __init__(self):
+        self.avg = '---'
+        self.std = '---'
+        self.min = '---'
+        self.max = '---'
+        self.p50 = '---'
+        self.p95 = '---'
+        self.p99 = '---'
+        self.filename_hist = ''
+
+    def calculate(self, data: pd.DataFrame):
+        """Calculate stats"""
+        if len(data) > 1:
+            self.avg = round(float(data.mean()), 3)
+            self.std = round(float(data.std()), 3)
+            self.p50 = round(float(np.quantile(data, 0.5)), 3)
+            self.p95 = round(float(np.quantile(data, 0.95)), 3)
+            self.p99 = round(float(np.quantile(data, 0.99)), 3)
+        if len(data) > 0:
+            self.min = round(float(data.min()), 3)
+            self.max = round(float(data.max()), 3)
+
+    def set_filename_hist(self, filename_hist: str):
+        self.filename_hist = filename_hist
+
+
+class StatsNode():
+    """Statistics of node"""
+    def __init__(self):
+        self.filename_timeseries = {}
+        self.callbacks = {}
+
+    def set_filename_timeseries(self, metrics: str, filename_timeseries: str):
+        self.filename_timeseries[metrics] = filename_timeseries
+
+    def set_callback(self, callback_name: str, callback_displayname: str, metrics: str,
+                     callback_stats: StatsCallback):
+        self.callbacks.setdefault(callback_name, {})
+        self.callbacks[callback_name][metrics] = vars(callback_stats)
+        self.callbacks[callback_name]['displayname'] = callback_displayname
 
 
 def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
@@ -82,14 +109,14 @@ def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
 def analyze_callback(callback_name: str, callback_displayname: str, metrics_str: str,
                      data: pd.DataFrame, metrics: str, dest_dir_path: str):
     """Analyze a callback"""
-    callback_stats = calculate_stats(data)
+    callback_stats = StatsCallback()
+    callback_stats.calculate(data)
     figure_hist = draw_histogram(data, callback_displayname, metrics_str)
     if figure_hist:
         filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
         export_graph(figure_hist, dest_dir_path, filename_hist, _logger)
-        callback_stats['filename_hist'] = filename_hist
-    else:
-        callback_stats['filename_hist'] = ''
+        callback_stats.set_filename_hist(filename_hist)
+
     return callback_stats
 
 
@@ -98,9 +125,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
     all_metrics_dict = {'Frequency': Plot.create_frequency_timeseries_plot,
                         'Period': Plot.create_period_timeseries_plot,
                         'Latency': Plot.create_latency_timeseries_plot}
-    node_stats = {}
-    node_stats['filename_timeseries'] = {}
-    node_stats['callbacks'] = {}
+    node_stats = StatsNode()
 
     for metrics, method in all_metrics_dict.items():
         try:
@@ -117,16 +142,14 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             df_callback = value
             if 'callback_start_timestamp' in metrics_str:
                 continue
-            callback_displayname = callback_name.split('/')[-1] + ': '
-            callback_displayname += make_callback_displayname(node.get_callback(callback_name))
+
+            callback_displayname = get_callback_legend(node, callback_name)
             df_callback = trail_df(df_callback, end_strip_num=2, start_strip_num=1)
             if len(df_callback) > 0:
                 has_valid_data = True
             callback_stats = analyze_callback(callback_name, callback_displayname,
                                               metrics_str, df_callback, metrics, dest_dir)
-            node_stats['callbacks'].setdefault(callback_name, {})
-            node_stats['callbacks'][callback_name][metrics] = callback_stats
-            node_stats['callbacks'][callback_name]['displayname'] = callback_displayname
+            node_stats.set_callback(callback_name, callback_displayname, metrics, callback_stats)
 
         if has_valid_data:
             try:
@@ -136,7 +159,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
                 p_timeseries.y_range.start = 0
                 filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
                 export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
-                node_stats['filename_timeseries'][metrics] = filename_timeseries
+                node_stats.set_filename_timeseries(metrics, filename_timeseries)
             except:
                 _logger.info(f'Failed to export graph')
 
@@ -151,7 +174,7 @@ def analyze_component(node_list: list[Node], dest_dir: str):
     for node in node_list:
         node_stats = analyze_node(node, dest_dir)
         if node_stats:
-            stats[node.node_name] = node_stats
+            stats[node.node_name] = vars(node_stats)
 
     stat_file_path = f"{dest_dir}/stats_node.yaml"
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
@@ -196,11 +219,12 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -215,16 +239,16 @@ def main():
     _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'component_list_json: {args.component_list_json}')
-    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
-    _logger.debug(f'dest_dir: {dest_dir}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
 
-    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
-    analyze(args, lttng, arch, app, dest_dir + '/node')
+    dest_dir = args.dest_dir[0]
+    analyze(args, lttng, arch, app, dest_dir + '/analyze_node')
 
 
 if __name__ == '__main__':

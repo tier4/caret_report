@@ -27,10 +27,10 @@ from caret_analyze.runtime.callback import CallbackBase
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph
-from common.utils import make_callback_displayname, round_yaml
+from common.utils import get_callback_legend, round_yaml
 from common.utils import ComponentManager
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -38,14 +38,14 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-def create_stats(callback: CallbackBase, freq_timer,
+def create_stats(app: Application, callback: CallbackBase, freq_timer,
                  freq_callback, num_huge_gap, graph_filename) -> dict:
     """Create stats"""
     stats = {
         'node_name': callback.node_name,
         'component_name': ComponentManager().get_component_name(callback.node_name),
         'callback_name': callback.callback_name,
-        'callback_displayname': make_callback_displayname(callback),
+        'callback_displayname': get_callback_legend(app.get_node(callback.node_name), callback.callback_name),
         'freq_timer': freq_timer,
         'freq_callback': freq_callback,
         'num_huge_gap': num_huge_gap,
@@ -54,7 +54,7 @@ def create_stats(callback: CallbackBase, freq_timer,
     return stats
 
 
-def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool):
+def analyze_callback(args, dest_dir, app: Application, callback: CallbackBase) -> tuple(dict, bool):
     """Analyze a timer callback function"""
     _logger.debug(f'Processing: {callback.callback_name}')
     freq_timer = 1e9 / float(callback.timer.period_ns)
@@ -81,7 +81,7 @@ def analyze_callback(args, dest_dir, callback: CallbackBase) -> tuple(dict, bool
     num_huge_gap = int(sum(freq_callback <= freq_threshold for freq_callback in freq_callback_list))
 
     export_graph(figure, dest_dir, graph_filename, _logger)
-    stats = create_stats(callback, freq_timer, freq_callback_avg, num_huge_gap, graph_filename)
+    stats = create_stats(app, callback, freq_timer, freq_callback_avg, num_huge_gap, graph_filename)
 
     is_warning = False
     if num_huge_gap >= args.count_threshold:
@@ -106,7 +106,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
         if ComponentManager().check_if_ignore(callback.callback_name):
             continue
         if 'timer_callback' == callback.callback_type.type_name:
-            stats, is_warning = analyze_callback(args, dest_dir, callback)
+            stats, is_warning = analyze_callback(args, dest_dir, app, callback)
             if stats:
                 stats_all_list.append(stats)
             if is_warning:
@@ -132,11 +132,12 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to check gap b/w timer frequency and callback function wake-up frequency')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-r', '--gap_threshold_ratio', type=float, default=0.2,
                         help='Warning when callback_freq is less than "gap_threshold_ratio" * timer_period for "count_threshold" times')
     parser.add_argument('-n', '--count_threshold', type=int, default=10,
@@ -155,17 +156,17 @@ def main():
     _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'component_list_json: {args.component_list_json}')
-    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{Path(args.trace_data[0]).stem}'
-    _logger.debug(f'dest_dir: {dest_dir}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     _logger.debug(f'gap_threshold_ratio: {args.gap_threshold_ratio}')
     _logger.debug(f'count_threshold: {args.count_threshold}')
 
-    lttng = read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
+    dest_dir = args.dest_dir[0]
     analyze(args, lttng, arch, app, dest_dir + '/check_callback_timer')
 
 

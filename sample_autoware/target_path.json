@@ -1,13 +1,13 @@
 [
   {
-    "name": "component_sensing",
+    "name": "sensing",
     "path": [
       "/sensing/lidar/top/velodyne_convert_node",
       "/perception/obstacle_segmentation/crop_box_filter"
     ]
   },
   {
-    "name": "component_localization",
+    "name": "localization",
     "path": [
       "/sensing/lidar/top/ring_outlier_filter",
       "/localization/pose_twist_fusion_filter/stop_filter",
@@ -15,7 +15,7 @@
     ]
   },
   {
-    "name": "component_perception",
+    "name": "perception",
     "path": [
       "/sensing/lidar/concatenate_data",
       "/perception/object_recognition/prediction/map_based_prediction",
@@ -26,7 +26,7 @@
     ]
   },
   {
-    "name": "component_planning",
+    "name": "planning",
     "path": [
       "/perception/object_recognition/prediction/map_based_prediction",
       [
@@ -42,7 +42,7 @@
     ]
   },
   {
-    "name": "component_control",
+    "name": "control",
     "path": [
       "/planning/scenario_planning/motion_velocity_smoother",
       ["/control/vehicle_cmd_gate", "/control/trajectory_follower/control_cmd"]

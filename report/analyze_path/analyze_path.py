@@ -17,6 +17,7 @@ Script to analyze path
 from __future__ import annotations
 import sys
 import os
+import datetime
 import pathlib
 import shutil
 import argparse
@@ -25,19 +26,68 @@ import logging
 import yaml
 import numpy as np
 from bokeh.plotting import Figure, figure
+from bokeh.models import AdaptiveTicker
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.experiment import ResponseTime
 from caret_analyze.plot import message_flow
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common import utils
+from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, round_yaml
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
 
 _logger: logging.Logger = None
+
+
+class Stats():
+    def __init__(self, target_path_name: str, node_names: list[str]):
+        self.target_path_name = target_path_name
+        self.node_names = node_names
+        self.best_avg = '---'
+        self.best_min = '---'
+        self.best_max = '---'
+        self.best_p50 = '---'
+        self.best_p95 = '---'
+        self.best_p99 = '---'
+        self.worst_avg = '---'
+        self.worst_min = '---'
+        self.worst_max = '---'
+        self.worst_p50 = '---'
+        self.worst_p95 = '---'
+        self.worst_p99 = '---'
+        self.filename_messageflow = ''
+        self.filename_messageflow_short = ''
+        self.filename_hist_total = ''
+        self.filename_hist_best = ''
+        self.filename_timeseries_best = ''
+        self.filename_hist_worst = ''
+        self.filename_timeseries_worst = ''
+
+    def calc_stats(self, df_best: np.ndarray, df_worst: np.ndarray):
+        self.best_avg = round(float(np.average(df_best)), 3)
+        self.best_min = round(float(np.min(df_best)), 3)
+        self.best_max = round(float(np.max(df_best)), 3)
+        self.best_p50 = round(float(np.quantile(df_best, 0.5)), 3)
+        self.best_p95 = round(float(np.quantile(df_best, 0.95)), 3)
+        self.best_p99 = round(float(np.quantile(df_best, 0.99)), 3)
+        self.worst_avg = round(float(np.average(df_worst)), 3)
+        self.worst_min = round(float(np.min(df_worst)), 3)
+        self.worst_max = round(float(np.max(df_worst)), 3)
+        self.worst_p50 = round(float(np.quantile(df_worst, 0.5)), 3)
+        self.worst_p95 = round(float(np.quantile(df_worst, 0.95)), 3)
+        self.worst_p99 = round(float(np.quantile(df_worst, 0.99)), 3)
+
+    def store_filename(self, target_path_name: str, save_long_graph: bool):
+        if save_long_graph:
+            self.filename_messageflow = f'{target_path_name}_messageflow'
+        self.filename_messageflow_short = f'{target_path_name}_messageflow_short'
+        self.filename_hist_best = f'{target_path_name}_hist_best'
+        self.filename_timeseries_best = f'{target_path_name}_timeseries_best'
+        self.filename_hist_worst = f'{target_path_name}_hist_worst'
+        self.filename_timeseries_worst = f'{target_path_name}_timeseries_worst'
 
 
 def align_timeseries(timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
@@ -52,7 +102,7 @@ def align_timeseries(timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[np.ndar
 
 
 def draw_response_time(hist: np.ndarray, bin_edges: np.ndarray,
-                       timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[Figure, Figure]:
+                       timeseries: tuple[np.ndarray, np.ndarray], offset) -> tuple[Figure, Figure]:
     """Draw histogram and timeseries graphs of response time"""
     bin_edges = bin_edges * 10**-6  # nanoseconds to milliseconds
     p_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
@@ -66,6 +116,10 @@ def draw_response_time(hist: np.ndarray, bin_edges: np.ndarray,
                        x_axis_label='Time [sec]', y_axis_label='Response Time [ms]')
         p_timeseries.y_range.start = 0
         p_timeseries.line(x=timeseries[0], y=timeseries[1])
+        datetime_s = datetime.datetime.fromtimestamp(offset*10**-9).strftime('%Y-%m-%d %H:%M:%S')
+        p_timeseries.xaxis.major_label_overrides = {0: datetime_s}
+        ticker = AdaptiveTicker(min_interval=0.1, mantissas=[1, 2, 5])
+        p_timeseries.xaxis.ticker = ticker
 
     return p_hist, p_timeseries
 
@@ -96,35 +150,11 @@ def get_messageflow_durationtime(records: RecordsInterface):
     return duration
 
 
-def create_default_stats(target_path_name: str, node_names: list[str]) -> dict:
-    stats = {
-        'target_path_name': target_path_name,
-        'node_names': node_names,
-        'worst_avg': '---',
-        'worst_min': '---',
-        'worst_max': '---',
-        'best_avg': '---',
-        'best_min': '---',
-        'best_max': '---',
-        'total_avg': '---',
-        'total_min': '---',
-        'total_max': '---',
-        'filename_messageflow': '',
-        'filename_messageflow_short': '',
-        'filename_hist_total': '',
-        'filename_hist_best': '',
-        'filename_timeseries_best': '',
-        'filename_hist_worst': '',
-        'filename_timeseries_worst': '',
-    }
-    return stats
-
-
 def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, target_path_name: str):
     """Analyze a path"""
     _logger.info(f'Processing: {target_path_name}')
     target_path = app.get_path(target_path_name)
-    stats = create_default_stats(target_path_name, arch.get_path(target_path_name).node_names)
+    stats = Stats(target_path_name, arch.get_path(target_path_name).node_names)
 
     records = target_path.to_records()
     duration = get_messageflow_durationtime(records)
@@ -140,85 +170,40 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
 
     graph_short.width = 1400
     graph_short.height = 15 * len(target_path.child_names) + 50
-    utils.export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name)
+    export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name)
 
     if args.message_flow:
         graph = message_flow(target_path, granularity='node',
                              treat_drop_as_delay=False, export_path='dummy.html')
         graph.width = graph_short.width
         graph.height = graph_short.height
-        utils.export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name)
+        export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name)
 
     _logger.info('  Call ResponseTime')
     response_time = ResponseTime(records)
 
-    _logger.debug('    Draw histogram (total)')
-    hist, bin_edges = response_time.to_histogram(10**7)  # binsize = 10ms
-    p_hist, _ = draw_response_time(hist, bin_edges, None)
-    utils.export_graph(p_hist, dest_dir, target_path_name + '_hist', target_path_name)
-    sumval = 0
-    for i in range(len(bin_edges) - 1):
-        val = (bin_edges[i] + bin_edges[i+1]) / 2
-        sumval += hist[i] * val
-    total_avg = sumval / np.sum(hist)
-
     _logger.debug('    Draw histogram and timeseries (best)')
     hist, bin_edges = response_time.to_best_case_histogram(10**7)  # binsize = 10ms
-    timeseries = response_time.to_best_case_timeseries()
-    timeseries = align_timeseries(timeseries)
-    p_hist, p_timeseries = draw_response_time(hist, bin_edges, timeseries)
-    utils.export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name)
-    utils.export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name)
-    best_avg = np.average(timeseries[1])
-    best_min = np.min(timeseries[1])
-    best_max = np.max(timeseries[1])
+    df_best = response_time.to_best_case_timeseries()
+    offset = df_best[0][0]
+    df_best = align_timeseries(df_best)
+    p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_best, offset)
+    export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name)
+    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name)
 
     _logger.debug('    Draw histogram and timeseries (worst)')
     hist, bin_edges = response_time.to_worst_case_histogram(10**7)  # binsize = 10ms
-    timeseries = response_time.to_worst_case_timeseries()
-    timeseries = align_timeseries(timeseries)
-    p_hist, p_timeseries = draw_response_time(hist, bin_edges, timeseries)
-    utils.export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name)
-    utils.export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name)
-    worst_avg = np.average(timeseries[1])
-    worst_min = np.min(timeseries[1])
-    worst_max = np.max(timeseries[1])
+    df_worst = response_time.to_worst_case_timeseries()
+    offset = df_worst[0][0]
+    df_worst = align_timeseries(df_worst)
+    p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_worst, offset)
+    export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name)
+    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name)
 
-    total_min = best_min
-    total_max = worst_max
-
+    stats.calc_stats(df_best[1], df_worst[1])
+    stats.store_filename(target_path_name, args.message_flow)
     _logger.info(f'---{target_path_name}---')
-    _logger.info(f'worst_avg = {worst_avg}')
-    _logger.info(f'worst_min = {worst_min}')
-    _logger.info(f'worst_max = {worst_max}')
-    _logger.info(f'best_avg = {best_avg}')
-    _logger.info(f'best_min = {best_min}')
-    _logger.info(f'best_max = {best_max}')
-    _logger.info(f'total_avg = {total_avg}')
-    _logger.info(f'total_min = {total_min}')
-    _logger.info(f'total_max = {total_max}')
-
-    stats['target_path_name'] =target_path_name
-    stats['node_names'] =arch.get_path(target_path_name).node_names
-    stats['worst_avg'] = round(float(worst_avg), 3)
-    stats['worst_min'] = round(float(worst_min), 3)
-    stats['worst_max'] = round(float(worst_max), 3)
-    stats['best_avg'] = round(float(best_avg), 3)
-    stats['best_min'] = round(float(best_min), 3)
-    stats['best_max'] = round(float(best_max), 3)
-    stats['total_avg'] = round(float(worst_avg), 3)
-    stats['total_min'] = round(float(total_min), 3)
-    stats['total_max'] = round(float(total_max), 3)
-    if args.message_flow:
-        stats['filename_messageflow'] = f'{target_path_name}_messageflow'
-    else:
-        stats['filename_messageflow'] = ''
-    stats['filename_messageflow_short'] = f'{target_path_name}_messageflow_short'
-    stats['filename_hist_total'] = f'{target_path_name}_hist'
-    stats['filename_hist_best'] = f'{target_path_name}_hist_best'
-    stats['filename_timeseries_best'] = f'{target_path_name}_timeseries_best'
-    stats['filename_hist_worst'] = f'{target_path_name}_hist_worst'
-    stats['filename_timeseries_worst'] = f'{target_path_name}_timeseries_worst'
+    _logger.debug(vars(stats))
 
     return stats
 
@@ -227,15 +212,16 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     """Analyze paths"""
     global _logger
     if _logger is None:
-        _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+        _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Paths: Start >>>')
-    utils.make_destination_dir(dest_dir, args.force, _logger)
+    make_destination_dir(dest_dir, args.force, _logger)
     shutil.copy(args.architecture_file_path, dest_dir)
 
     stats_list = []
 
     # Verify each path
-    for target_path_name in arch.path_names:
+    for target_path in arch.paths:
+        target_path_name = target_path.path_name
         path = arch.get_path(target_path_name)
         ret_verify = path.verify()
         _logger.info(f'path.verify {target_path_name}: {ret_verify}')
@@ -243,16 +229,16 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
             sys.exit(-1)
 
     # Analyze each path
-    for target_path_name in arch.path_names:
+    for target_path in arch.paths:
+        target_path_name = target_path.path_name
         stats = analyze_path(args, dest_dir, arch, app, target_path_name)
-        if stats:
-            stats_list.append(stats)
+        stats_list.append(vars(stats))
 
     # Save stats file
     stat_file_path = f'{dest_dir}/stats_path.yaml'
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
         yaml.safe_dump(stats_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
-    utils.round_yaml(stat_file_path)
+    round_yaml(stat_file_path)
 
     _logger.info('<<< Analyze Paths: Finish >>>')
 
@@ -262,13 +248,14 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to analyze path')
     parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('-m', '--message_flow', type=strtobool, default=False,
                         help='Output message flow graph')
-    parser.add_argument('-s', '--start_point', type=float, default=0.0,
-                        help='Start point[sec] to load trace data')
-    parser.add_argument('-d', '--duration', type=float, default=0.0,
-                        help='Duration[sec] to load trace data')
+    parser.add_argument('--start_strip', type=float, default=0.0,
+                        help='Start strip [sec] to load trace data')
+    parser.add_argument('--end_strip', type=float, default=0.0,
+                        help='End strip [sec] to load trace data')
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -280,21 +267,21 @@ def main():
     """Main function"""
     global _logger
     args = parse_arg()
-    _logger = utils.create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
-    _logger.debug(f'start_point: {args.start_point}, duration: {args.duration}')
-    dest_dir = f'report_{pathlib.Path(args.trace_data[0]).stem}'
-    _logger.debug(f'dest_dir: {dest_dir}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     args.message_flow = True if args.message_flow == 1 else False
     _logger.debug(f'message_flow: {args.message_flow}')
 
-    lttng = utils.read_trace_data(args.trace_data[0], args.start_point, args.duration, False)
+    lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('yaml', args.architecture_file_path)
     app = Application(arch, lttng)
 
-    analyze(args, lttng, arch, app, dest_dir + '/path')
+    dest_dir = args.dest_dir[0]
+    analyze(args, lttng, arch, app, dest_dir + '/analyze_path')
 
 
 if __name__ == '__main__':

@@ -41,12 +41,12 @@
 
       <table class="table table-hover table-bordered">
         <tr class="table-primary text-center">
-          <th>Publishment Frequency (avg) [Hz]</th>
+          <th>Publication Frequency (avg) [Hz]</th>
           <th>Subscription Frequency (avg) [Hz]</th>
           <th>The number of times freq_sub &lt; freq_pub</th>
         </tr>
         <tr>
-          <td class="text-end">{{ '%.1f' % info['publishment_freq']|float }}</td>
+          <td class="text-end">{{ '%.1f' % info['publication_freq']|float }}</td>
           <td class="text-end">{{ '%.1f' % info['subscription_freq']|float }}</td>
           <td class="text-end">{{ '%d' % info['num_huge_gap']|int }}</td>
         </tr>
