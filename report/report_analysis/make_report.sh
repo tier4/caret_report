@@ -7,7 +7,7 @@ set -e
 mkdir -p output
 
 # Variable settings
-script_path=$(dirname $0)/..
+script_path=$(dirname "$0")/..
 trace_data_name=$(basename "${trace_data}")
 report_dir_name=output/report_"${trace_data_name}"
 

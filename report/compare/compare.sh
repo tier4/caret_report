@@ -12,7 +12,7 @@ echo "[compare] ========== Result =========="
 
 echo "[compare] 1/3 file existence matches"
 diff "${report_dir_1}" "${report_dir_2}" -r \
-    --exclude=*.git --exclude=autoware_universe_node_diagram.png --exclude=*_0_messageflow.* |
+    --exclude=*.git --exclude=autoware_universe_node_diagram.png --exclude=*_0_messageflow.* --exclude=track_path |
     grep Only >diff_existence.txt
 
 if [ -s diff_existence.txt ]; then
