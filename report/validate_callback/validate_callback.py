@@ -35,7 +35,7 @@ from common.utils import create_logger, make_destination_dir, read_trace_data, e
 from common.utils import ComponentManager
 from common.utils_validation import Metrics, ResultStatus
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)

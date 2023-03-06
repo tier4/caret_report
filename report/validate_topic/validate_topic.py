@@ -40,7 +40,7 @@ from common.utils import ComponentManager
 from common.utils_validation import Metrics, ResultStatus
 
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -68,13 +68,13 @@ def get_callback_plot(callback: CallbackBase, metrics: Metrics):
 class Expectation():
     id = 0
     def __init__(self,
-        topic_name: str, publish_node_name: str, pubilsh_component_name: str, subscribe_node_name: str, subscribe_component_name: str,
+        topic_name: str, publish_node_name: str, publish_component_name: str, subscribe_node_name: str, subscribe_component_name: str,
         value: float, lower_limit: Optional[float] = None, upper_limit: Optional[float] = None, ratio: Optional[float] = None, burst_num: Optional[int] = None):
         self.id = Expectation.id
         Expectation.id += 1
         self.topic_name = topic_name
         self.publish_node_name = publish_node_name
-        self.pubilsh_component_name = pubilsh_component_name
+        self.publish_component_name = publish_component_name
         self.subscribe_node_name = subscribe_node_name
         self.subscribe_component_name = subscribe_component_name
         self.value = value
@@ -92,22 +92,22 @@ class Expectation():
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str, pubilsh_component_name: Optional[str], subscribe_component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=2) -> List:
+    def from_csv(expectation_csv_filename: str, publish_component_name: Optional[str], subscribe_component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=2) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
-            for row in csv.DictReader(csvfile, ['topic_name', 'publish_node_name', 'pubilsh_component_name', 'subscribe_node_name', 'subscribe_component_name', 'value']):
+            for row in csv.DictReader(csvfile, ['topic_name', 'publish_node_name', 'publish_component_name', 'subscribe_node_name', 'subscribe_component_name', 'value']):
                 try:
-                    if (pubilsh_component_name is not None and row['pubilsh_component_name'] != pubilsh_component_name) \
+                    if (publish_component_name is not None and row['publish_component_name'] != publish_component_name) \
                         or (subscribe_component_name is not None and row['subscribe_component_name'] != subscribe_component_name):
                         continue
                     try:
                         value = float(row['value'])
                     except ValueError:
                         value = 0
-                    expectation = Expectation(row['topic_name'], row['publish_node_name'], row['pubilsh_component_name'],
+                    expectation = Expectation(row['topic_name'], row['publish_node_name'], row['publish_component_name'],
                         row['subscribe_node_name'], row['subscribe_component_name'], value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
                 except:
                     _logger.error(f"Error at reading: {row['topic_name']}")
@@ -119,7 +119,7 @@ class Stats():
     def __init__(self):
         self.topic_name = ''
         self.publish_node_name = ''
-        self.pubilsh_component_name = ''
+        self.publish_component_name = ''
         self.subscribe_node_name = ''
         self.subscribe_component_name = ''
         self.metrics = ''
@@ -137,7 +137,7 @@ class Stats():
         stats = Stats()
         stats.topic_name = topic_name
         stats.publish_node_name = publish_node_name
-        stats.pubilsh_component_name = component_pair[0]
+        stats.publish_component_name = component_pair[0]
         stats.subscribe_node_name = subscribe_node_name
         stats.subscribe_component_name = component_pair[1]
         stats.metrics = metrics.name
@@ -164,7 +164,7 @@ class Stats():
         stats = Stats()
         stats.topic_name = expectation.topic_name
         stats.publish_node_name = expectation.publish_node_name
-        stats.pubilsh_component_name = expectation.pubilsh_component_name
+        stats.publish_component_name = expectation.publish_component_name
         stats.subscribe_node_name = expectation.subscribe_node_name
         stats.subscribe_component_name = expectation.subscribe_component_name
         stats.metrics = metrics.name
@@ -352,13 +352,13 @@ def validate_component_pair(app: Application, component_pair: tuple[str], dest_d
             or ComponentManager().check_if_ignore(comm.subscribe_node_name)\
             or ComponentManager().check_if_ignore(comm.topic_name):
             continue
-        pubilsh_component_name = ComponentManager().get_component_name(comm.publish_node_name)
+        publish_component_name = ComponentManager().get_component_name(comm.publish_node_name)
         subscribe_component_name = ComponentManager().get_component_name(comm.subscribe_node_name)
         if ComponentManager().check_if_external_in_topic(comm.topic_name, comm.subscribe_node_name):
-            pubilsh_component_name = 'external'
+            publish_component_name = 'external'
         elif ComponentManager().check_if_external_out_topic(comm.topic_name, comm.publish_node_name):
             subscribe_component_name = 'external'
-        if pubilsh_component_name == component_pair[0] and subscribe_component_name == component_pair[1]:
+        if publish_component_name == component_pair[0] and subscribe_component_name == component_pair[1]:
             target_comm_list.append(comm)
 
     make_destination_dir(dest_dir, force, _logger)

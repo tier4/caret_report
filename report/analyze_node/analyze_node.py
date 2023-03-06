@@ -33,7 +33,7 @@ from common.utils import create_logger, make_destination_dir, read_trace_data, e
 from common.utils import round_yaml, get_callback_legend
 from common.utils import ComponentManager
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -53,7 +53,7 @@ class StatsCallback():
         self.p99 = '---'
         self.filename_hist = ''
 
-    def calgulate(self, data: pd.DataFrame):
+    def calculate(self, data: pd.DataFrame):
         """Calculate stats"""
         if len(data) > 1:
             self.avg = round(float(data.mean()), 3)
@@ -110,7 +110,7 @@ def analyze_callback(callback_name: str, callback_displayname: str, metrics_str:
                      data: pd.DataFrame, metrics: str, dest_dir_path: str):
     """Analyze a callback"""
     callback_stats = StatsCallback()
-    callback_stats.calgulate(data)
+    callback_stats.calculate(data)
     figure_hist = draw_histogram(data, callback_displayname, metrics_str)
     if figure_hist:
         filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]

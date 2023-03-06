@@ -152,9 +152,9 @@ def make_stats_dict_topic_pubsub_metrics(report_dir: str, component_pair: tuple[
                     continue
 
                 stats['stats']['publish_node_html'] = ''
-                if stats['stats']['pubilsh_component_name'] != 'external':
+                if stats['stats']['publish_component_name'] != 'external':
                     stats['stats']['publish_node_html'] = '../../validate_callback/' + \
-                        stats['stats']['pubilsh_component_name'] + '/' + \
+                        stats['stats']['publish_component_name'] + '/' + \
                         make_callback_detail_filename(stats['stats']['publish_node_name'])
 
                 stats['stats']['subscribe_node_html'] = ''

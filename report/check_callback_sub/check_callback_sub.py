@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Script to check gap b/w publishment and subscription frequency
+Script to check gap b/w publication and subscription frequency
 """
 from __future__ import annotations
 import sys
@@ -31,7 +31,7 @@ from common.utils import create_logger, make_destination_dir, read_trace_data, e
 from common.utils import get_callback_legend, round_yaml
 from common.utils import ComponentManager
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -72,7 +72,7 @@ def calc_frequency(timestamp_df: pd.DataFrame,
 
 
 def calc_pub_freq(timestamp_df: pd.DataFrame) -> tuple[list[float], list[int]]:
-    """Measure frequency of publishment"""
+    """Measure frequency of publication"""
     return calc_frequency(timestamp_df, 'rclcpp_publish_timestamp')
 
 
@@ -96,14 +96,14 @@ def match_pubsub_freq(pub_freq: tuple[list[float], list[int]],
     timestamp_list : list[float]
         list of timestamp [sec]
     pub_freq_list : list[float]
-        list of publishment frequency [Hz]
+        list of publication frequency [Hz]
     sub_freq_list : list[float]
         list of subscription frequency [Hz]
 
     Note
     ---
     In case there is not correspond subscription(*), the publish event is ignored
-    (*: gap between publishment timestamp and subscription timestamp > 1 sec)
+    (*: gap between publication timestamp and subscription timestamp > 1 sec)
     """
     timestamp_list = []
     pub_freq_list = []
@@ -147,7 +147,7 @@ def make_graph(pub_freq: tuple[list[float], list[int]],
 
 def create_stats(title,  graph_filename, topic_name, publisher_name,
                  node_name, callback_name, callback_displayname,
-                 publishment_freq, subscription_freq, num_huge_gap) -> dict:
+                 publication_freq, subscription_freq, num_huge_gap) -> dict:
     """Create stats"""
     stats = {
         'title': title,
@@ -158,7 +158,7 @@ def create_stats(title,  graph_filename, topic_name, publisher_name,
         'component_name': ComponentManager().get_component_name(node_name),
         'callback_name': callback_name,
         'callback_displayname': callback_displayname,
-        'publishment_freq': publishment_freq,
+        'publication_freq': publication_freq,
         'subscription_freq': subscription_freq,
         'num_huge_gap': num_huge_gap,
     }
@@ -266,7 +266,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
-                description='Script to check gap b/w publishment and subscription frequency')
+                description='Script to check gap b/w publication and subscription frequency')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')

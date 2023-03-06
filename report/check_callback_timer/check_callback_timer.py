@@ -30,7 +30,7 @@ from common.utils import create_logger, make_destination_dir, read_trace_data, e
 from common.utils import get_callback_legend, round_yaml
 from common.utils import ComponentManager
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)

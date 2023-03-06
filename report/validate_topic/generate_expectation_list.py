@@ -25,7 +25,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir
 from common.utils import ComponentManager
 
-# Supress log for CARET
+# Suppress log for CARET
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
@@ -69,15 +69,15 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
                     expectation = {}
                     expectation['topic_name'] = topic_name
                     expectation['publish_node_name'] = comm.publish_node_name
-                    expectation['pubilsh_component_name'] = ComponentManager().get_component_name(comm.publish_node_name)
+                    expectation['publish_component_name'] = ComponentManager().get_component_name(comm.publish_node_name)
                     expectation['subscribe_node_name'] = comm.subscribe_node_name
                     expectation['subscribe_component_name'] = ComponentManager().get_component_name(comm.subscribe_node_name)
                     expectation['value'] = value
                     if ComponentManager().check_if_external_in_topic(topic_name, comm.subscribe_node_name):
-                        expectation['pubilsh_component_name'] = 'external'
+                        expectation['publish_component_name'] = 'external'
                     if ComponentManager().check_if_external_out_topic(topic_name, comm.publish_node_name):
                         expectation['subscribe_component_name'] = 'external'
-                    if expectation['pubilsh_component_name'] == expectation['subscribe_component_name']:
+                    if expectation['publish_component_name'] == expectation['subscribe_component_name']:
                         continue
                     expectation_list.append(expectation)
             else:
@@ -90,7 +90,7 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
                             expectation = {}
                             expectation['topic_name'] = topic_name
                             expectation['publish_node_name'] = 'external'
-                            expectation['pubilsh_component_name'] = 'external'
+                            expectation['publish_component_name'] = 'external'
                             expectation['subscribe_node_name'] = callback.node_name
                             expectation['subscribe_component_name'] = ComponentManager().get_component_name(callback.node_name)
                             expectation['value'] = value
