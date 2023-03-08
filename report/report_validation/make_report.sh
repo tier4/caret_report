@@ -22,6 +22,9 @@ python3 "${script_path}"/validate_callback/make_report_validate_callback.py "${r
 python3 "${script_path}"/validate_topic/validate_topic.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${report_dir_name}/${topic_list_csv}_pubsub.csv" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/validate_topic/make_report_validate_topic.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
+# Trace Validation failure
+python3 "${script_path}"/trace_validation_failure/make_report_trace_validation_failure.py "${report_dir_name}"
+
 # Re-make html for Callback to generate link to topics
 python3 "${script_path}"/validate_callback/make_report_validate_callback.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
