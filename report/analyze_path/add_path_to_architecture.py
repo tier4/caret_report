@@ -91,7 +91,7 @@ def find_path(arch: Architecture, target_path_json: list, max_node_depth: int, t
         if '[' not in node_name and '.' not in node_name and '*' not in node_name:
             # collect node name which doesn't contain regular expressions
             node_name_list.append(node_name)
-    for depth in range(3, max_node_depth):
+    for depth in range(1, max_node_depth):
         found_path_list = search_paths_with_timeout(arch, node_name_list, max_node_depth=depth, timeout=timeout)
         if found_path_list is None:
             _logger.warning('Timeout happens. Please specify more details for the path')
