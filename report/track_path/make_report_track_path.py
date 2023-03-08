@@ -109,12 +109,14 @@ def make_stats(dest_dir: str, stats_list_file: str):
         top_report_file = Path(stats_file).parent.parent.joinpath('index.html')
         if path_report_file.exists():
             path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
-        else:
-            path_report_file = ''
-        if top_report_file.exists() or True:  # do not check top_report_file because it's created later
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
         else:
+            path_report_file = ''
             top_report_file = ''
+        # if top_report_file.exists() or True:  # do not check top_report_file because it's created later
+        #     top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
+        # else:
+        #     top_report_file = ''
         reportpath_version_dict[version] = (path_report_file, top_report_file)
 
     stats_version_dict = {}  # key: version, value: stats

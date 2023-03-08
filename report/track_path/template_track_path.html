@@ -39,9 +39,14 @@
                   <td>
                     {% if report_path[0] != '' %}
                       <a href="{{ report_path[0] }}#{{ target_path_name }}" target="_blank">path</a>
+                    {% else %}
+                      ---
                     {% endif %}
+                    , 
                     {% if report_path[1] != '' %}
-                      <a href="{{ report_path[1] }}" target="_blank">, top</a>
+                      <a href="{{ report_path[1] }}" target="_blank">top</a>
+                    {% else %}
+                      ---
                     {% endif %}
                   </td>
                   {% for value_name, value_list in stats.items() %}
