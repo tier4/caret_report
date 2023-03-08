@@ -18,6 +18,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
+import glob
 import math
 import logging
 import csv
@@ -65,63 +66,68 @@ def render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, de
             f_html.write(rendered)
 
 
-def make_stats_file_list(dest_dir: str, stats_list_file: str) -> list[tuple[str,str]]:
+def make_stats_file_dict(dest_dir: str, stats_list_file: str) -> list[tuple[str,str]]:
     """Make file list"""
-    stats_file_list = []
+    stats_file_dict = {}
     if not os.path.isfile(stats_list_file):
         _logger.error(f"Unable to read csv: {stats_list_file}")
         return []
     with open(stats_list_file, 'r', encoding='utf-8') as f_csv:
         for row in csv.DictReader(f_csv, ['version', 'stats_file']):
-            stats_file = row['stats_file']
-            stats_file_abs = Path(stats_file).expanduser()
-            stats_file_from_current = Path(stats_file).resolve()
-            stats_file_from_csv = Path.joinpath(Path(os.path.dirname(stats_list_file)).resolve(), stats_file)
-            stats_file_from_dest = Path.joinpath(Path(os.path.dirname(dest_dir)).resolve(), stats_file)
-            stats_file_from_dest_parent = Path.joinpath(Path(os.path.dirname(dest_dir)).resolve().parent, stats_file)
-            if os.path.isfile(stats_file_abs):
-                stats_file_list.append((row['version'], stats_file_abs))
-            elif os.path.isfile(stats_file_from_current):
-                stats_file_list.append((row['version'], stats_file_from_current))
-            elif os.path.isfile(stats_file_from_csv):
-                stats_file_list.append((row['version'], stats_file_from_csv))
-            elif os.path.isfile(stats_file_from_dest):
-                stats_file_list.append((row['version'], stats_file_from_dest))
-            elif os.path.isfile(stats_file_from_dest_parent):
-                stats_file_list.append((row['version'], stats_file_from_dest_parent))
-            else:
-                _logger.error(f"Unable to read stats file: {row}")
-                continue
-    return stats_file_list
+            stats_file = row['stats_file']  # this can be directory or file.yaml with wild card
+            stats_file_candidate_list = [
+                Path(stats_file).expanduser(),  # abs
+                Path(stats_file).resolve(),     # from current
+                Path.joinpath(Path(os.path.dirname(stats_list_file)).resolve(), stats_file),    # from csv
+                Path.joinpath(Path(os.path.dirname(dest_dir)).resolve(), stats_file),           # from dest
+                Path.joinpath(Path(os.path.dirname(dest_dir)).resolve().parent, stats_file),    # from dest parent
+            ]
+            for stats_file_candidate in stats_file_candidate_list:
+                # For stats_file as directory
+                stats_path_list = glob.glob(f'{stats_file_candidate}/**/stats_path.yaml', recursive=True)
+                if len(stats_path_list) > 0 and os.path.isfile(stats_path_list[0]):
+                    stats_file_dict[row['version']] = stats_path_list[0]
+                    break
+                # For stats_file as file
+                stats_path_list = glob.glob(f'{stats_file_candidate}', recursive=True)
+                if len(stats_path_list) > 0 and os.path.isfile(stats_path_list[0]):
+                    stats_file_dict[row['version']] = stats_path_list[0]
+                    break
+            if row['version'] not in stats_file_dict:
+                _logger.error(f"Unable to find stats file for {row['version']}")
+
+    return stats_file_dict
 
 
 def make_stats(dest_dir: str, stats_list_file: str):
     """Make stats"""
-    stats_file_list = make_stats_file_list(dest_dir, stats_list_file)
+    stats_file_dict = make_stats_file_dict(dest_dir, stats_list_file)
 
     reportpath_version_dict = {}   # key: version, value: path to report
-    for version, stats_file in stats_file_list:
+    for version, stats_file in stats_file_dict.items():
         path_report_file = Path(stats_file).parent.joinpath('index.html')
         top_report_file = Path(stats_file).parent.parent.joinpath('index.html')
         if path_report_file.exists():
             path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
-        else:
-            path_report_file = ''
-        if top_report_file.exists() or True:  # do not check top_report_file because it's created later
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
         else:
+            path_report_file = ''
             top_report_file = ''
+        # if top_report_file.exists() or True:  # do not check top_report_file because it's created later
+        #     top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
+        # else:
+        #     top_report_file = ''
         reportpath_version_dict[version] = (path_report_file, top_report_file)
 
     stats_version_dict = {}  # key: version, value: stats
-    for version, stats_file in stats_file_list:
+    for version, stats_file in stats_file_dict.items():
         with open(stats_file, 'r', encoding='utf-8') as f_yaml:
             stats_version_dict[version] = yaml.safe_load(f_yaml)
 
     target_path_name_list = []
-    if len(stats_file_list)> 0:
-        target_path_name_list = [
-            target_path_info['target_path_name'] for target_path_info in stats_version_dict[stats_file_list[0][0]]]
+    if len(stats_version_dict)> 0:
+        stats_latest = next(reversed(stats_version_dict.values()))
+        target_path_name_list = [target_path_info['target_path_name'] for target_path_info in stats_latest]
 
     # Create dataframe for each target path (index=version, column=avg, max, min, etc.)
     df_per_path = pd.DataFrame(columns=pd.MultiIndex.from_product([target_path_name_list, value_name_list]), dtype=float)
