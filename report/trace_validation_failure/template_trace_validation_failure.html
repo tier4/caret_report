@@ -1,0 +1,51 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <title>{{ title }}</title>
+  </head>
+
+  <body>
+    <div class="container" style="white-space: nowrap; margin: 0px;">
+      <hr />
+      sample:<br />
+      /the_terminal_node_with_failure (callback trigger)<br />
+      └── /preceding_node_with_failure (callback trigger)<br />
+      * the start-edge node (colored node) may be the cause of the failure
+      {% for trace in trace_list %}
+        <hr />
+        {% for line in trace %}
+          <pre style="display: inline; margin-bottom: 0px">{{ line["pre"] }}</pre>
+          <font color={{ line["color"] }}>{{ line["node_name"] }}</font>
+          {% if line["node_html"] != "" %}
+            (<a href="{{ line["node_html"] }}" target="_blank">{{ line["trigger"] }}</a>)
+          {% else %}
+            ({{ line["trigger"] }})
+          {% endif %}
+          <br />
+        {% endfor %}
+      {% endfor %}
+    </div><!-- container -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        var height = document.getElementsByTagName("html")[0].scrollHeight;
+        window.parent.postMessage(["setHeightTraceFailure", height], "*");
+      }
+    </script>
+
+  </body>
+</html>
