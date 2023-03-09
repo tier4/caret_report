@@ -25,7 +25,7 @@
 
 ```sh
 # Flask 2.1.0 (need to specify version) is required to create html report pages
-pip3 install Flask==2.1.0
+pip3 install Flask==2.1.0 anytree
 
 # Firefox, selenium and geckodriver are required to generate graph image files
 # sudo apt install -y firefox    # Ubuntu 20.04 only

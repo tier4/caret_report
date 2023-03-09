@@ -153,7 +153,7 @@ def create_stats_list(stats_file_list: list[str]) -> list[dict]:
 
 
 def get_color_for_callback(callback_name: str):
-    color_list = ['blue', 'red', 'green', 'yellow', 'purple', 'orange', 'brown', 'pink', 'gray', 'olive', 'cyan']
+    color_list = ['blue', 'red', 'green', 'purple', 'orange', 'brown', 'pink', 'olive', 'cyan', 'fuchsia', 'lime', 'teal', 'aqua', 'maroon', 'navy', 'silver', 'yellow', 'gray']
     if callback_name not in get_color_for_callback.color_index_dict:
         get_color_for_callback.color_index_dict[callback_name] = len(get_color_for_callback.color_index_dict) % len(color_list)
     color_index = get_color_for_callback.color_index_dict[callback_name]
