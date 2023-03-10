@@ -29,7 +29,7 @@ from bokeh.plotting import Figure, figure
 from bokeh.models import AdaptiveTicker
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
-from caret_analyze.experiment import ResponseTime
+from caret_analyze.record import ResponseTime
 from caret_analyze.plot import message_flow
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, round_yaml
