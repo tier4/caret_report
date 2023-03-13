@@ -29,15 +29,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3.1.0
 
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ github.ref }}-${{ github.sha }}
-          restore-keys: |
-            ${{ github.ref }}-${{ github.sha }}
-            ${{ github.ref }}
-            refs/head/main
+      # - name: Cache Docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/.buildx-cache
+      #     key: ${{ github.ref }}-${{ github.sha }}
+      #     restore-keys: |
+      #       ${{ github.ref }}-${{ github.sha }}
+      #       ${{ github.ref }}
+      #       refs/head/main
 
       - name: Set up Docker Buildx
         id: buildx
