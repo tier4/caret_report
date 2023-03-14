@@ -22,7 +22,7 @@ wget -nv https://github.com/tier4/CARET_report/releases/download/20221227/autowa
 unzip autoware_launch_trace_20221227-150253_universe_rosbag.zip
 
 # Download reference data
-wget -v https://github.com/tier4/CARET_report/releases/download/20230306/report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
+wget -v https://github.com/tier4/CARET_report/releases/download/20230314/report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
 unzip report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
 mv report_autoware_launch_trace_20221227-150253_universe_rosbag reference_result
 
