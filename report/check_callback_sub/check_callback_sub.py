@@ -146,7 +146,7 @@ def make_graph(pub_freq: tuple[list[float], list[int]],
 
 
 def create_stats(title,  graph_filename, topic_name, publisher_name,
-                 node_name, callback_name, callback_displayname,
+                 node_name, callback_name, callback_legend,
                  publication_freq, subscription_freq, num_huge_gap) -> dict:
     """Create stats"""
     stats = {
@@ -157,7 +157,7 @@ def create_stats(title,  graph_filename, topic_name, publisher_name,
         'node_name': node_name,
         'component_name': ComponentManager().get_component_name(node_name),
         'callback_name': callback_name,
-        'callback_displayname': callback_displayname,
+        'callback_legend': callback_legend,
         'publication_freq': publication_freq,
         'subscription_freq': subscription_freq,
         'num_huge_gap': num_huge_gap,
@@ -172,7 +172,7 @@ def analyze_communication(args, dest_dir, app: Application, communication: Commu
     graph_filename = graph_filename[:250]
     node = app.get_node(communication.callback_subscription.node_name)
     callback_name = communication.callback_subscription.callback_name
-    display_name = get_callback_legend(node, callback_name)
+    callback_legend = get_callback_legend(node, callback_name)
     _logger.debug(f'Processing {title}')
 
     try:
@@ -209,7 +209,7 @@ def analyze_communication(args, dest_dir, app: Application, communication: Commu
 
     stats = create_stats(title, graph_filename, communication.topic_name,
                          communication.publish_node_name, communication.subscribe_node_name,
-                         callback_name, display_name, mean_pub_freq, mean_sub_freq, num_huge_gap)
+                         callback_name, callback_legend, mean_pub_freq, mean_sub_freq, num_huge_gap)
 
     is_warning = False
     if num_huge_gap >= args.count_threshold:

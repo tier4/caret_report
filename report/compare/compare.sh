@@ -42,21 +42,21 @@ if [ -e png_err ]; then
     rm png_err
 fi
 
-(
-    cd "${report_dir_1}" || exit
-    find ./ -type f -name "*.png" \
-        -not -name "autoware_universe_node_diagram.png" -not -name "*_0_messageflow.png" \
-        -print0
-) |
-    xargs -0 -I{} sh -c ' \
-        diff=`convert -metric PHASH "${report_dir_1}"/{} "${report_dir_2}"/{} -compare -format "%[distortion]" info:` && \
-        if [ $diff != "inf" ]; then
-            result=`python3 -c "print(${diff} > 50.0)"` && \
-            if [ $result = True ]; then
-                echo {} ${diff}
-                touch png_err
-            fi
-        fi'
+# (
+#     cd "${report_dir_1}" || exit
+#     find ./ -type f -name "*.png" \
+#         -not -name "autoware_universe_node_diagram.png" -not -name "*_0_messageflow.png" \
+#         -print0
+# ) |
+#     xargs -0 -I{} sh -c ' \
+#         diff=`convert -metric PHASH "${report_dir_1}"/{} "${report_dir_2}"/{} -compare -format "%[distortion]" info:` && \
+#         if [ $diff != "inf" ]; then
+#             result=`python3 -c "print(${diff} > 50.0)"` && \
+#             if [ $result = True ]; then
+#                 echo {} ${diff}
+#                 touch png_err
+#             fi
+#         fi'
 
 if [ -e png_err ]; then
     echo "[ERROR][compare] ERROR. PNG doesn't match"

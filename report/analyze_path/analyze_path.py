@@ -65,6 +65,7 @@ class Stats():
         self.filename_timeseries_best = ''
         self.filename_hist_worst = ''
         self.filename_timeseries_worst = ''
+        self.graph_height = ''
 
     def calc_stats(self, df_best: np.ndarray, df_worst: np.ndarray):
         self.best_avg = round(float(np.average(df_best)), 3)
@@ -80,7 +81,7 @@ class Stats():
         self.worst_p95 = round(float(np.quantile(df_worst, 0.95)), 3)
         self.worst_p99 = round(float(np.quantile(df_worst, 0.99)), 3)
 
-    def store_filename(self, target_path_name: str, save_long_graph: bool):
+    def store_filename(self, target_path_name: str, save_long_graph: bool, graph_height: int):
         if save_long_graph:
             self.filename_messageflow = f'{target_path_name}_messageflow'
         self.filename_messageflow_short = f'{target_path_name}_messageflow_short'
@@ -88,6 +89,7 @@ class Stats():
         self.filename_timeseries_best = f'{target_path_name}_timeseries_best'
         self.filename_hist_worst = f'{target_path_name}_hist_worst'
         self.filename_timeseries_worst = f'{target_path_name}_timeseries_worst'
+        self.graph_height = graph_height
 
 
 def align_timeseries(timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
@@ -106,7 +108,7 @@ def draw_response_time(hist: np.ndarray, bin_edges: np.ndarray,
     """Draw histogram and timeseries graphs of response time"""
     bin_edges = bin_edges * 10**-6  # nanoseconds to milliseconds
     p_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
-                    x_axis_label='Response Time [ms]', y_axis_label='Frequency')
+                    x_axis_label='Response Time [ms]', y_axis_label='Count')
     p_hist.quad(top=hist, bottom=0, left=bin_edges[:-1], right=bin_edges[1:],
                 line_color='white', alpha=0.5)
 
@@ -168,16 +170,16 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
                 rstrip_s=max(duration / 2 - (3 + 0.1), 0),
                 export_path='dummy.html')
 
-    graph_short.width = 1400
-    graph_short.height = 15 * len(target_path.child_names) + 50
-    export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name)
+    graph_short.width = 1200
+    graph_short.height = max(200, 15 * len(target_path.child_names) + 50)
+    export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name, with_png=False)
 
     if args.message_flow:
         graph = message_flow(target_path, granularity='node',
                              treat_drop_as_delay=False, export_path='dummy.html')
         graph.width = graph_short.width
         graph.height = graph_short.height
-        export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name)
+        export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name, with_png=False)
 
     _logger.info('  Call ResponseTime')
     response_time = ResponseTime(records)
@@ -188,8 +190,8 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     offset = df_best[0][0]
     df_best = align_timeseries(df_best)
     p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_best, offset)
-    export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name)
-    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name)
+    export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name, with_png=False)
+    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name, with_png=False)
 
     _logger.debug('    Draw histogram and timeseries (worst)')
     hist, bin_edges = response_time.to_worst_case_histogram(10**7)  # binsize = 10ms
@@ -197,11 +199,11 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     offset = df_worst[0][0]
     df_worst = align_timeseries(df_worst)
     p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_worst, offset)
-    export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name)
-    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name)
+    export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name, with_png=False)
+    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name, with_png=False)
 
     stats.calc_stats(df_best[1], df_worst[1])
-    stats.store_filename(target_path_name, args.message_flow)
+    stats.store_filename(target_path_name, args.message_flow, graph_short.height + 17)
     _logger.info(f'---{target_path_name}---')
     _logger.debug(vars(stats))
 

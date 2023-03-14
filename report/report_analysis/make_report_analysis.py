@@ -15,11 +15,14 @@
 Script to make report page
 """
 from __future__ import annotations
+import sys
 import os
 import argparse
 from pathlib import Path
 import yaml
 import flask
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+from common.utils import ComponentManager
 
 app = flask.Flask(__name__)
 
@@ -46,9 +49,12 @@ def render_page(destination_path, template_path, report_name, component_list, st
 
 def get_component_list(report_dir: str) -> list[str]:
     """Create component name list in node analysis"""
-    component_list = os.listdir(report_dir + '/analyze_node')
-    component_list = [f for f in component_list if os.path.isdir(os.path.join(report_dir + '/analyze_node', f))]
-    component_list.sort()
+    node_report_dir= report_dir + '/analyze_node'
+
+    component_list = []
+    for component_name, _ in ComponentManager().component_dict.items():
+        if os.path.isdir(os.path.join(node_report_dir, component_name)):
+            component_list.append(component_name)
     return component_list
 
 
@@ -76,9 +82,10 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
     for node_name, node_info in stats_node.items():
         callbacks = node_info['callbacks']
         for _, callback_info in callbacks.items():
+            trigger = callback_info['subscribe_topic_name'] if callback_info['period_ns'] == -1 else f'{float(callback_info["period_ns"]) / 1e6} [ms]'
             callback_latency_list.append({
-                'link': 'analyze_node/' + component_name + '/index.html#' + node_name,
-                'displayname': flask.Markup(node_name + '<br>' + callback_info['displayname']),
+                'link': f'analyze_node/{component_name}/index{node_name.replace("/", "_")}.html',
+                'displayname': flask.Markup(node_name + '<br>' + callback_info['callback_legend'] + ': ' + trigger),
                 'avg': callback_info['Latency']['avg'] if isinstance(callback_info['Latency']['avg'], (int, float)) else 0,
                 'min': callback_info['Latency']['min'] if isinstance(callback_info['Latency']['min'], (int, float)) else 0,
                 'max': callback_info['Latency']['max'] if isinstance(callback_info['Latency']['max'], (int, float)) else 0,
@@ -108,6 +115,7 @@ def make_report(args, index_filename: str='index'):
     """Make report page"""
     dest_dir = str(Path(args.dest_dir[0]))
     report_name = dest_dir.split('/')[-1]
+    ComponentManager().initialize('component_list.json')
 
     component_list = get_component_list(dest_dir)
     stats_node_dict = get_stats_node(dest_dir)
