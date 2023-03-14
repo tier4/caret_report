@@ -15,11 +15,14 @@
 Script to make report page
 """
 from __future__ import annotations
+import sys
 import os
 import argparse
 from pathlib import Path
 import yaml
 import flask
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+from common.utils import ComponentManager
 
 app = flask.Flask(__name__)
 
@@ -46,9 +49,12 @@ def render_page(destination_path, template_path, report_name, component_list, st
 
 def get_component_list(report_dir: str) -> list[str]:
     """Create component name list in node analysis"""
-    component_list = os.listdir(report_dir + '/analyze_node')
-    component_list = [f for f in component_list if os.path.isdir(os.path.join(report_dir + '/analyze_node', f))]
-    component_list.sort()
+    node_report_dir= report_dir + '/analyze_node'
+
+    component_list = []
+    for component_name, _ in ComponentManager().component_dict.items():
+        if os.path.isdir(os.path.join(node_report_dir, component_name)):
+            component_list.append(component_name)
     return component_list
 
 
@@ -109,6 +115,7 @@ def make_report(args, index_filename: str='index'):
     """Make report page"""
     dest_dir = str(Path(args.dest_dir[0]))
     report_name = dest_dir.split('/')[-1]
+    ComponentManager().initialize('component_list.json')
 
     component_list = get_component_list(dest_dir)
     stats_node_dict = get_stats_node(dest_dir)
