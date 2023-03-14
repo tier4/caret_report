@@ -40,9 +40,7 @@
       <a href="{{ path_info.filename_messageflow }}.html" target="_blank"> message flow (full) </a>
       <br />
       {% endif %}
-      <a href="{{ path_info.filename_messageflow_short }}.html" target="_blank">
-        <img src="{{ path_info.filename_messageflow_short }}.png" />
-      </a>
+      <iframe src="{{ path_info.filename_messageflow_short }}.html" frameborder="0" width="100%" height="{{ path_info.graph_height }}" scrolling="yes"></iframe>
 
       <h4>Response Time</h4>
       <div class="w-75">
@@ -73,14 +71,10 @@
 
       <div class="row">
         <div class="col">
-          <a href="{{ path_info.filename_hist_best }}.html" target="_blank">
-            <img src="{{ path_info.filename_hist_best }}.png" />
-          </a>
+          <iframe src="{{ path_info.filename_hist_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
         </div>
         <div class="col">
-          <a href="{{ path_info.filename_timeseries_best }}.html" target="_blank">
-            <img src="{{ path_info.filename_timeseries_best }}.png" />
-          </a>
+          <iframe src="{{ path_info.filename_timeseries_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
         </div>
       </div>
       {% endfor %}

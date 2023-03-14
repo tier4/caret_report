@@ -76,9 +76,10 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
     for node_name, node_info in stats_node.items():
         callbacks = node_info['callbacks']
         for _, callback_info in callbacks.items():
+            trigger = callback_info['subscribe_topic_name'] if callback_info['period_ns'] == -1 else f'{float(callback_info["period_ns"]) / 1e6} [ms]'
             callback_latency_list.append({
-                'link': 'analyze_node/' + component_name + '/index.html#' + node_name,
-                'displayname': flask.Markup(node_name + '<br>' + callback_info['displayname']),
+                'link': f'analyze_node/{component_name}/index{node_name.replace("/", "_")}.html',
+                'displayname': flask.Markup(node_name + '<br>' + callback_info['callback_legend'] + ': ' + trigger),
                 'avg': callback_info['Latency']['avg'] if isinstance(callback_info['Latency']['avg'], (int, float)) else 0,
                 'min': callback_info['Latency']['min'] if isinstance(callback_info['Latency']['min'], (int, float)) else 0,
                 'max': callback_info['Latency']['max'] if isinstance(callback_info['Latency']['max'], (int, float)) else 0,

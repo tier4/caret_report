@@ -27,6 +27,7 @@ import pandas as pd
 from bokeh.plotting import Figure, figure
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
+from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, trail_df
@@ -78,11 +79,14 @@ class StatsNode():
     def set_filename_timeseries(self, metrics: str, filename_timeseries: str):
         self.filename_timeseries[metrics] = filename_timeseries
 
-    def set_callback(self, callback_name: str, callback_displayname: str, metrics: str,
+    def set_callback(self, callback: CallbackBase, callback_legend: str, metrics: str,
                      callback_stats: StatsCallback):
-        self.callbacks.setdefault(callback_name, {})
-        self.callbacks[callback_name][metrics] = vars(callback_stats)
-        self.callbacks[callback_name]['displayname'] = callback_displayname
+        self.callbacks.setdefault(callback.callback_name, {})
+        self.callbacks[callback.callback_name]['callback_legend'] = callback_legend
+        self.callbacks[callback.callback_name]['callback_type'] = callback.callback_type.type_name
+        self.callbacks[callback.callback_name]['period_ns'] = callback.timer.period_ns if callback.callback_type == CallbackType.TIMER else -1
+        self.callbacks[callback.callback_name]['subscribe_topic_name'] = callback.subscribe_topic_name if callback.callback_type == CallbackType.SUBSCRIPTION else ''
+        self.callbacks[callback.callback_name][metrics] = vars(callback_stats)
 
 
 def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
@@ -106,15 +110,15 @@ def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
     return figure_hist
 
 
-def analyze_callback(callback_name: str, callback_displayname: str, metrics_str: str,
+def analyze_callback(callback_name: str, callback_legend: str, metrics_str: str,
                      data: pd.DataFrame, metrics: str, dest_dir_path: str):
     """Analyze a callback"""
     callback_stats = StatsCallback()
     callback_stats.calculate(data)
-    figure_hist = draw_histogram(data, callback_displayname, metrics_str)
+    figure_hist = draw_histogram(data, callback_legend, metrics_str)
     if figure_hist:
         filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
-        export_graph(figure_hist, dest_dir_path, filename_hist, _logger)
+        export_graph(figure_hist, dest_dir_path, filename_hist, with_png=False, logger=_logger)
         callback_stats.set_filename_hist(filename_hist)
 
     return callback_stats
@@ -143,13 +147,13 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
             if 'callback_start_timestamp' in metrics_str:
                 continue
 
-            callback_displayname = get_callback_legend(node, callback_name)
             df_callback = trail_df(df_callback, end_strip_num=2, start_strip_num=1)
             if len(df_callback) > 0:
                 has_valid_data = True
-            callback_stats = analyze_callback(callback_name, callback_displayname,
+            callback_stats = analyze_callback(callback_name, get_callback_legend(node, callback_name),
                                               metrics_str, df_callback, metrics, dest_dir)
-            node_stats.set_callback(callback_name, callback_displayname, metrics, callback_stats)
+            node_stats.set_callback(node.get_callback(callback_name), get_callback_legend(node, callback_name, False),
+                                    metrics, callback_stats)
 
         if has_valid_data:
             try:
@@ -158,7 +162,7 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
                 p_timeseries.frame_height = 350
                 p_timeseries.y_range.start = 0
                 filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
-                export_graph(p_timeseries, dest_dir, filename_timeseries, _logger)
+                export_graph(p_timeseries, dest_dir, filename_timeseries, with_png=False, logger=_logger)
                 node_stats.set_filename_timeseries(metrics, filename_timeseries)
             except:
                 _logger.info(f'Failed to export graph')
