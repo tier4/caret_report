@@ -118,7 +118,7 @@ jobs:
         if: ${{ matrix.do_test }}
         run: |
           sudo apt-get install -y imagemagick
-          wget -v https://github.com/tier4/CARET_report/releases/download/20230306/report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
+          wget -v https://github.com/tier4/CARET_report/releases/download/20230314/report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
           unzip report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
           mv report_autoware_launch_trace_20221227-150253_universe_rosbag reference_result
           export report_dir_1=`pwd`/reference_result
