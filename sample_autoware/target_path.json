@@ -1,9 +1,5 @@
 {
-  "ignore_topic_list": [
-    "/tf",
-    "/tf_static",
-    "/diagnostics"
-  ],
+  "ignore_topic_list": ["/tf", "/tf_static", "/diagnostics"],
   "ignore_node_list": [
     "/_ros2cli_/*",
     "/launch_ros_*",
@@ -91,8 +87,14 @@
           ]
         ],
         [
-          ["/planning/scenario_planning/motion_velocity_smoother", "/planning/scenario_planning/trajectory"],
-          ["/control/trajectory_follower/controller_node_exe", "/control/trajectory_follower/control_cmd"],
+          [
+            "/planning/scenario_planning/motion_velocity_smoother",
+            "/planning/scenario_planning/trajectory"
+          ],
+          [
+            "/control/trajectory_follower/controller_node_exe",
+            "/control/trajectory_follower/control_cmd"
+          ],
           ["/control/vehicle_cmd_gate", "/control/trajectory_follower/control_cmd"]
         ]
       ]
