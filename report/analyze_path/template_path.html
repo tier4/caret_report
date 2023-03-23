@@ -20,6 +20,9 @@
       <hr />
       <h2><a href="../index.html">Back to Top </a></h2>
 
+      <hr />
+      <p>Note: "Response Time (worst)" includes delay at input node</p>
+
       {% for path_info in stats %}
       <hr />
       <h2 id="{{ path_info.target_path_name }}">{{ path_info.target_path_name }}</h2>
@@ -47,7 +50,7 @@
         <table class="table table-hover table-bordered">
           <thead>
             <tr class="table-primary text-center">
-              <th>Response Time</th>
+              <th>{{ path_info.target_path_name}}</th>
               <th>Avg [ms]</th>
               <th>Median [ms]</th>
               <th>95%ile [ms]</th>
@@ -57,13 +60,23 @@
           </thead>
           <tbody>
             <tr>
-              <td>{{ path_info.target_path_name}}</td>
+              <td>Response Time (best)</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_avg|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_p50|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_p95|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_p99|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_max|float }}</td>
             </tr>
+            {% if "sensing" in path_info.target_path_name or "e2e" in path_info.target_path_name or "end" in path_info.target_path_name %}
+            <tr>
+              <td>Response Time (worst)</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_avg|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_p50|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_p95|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_p99|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_max|float }}</td>
+            </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>

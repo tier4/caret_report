@@ -15,6 +15,7 @@
 Script to add path information to architecture file
 """
 from __future__ import annotations
+from typing import Callable
 import sys
 import os
 import argparse
@@ -24,6 +25,7 @@ import re
 import json
 import yaml
 from caret_analyze import Architecture
+from caret_analyze.value_objects import PathStructValue, NodePathStructValue
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger
 
@@ -35,7 +37,7 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-def find_path(arch: Architecture, target_path_json: list, max_node_depth: int, timeout: int):
+def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filter: Callable[[str], bool], target_path_json: list, max_node_depth: int, timeout: int):
     """Find target path from architecture"""
     def get_node_topic(info) -> tuple[str, str]:
         if isinstance(info, str):
@@ -45,38 +47,17 @@ def find_path(arch: Architecture, target_path_json: list, max_node_depth: int, t
         _logger.error('Invalid description in JSON file')
         sys.exit(-1)
 
-    def comm_filter(topic_name: str) -> bool:
-        comm_filters = [
-            re.compile(r'/tf'),
-            re.compile(r'/tf_static'),
-            re.compile(r'/diagnostics'),
-        ]
-        can_pass = True
-        for comm_filter in comm_filters:
-            can_pass &= not bool(comm_filter.search(topic_name))
-        return can_pass
-
-    def node_filter(node_name: str) -> bool:
-        node_filters = [
-            re.compile(r'/_ros2cli_/*'),
-            re.compile(r'/launch_ros_*'),
-        ]
-        can_pass = True
-        for node_filter in node_filters:
-            can_pass &= not bool(node_filter.search(node_name))
-        return can_pass
-
     def search_paths_with_timeout(arch, node_names, max_node_depth, timeout) -> list:
-        def search_paths(arch, node_names, max_node_depth, result_obj):
+        def local_search_paths(arch, node_names, max_node_depth, result_obj):
             try:
                 result_obj['result'] = arch.search_paths(*node_names, max_node_depth=max_node_depth,
-                                                        node_filter=node_filter, communication_filter=comm_filter)
+                                                         node_filter=node_filter, communication_filter=comm_filter)
             except:
                 _logger.error(f'path not found: {node_names}')
                 result_obj['result'] = []
 
         result_obj = {}
-        thread = threading.Thread(target=search_paths, args=(arch, node_names, max_node_depth, result_obj), daemon=True)
+        thread = threading.Thread(target=local_search_paths, args=(arch, node_names, max_node_depth, result_obj), daemon=True)
         thread.start()
         thread.join(timeout=timeout)
         if thread.is_alive():
@@ -157,6 +138,39 @@ def convert_context_type_to_use_latest_message(filename_src, filename_dst):
         yaml.dump(yml, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
+def create_search_paths_filter(ignore_topic_list: list[str], ignore_node_list: list[str]) -> tuple[Callable[[str], bool], Callable[[str], bool]]:
+    if ignore_topic_list:
+        topic_filter_list = [re.compile(topic) for topic in ignore_topic_list]
+    else:
+        topic_filter_list = [
+            re.compile('/tf'),
+            re.compile('/tf_static'),
+            re.compile('/diagnostics'),
+        ]
+
+    if ignore_node_list:
+        node_filter_list = [re.compile(node) for node in ignore_node_list]
+    else:
+        node_filter_list = [
+            re.compile('/_ros2cli_/*'),
+            re.compile('/launch_ros_*'),
+        ]
+
+    def comm_filter(topic_name: str) -> bool:
+        can_pass = True
+        for topic_filter in topic_filter_list:
+            can_pass &= not bool(topic_filter.search(topic_name))
+        return can_pass
+
+    def node_filter(node_name: str) -> bool:
+        can_pass = True
+        for node_filter in node_filter_list:
+            can_pass &= not bool(node_filter.search(node_name))
+        return can_pass
+
+    return comm_filter, node_filter
+
+
 def add_path_to_architecture(args, arch: Architecture):
     """Add path information to architecture file"""
     global _logger
@@ -166,25 +180,63 @@ def add_path_to_architecture(args, arch: Architecture):
     # Read target path information from JSON
     try:
         with open(args.target_path_json[0], encoding='UTF-8') as f_json:
-            target_path_list = json.load(f_json)
+            target_path_json = json.load(f_json)
     except:
         _logger.error(f'Unable to read {args.target_path_json[0]}')
         sys.exit(-1)
+    comm_filter, node_filter = create_search_paths_filter(
+        target_path_json['ignore_topic_list'] if 'ignore_topic_list' in target_path_json else None,
+        target_path_json['ignore_node_list'] if 'ignore_node_list' in target_path_json else None)
 
     # arch.export('architecture_raw.yaml', force=True)
 
     # Find path from architecture
-    for target_path in target_path_list:
+    for target_path in target_path_json['target_path_list']:
         target_path_name = target_path['name']
         _logger.info(f'Processing: {target_path_name}')
-        found_path_list = find_path(arch, target_path['path'], max_node_depth=args.max_node_depth, timeout=args.timeout)
-        if len(found_path_list) > 0:
-            _logger.info(f'Target path found: {target_path_name}')
-            for i, found_path in enumerate(found_path_list):
+        target_path_info = target_path['path'] if isinstance(target_path['path'][0], list) else [target_path['path']]
+
+        found_path_list = []
+        for block_index, target_path_block in enumerate(target_path_info):
+            found_path_block_list = find_path(arch, comm_filter, node_filter, target_path_block, max_node_depth=args.max_node_depth, timeout=args.timeout)
+            if len(found_path_block_list) > 0:
+                _logger.info(f'Target path found: {target_path_name}_{block_index}')
+                found_path_list.append(found_path_block_list)
+                # for i, found_path in enumerate(found_path_list):
+                #     arch.add_path(target_path_name + '_' + str(i), found_path)
+            else:
+                _logger.error(f'Target path not found: {target_path_name}_{block_index}')
+
+        if len(found_path_list) != len(target_path_info):
+            continue
+
+        # merge found paths
+        if len(found_path_list) == 1:
+            found_path_block_list = found_path_list[0]
+            for i, found_path in enumerate(found_path_block_list):
                 arch.add_path(target_path_name + '_' + str(i), found_path)
-        else:
-            _logger.error(f'Target path not found: {target_path_name}')
-            # sys.exit(-1)
+        elif len(found_path_list) > 1:
+            child = []
+            for i, found_path_block_list in enumerate(found_path_list):
+                block_index = 0     # todo. use the first found path only at the moment
+                found_path_block = found_path_block_list[block_index]
+                if i == 0:
+                    child += found_path_block.child[:-1]
+                else:
+                    child += found_path_block.child[1:-1]
+                if i == len(found_path_list) - 1:
+                    child.append(found_path_block.child[-1])
+                else:
+                    found_path_block_next = found_path_list[i + 1][block_index]
+                    terminal_node = NodePathStructValue(
+                        found_path_block.child[-1].node_name,
+                        found_path_block.child[-1].subscription,
+                        found_path_block_next.child[0].publisher,
+                        found_path_block_next.child[0].child,
+                        found_path_block_next.child[0].message_context,
+                    )
+                    child.append(terminal_node)
+            arch.add_path(target_path_name, PathStructValue(target_path_name, child))
 
     arch.export(args.architecture_file_path, force=True)
 

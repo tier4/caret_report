@@ -196,7 +196,8 @@ def get_node_list(lttng: Lttng, app: Application, component_name: str) -> list[N
     target_node_name_list.sort()
     node_list = []
     for node_name in target_node_name_list:
-        node_list.append(app.get_node(node_name))
+        if node_name in app.node_names:
+            node_list.append(app.get_node(node_name))
 
     return node_list
 

@@ -27,7 +27,7 @@
               <tr class="table-primary text-center">
                 <th>Version</th>
                 <th>Link to report</th>
-                {% for value_name, value_list in stats.items() %}
+                {% for value_name in stats.keys() | reverse %}
                 <th>{{ value_name}} [ms]</th>
                 {% endfor %}
               </tr>
@@ -49,7 +49,7 @@
                       ---
                     {% endif %}
                   </td>
-                  {% for value_name, value_list in stats.items() %}
+                  {% for value_list in stats.values() | reverse %}
                   <td>{{ '%0.3f' % value_list[version] | float }}</td>
                   {% endfor %}
                 </tr>
