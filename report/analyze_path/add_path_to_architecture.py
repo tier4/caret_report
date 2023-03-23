@@ -140,9 +140,9 @@ def convert_context_type_to_use_latest_message(filename_src, filename_dst):
 
 def create_search_paths_filter(ignore_topic_list: list[str], ignore_node_list: list[str]) -> tuple[Callable[[str], bool], Callable[[str], bool]]:
     if ignore_topic_list:
-        topic_fiiler_list = [re.compile(topic) for topic in ignore_topic_list]
+        topic_filter_list = [re.compile(topic) for topic in ignore_topic_list]
     else:
-        topic_fiiler_list = [
+        topic_filter_list = [
             re.compile('/tf'),
             re.compile('/tf_static'),
             re.compile('/diagnostics'),
@@ -158,8 +158,8 @@ def create_search_paths_filter(ignore_topic_list: list[str], ignore_node_list: l
 
     def comm_filter(topic_name: str) -> bool:
         can_pass = True
-        for topic_fiiler in topic_fiiler_list:
-            can_pass &= not bool(topic_fiiler.search(topic_name))
+        for topic_filter in topic_filter_list:
+            can_pass &= not bool(topic_filter.search(topic_name))
         return can_pass
 
     def node_filter(node_name: str) -> bool:
