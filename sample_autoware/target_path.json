@@ -12,10 +12,7 @@
   "target_path_list": [
     {
       "name": "component_sensing",
-      "path": [
-        "/sensing/lidar/top/velodyne_convert_node",
-        "/sensing/lidar/concatenate_data"
-      ]
+      "path": ["/sensing/lidar/top/velodyne_convert_node", "/sensing/lidar/concatenate_data"]
     },
     {
       "name": "component_localization",

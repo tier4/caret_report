@@ -78,7 +78,7 @@ class Stats():
             self.best_p50 = round(float(np.quantile(df_best, 0.5)), 3)
             self.best_p95 = round(float(np.quantile(df_best, 0.95)), 3)
             self.best_p99 = round(float(np.quantile(df_best, 0.99)), 3)
-        
+
         self.worst_avg = round(float(np.average(df_worst)), 3)
         if len(df_worst) > 1:
             self.worst_min = round(float(np.min(df_worst)), 3)
