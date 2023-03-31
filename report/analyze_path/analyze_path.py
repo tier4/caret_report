@@ -26,11 +26,10 @@ import logging
 import yaml
 import numpy as np
 from bokeh.plotting import Figure, figure
-from bokeh.models import AdaptiveTicker
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.record import ResponseTime
-from caret_analyze.plot import Plot, message_flow
+from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, round_yaml
 
@@ -202,19 +201,19 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
         _logger.warning(f'    No-traffic and No-input in the path: {target_path_name}')
         return stats
 
-    graph_short = message_flow(target_path, treat_drop_as_delay=False,
+    graph_short = Plot.create_message_flow_plot(target_path,
                 lstrip_s=duration / 2,
-                rstrip_s=max(duration / 2 - (3 + 0.1), 0),
-                export_path='dummy.html')
-    graph_short.width = 1200
-    graph_short.height = max(200, 15 * len(target_path.child_names) + 50)
+                rstrip_s=max(duration / 2 - (3 + 0.1), 0)).figure(full_legends=True)
+    message_flow_width = 1200
+    message_flow_height = max(200, 18 * len(target_path.child_names) + 50)
+    graph_short.max_width = graph_short.min_width = message_flow_width  # width doesn't work for some reasons...
+    graph_short.max_height = graph_short.min_height = message_flow_height  # height doesn't work for some reasons...
     export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name, with_png=False)
 
     if args.message_flow:
-        graph = message_flow(target_path,
-                             treat_drop_as_delay=False, export_path='dummy.html')
-        graph.width = graph_short.width
-        graph.height = graph_short.height
+        graph = Plot.create_message_flow_plot(target_path).figure(full_legends=True)
+        graph.max_width = graph.min_width = message_flow_width
+        graph.max_height = graph.min_height = message_flow_height
         export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name, with_png=False)
 
     _logger.info('  response time')
@@ -241,7 +240,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
         df_worst = response_time.to_worst_case_timeseries()
         stats.calc_stats(df_best[1], df_worst[1])
 
-    stats.store_filename(target_path_name, args.message_flow, graph_short.height + 17)
+    stats.store_filename(target_path_name, args.message_flow, message_flow_height + 17)
     _logger.info(f'---{target_path_name}---')
     _logger.debug(vars(stats))
 
