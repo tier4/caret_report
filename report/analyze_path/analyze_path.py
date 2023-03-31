@@ -30,7 +30,7 @@ from bokeh.models import AdaptiveTicker
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.record import ResponseTime
-from caret_analyze.plot import message_flow
+from caret_analyze.plot import Plot, message_flow
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, round_yaml
 
@@ -63,23 +63,30 @@ class Stats():
         self.filename_hist_total = ''
         self.filename_hist_best = ''
         self.filename_timeseries_best = ''
+        self.filename_stacked_bar_best = ''
         self.filename_hist_worst = ''
         self.filename_timeseries_worst = ''
+        self.filename_stacked_bar_worst = ''
         self.graph_height = ''
 
     def calc_stats(self, df_best: np.ndarray, df_worst: np.ndarray):
+        df_best = df_best * 1e-6    # nsec -> msec
+        df_worst = df_worst * 1e-6
         self.best_avg = round(float(np.average(df_best)), 3)
-        self.best_min = round(float(np.min(df_best)), 3)
-        self.best_max = round(float(np.max(df_best)), 3)
-        self.best_p50 = round(float(np.quantile(df_best, 0.5)), 3)
-        self.best_p95 = round(float(np.quantile(df_best, 0.95)), 3)
-        self.best_p99 = round(float(np.quantile(df_best, 0.99)), 3)
+        if len(df_best) > 1:
+            self.best_min = round(float(np.min(df_best)), 3)
+            self.best_max = round(float(np.max(df_best)), 3)
+            self.best_p50 = round(float(np.quantile(df_best, 0.5)), 3)
+            self.best_p95 = round(float(np.quantile(df_best, 0.95)), 3)
+            self.best_p99 = round(float(np.quantile(df_best, 0.99)), 3)
+        
         self.worst_avg = round(float(np.average(df_worst)), 3)
-        self.worst_min = round(float(np.min(df_worst)), 3)
-        self.worst_max = round(float(np.max(df_worst)), 3)
-        self.worst_p50 = round(float(np.quantile(df_worst, 0.5)), 3)
-        self.worst_p95 = round(float(np.quantile(df_worst, 0.95)), 3)
-        self.worst_p99 = round(float(np.quantile(df_worst, 0.99)), 3)
+        if len(df_worst) > 1:
+            self.worst_min = round(float(np.min(df_worst)), 3)
+            self.worst_max = round(float(np.max(df_worst)), 3)
+            self.worst_p50 = round(float(np.quantile(df_worst, 0.5)), 3)
+            self.worst_p95 = round(float(np.quantile(df_worst, 0.95)), 3)
+            self.worst_p99 = round(float(np.quantile(df_worst, 0.99)), 3)
 
     def store_filename(self, target_path_name: str, save_long_graph: bool, graph_height: int):
         if save_long_graph:
@@ -87,122 +94,153 @@ class Stats():
         self.filename_messageflow_short = f'{target_path_name}_messageflow_short'
         self.filename_hist_best = f'{target_path_name}_hist_best'
         self.filename_timeseries_best = f'{target_path_name}_timeseries_best'
+        self.filename_stacked_bar_best = f'{target_path_name}_stacked_bar_best'
         self.filename_hist_worst = f'{target_path_name}_hist_worst'
         self.filename_timeseries_worst = f'{target_path_name}_timeseries_worst'
+        self.filename_stacked_bar_worst = f'{target_path_name}_stacked_bar_worst'
         self.graph_height = graph_height
 
 
-def align_timeseries(timeseries: tuple[np.ndarray, np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
-    """Adjust timeseries graph"""
-    x_list = np.zeros(len(timeseries[0]), dtype='float')
-    y_list = np.zeros(len(timeseries[1]), dtype='float')
-    offset = timeseries[0][0]
-    for i in range(len(timeseries[0])):
-        x_list[i] = (timeseries[0][i] - offset) * 10**-9  # [sec]
-        y_list[i] = timeseries[1][i] * 10**-6  # [msec]
-    return x_list, y_list
-
-
-def draw_response_time(hist: np.ndarray, bin_edges: np.ndarray,
-                       timeseries: tuple[np.ndarray, np.ndarray], offset) -> tuple[Figure, Figure]:
-    """Draw histogram and timeseries graphs of response time"""
-    bin_edges = bin_edges * 10**-6  # nanoseconds to milliseconds
-    p_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
+def draw_response_time(response_time: ResponseTime, target_path_name, with_best=True, with_worst=True) -> tuple[Figure, Figure]:
+    fig_timeseries = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
+                 x_axis_label='Response Time [sec]', y_axis_label='Response Time [ms]')
+    fig_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
                     x_axis_label='Response Time [ms]', y_axis_label='Count')
-    p_hist.quad(top=hist, bottom=0, left=bin_edges[:-1], right=bin_edges[1:],
-                line_color='white', alpha=0.5)
 
-    p_timeseries = None
-    if timeseries:
-        p_timeseries = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
-                       x_axis_label='Time [sec]', y_axis_label='Response Time [ms]')
-        p_timeseries.y_range.start = 0
-        p_timeseries.line(x=timeseries[0], y=timeseries[1])
-        datetime_s = datetime.datetime.fromtimestamp(offset*10**-9).strftime('%Y-%m-%d %H:%M:%S')
-        p_timeseries.xaxis.major_label_overrides = {0: datetime_s}
-        ticker = AdaptiveTicker(min_interval=0.1, mantissas=[1, 2, 5])
-        p_timeseries.xaxis.ticker = ticker
+    df_best = response_time.to_best_case_timeseries()
+    if len(df_best[1]) == 0:
+        _logger.warning(f'No data: {target_path_name}')
+        return fig_timeseries, fig_hist
 
-    return p_hist, p_timeseries
+    df_best_val = df_best[1] * 1e-6
+    offset = df_best[0][0]
+    df_best_x = [(t - offset) * 1e-9 for t in df_best[0]]
+    df_worst = response_time.to_worst_case_timeseries()
+    df_worst_val = df_worst[1] * 1e-6
+    df_worst_x = [(t - offset) * 1e-9 for t in df_worst[0]]
+    # print(f'best:  avg={df_best_val.mean():.1f}ms, max={df_best_val.max():.1f}ms')
+    # print(f'worst: avg={df_worst_val.mean():.1f}ms, max={df_worst_val.max():.1f}ms')
+    fig_timeseries.y_range.start = 0
+    if with_best:
+        fig_timeseries.line(x=df_best_x, y=df_best_val, color='blue', legend_label='best')
+    if with_worst:
+        fig_timeseries.line(x=df_worst_x, y=df_worst_val, color='red', legend_label='worst')
+    fig_timeseries.xaxis.major_label_overrides = {0: datetime.datetime.fromtimestamp(offset*10**-9).strftime('%Y-%m-%d %H:%M:%S')}
+    fig_timeseries.legend.click_policy = 'hide'
+
+    hist_best, bin_edges_best = response_time.to_best_case_histogram(10**7)  # binsize = 10ms
+    bin_edges_best = bin_edges_best * 10**-6  # nanoseconds to milliseconds
+    hist_worst, bin_edges_worst = response_time.to_worst_case_histogram(10**7)  # binsize = 10ms
+    bin_edges_worst = bin_edges_worst * 10**-6  # nanoseconds to milliseconds
+    if with_best:
+        fig_hist.quad(top=hist_best, bottom=0, left=bin_edges_best[:-1], right=bin_edges_best[1:],
+                    line_color='white', alpha=0.5, color='blue', legend_label='best')
+    if with_worst:
+        fig_hist.quad(top=hist_worst, bottom=0, left=bin_edges_worst[:-1], right=bin_edges_worst[1:],
+                line_color='white', alpha=0.5, color='red', legend_label='worst')
+    fig_hist.legend.click_policy = 'hide'
+
+    return fig_timeseries, fig_hist
 
 
-def get_messageflow_durationtime(records: RecordsInterface):
+def get_messageflow_durationtime(records: RecordsInterface, check_by_input: bool = True):
     """Get duration time [sec] of message flow"""
-    input_column = records.columns[0]
-    output_column = records.columns[-1]
-
-    input_time_min = None
-    output_time_max = None
-
-    # Need to check all records because some paths may not be fully connected
-    data_list = records.data
-    for data in data_list:
-        if input_column in data.columns:
-            input_time = data.get(input_column)
-            input_time_min = min(input_time, input_time_min) if input_time_min else input_time
-        if output_column in data.columns:
-            output_time = data.get(output_column)
-            output_time_max = max(output_time, output_time_max) if output_time_max else output_time
-
-    if input_time_min is None or output_time_max is None:
+    df_records = records.to_dataframe()
+    try:
+        input_column = df_records.columns[0]
+        input_time_min = df_records[input_column].min()
+        if check_by_input:
+            input_time_max = df_records[input_column].max()
+            duration = (input_time_max - input_time_min) * 1e-9
+        else:
+            output_column = df_records.columns[-1]
+            output_time_max = df_records[output_column].max()
+            duration = (output_time_max - input_time_min) * 1e-9
+    except:
         duration = None
-    else:
-        duration = (output_time_max - input_time_min) / 1e9
+
+    if not isinstance(duration, (int, float)):
+        duration = None
 
     return duration
+
+
+def check_the_first_last_callback_is_valid(records: RecordsInterface):
+    df_records = records.to_dataframe()
+    is_first_valid = True
+    is_last_valid = True
+    if len(df_records[df_records.columns[0]]) == 0:
+        # velodyne_convert_node doesn't have the first callback_start
+        _logger.warning(f'  The first callback is invalid')
+        is_first_valid = False
+    if len(df_records[df_records.columns[-1]]) == 0:
+        _logger.warning(f'  The last callback is invalid')
+        is_last_valid = False
+    return is_first_valid, is_last_valid
 
 
 def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, target_path_name: str):
     """Analyze a path"""
     _logger.info(f'Processing: {target_path_name}')
     target_path = app.get_path(target_path_name)
+
+    # Include the first and last callback if availble
+    target_path.include_first_callback = True
+    target_path.include_last_callback = True
+    records = target_path.to_records()
+    is_first_valid, is_last_valid = check_the_first_last_callback_is_valid(records)
+    if (not is_first_valid) or (not is_last_valid):
+        target_path.include_first_callback = is_first_valid
+        target_path.include_last_callback = is_last_valid
+        records = target_path.to_records()
+
     stats = Stats(target_path_name, arch.get_path(target_path_name).node_names)
 
-    records = target_path.to_records()
+    _logger.info('  message flow')
     duration = get_messageflow_durationtime(records)
     if duration is None:
-        _logger.warning(f'    There are no-traffic communications: {target_path_name}')
+        _logger.warning(f'    No-traffic and No-input in the path: {target_path_name}')
         return stats
 
-    _logger.info('  Call message_flow')
-    graph_short = message_flow(target_path, granularity='node', treat_drop_as_delay=False,
+    graph_short = message_flow(target_path, treat_drop_as_delay=False,
                 lstrip_s=duration / 2,
                 rstrip_s=max(duration / 2 - (3 + 0.1), 0),
                 export_path='dummy.html')
-
     graph_short.width = 1200
     graph_short.height = max(200, 15 * len(target_path.child_names) + 50)
     export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name, with_png=False)
 
     if args.message_flow:
-        graph = message_flow(target_path, granularity='node',
+        graph = message_flow(target_path,
                              treat_drop_as_delay=False, export_path='dummy.html')
         graph.width = graph_short.width
         graph.height = graph_short.height
         export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name, with_png=False)
 
-    _logger.info('  Call ResponseTime')
-    response_time = ResponseTime(records)
+    _logger.info('  response time')
+    if get_messageflow_durationtime(records, check_by_input=False) is None:
+        _logger.warning(f'    No-traffic in the path: {target_path_name}')
+    else:
+        response_time = ResponseTime(records)
+        fig_timeseries, fig_hist = draw_response_time(response_time, target_path_name, with_worst=False)
+        export_graph(fig_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name, with_png=False)
+        export_graph(fig_hist, dest_dir, target_path_name + '_hist_best', target_path_name, with_png=False)
 
-    _logger.debug('    Draw histogram and timeseries (best)')
-    hist, bin_edges = response_time.to_best_case_histogram(10**7)  # binsize = 10ms
-    df_best = response_time.to_best_case_timeseries()
-    offset = df_best[0][0]
-    df_best = align_timeseries(df_best)
-    p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_best, offset)
-    export_graph(p_hist, dest_dir, target_path_name + '_hist_best', target_path_name, with_png=False)
-    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name, with_png=False)
+        fig_timeseries, fig_hist = draw_response_time(response_time, target_path_name)
+        export_graph(fig_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name, with_png=False)
+        export_graph(fig_hist, dest_dir, target_path_name + '_hist_worst', target_path_name, with_png=False)
 
-    _logger.debug('    Draw histogram and timeseries (worst)')
-    hist, bin_edges = response_time.to_worst_case_histogram(10**7)  # binsize = 10ms
-    df_worst = response_time.to_worst_case_timeseries()
-    offset = df_worst[0][0]
-    df_worst = align_timeseries(df_worst)
-    p_hist, p_timeseries = draw_response_time(hist, bin_edges, df_worst, offset)
-    export_graph(p_hist, dest_dir, target_path_name + '_hist_worst', target_path_name, with_png=False)
-    export_graph(p_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name, with_png=False)
+        try:
+            Plot.create_response_time_stacked_bar_plot(target_path, case='worst').save(export_path=f'{dest_dir}/{target_path_name}_stacked_bar_worst.html', full_legends=True)
+            Plot.create_response_time_stacked_bar_plot(target_path, case='best').save(export_path=f'{dest_dir}/{target_path_name}_stacked_bar_best.html', full_legends=True)
+        except Exception as e:
+            _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}')
+            _logger.warning(str(e))
 
-    stats.calc_stats(df_best[1], df_worst[1])
+        df_best = response_time.to_best_case_timeseries()
+        df_worst = response_time.to_worst_case_timeseries()
+        stats.calc_stats(df_best[1], df_worst[1])
+
     stats.store_filename(target_path_name, args.message_flow, graph_short.height + 17)
     _logger.info(f'---{target_path_name}---')
     _logger.debug(vars(stats))

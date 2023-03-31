@@ -14,32 +14,26 @@
       "name": "component_sensing",
       "path": [
         "/sensing/lidar/top/velodyne_convert_node",
-        "/perception/obstacle_segmentation/crop_box_filter"
+        "/sensing/lidar/concatenate_data"
       ]
     },
     {
       "name": "component_localization",
       "path": [
-        "/sensing/lidar/top/ring_outlier_filter",
-        "/localization/pose_twist_fusion_filter/stop_filter",
-        "/localization/localization_error_monitor"
+        "/localization/util/crop_box_filter_measurement_range",
+        "/localization/pose_twist_fusion_filter/stop_filter"
       ]
     },
     {
       "name": "component_perception",
       "path": [
-        "/sensing/lidar/concatenate_data",
-        "/perception/object_recognition/prediction/map_based_prediction",
-        [
-          "/planning/scenario_planning/parking/costmap_generator",
-          "/perception/object_recognition/objects"
-        ]
+        "/perception/object_recognition/detection/centerpoint/lidar_centerpoint",
+        "/perception/object_recognition/prediction/map_based_prediction"
       ]
     },
     {
       "name": "component_planning",
       "path": [
-        "/perception/object_recognition/prediction/map_based_prediction",
         [
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
           "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
@@ -48,31 +42,28 @@
         [
           "/planning/scenario_planning/motion_velocity_smoother",
           "/planning/scenario_planning/scenario_selector/trajectory"
-        ],
-        "/planning/planning_diagnostics/planning_error_monitor"
+        ]
       ]
     },
     {
       "name": "component_control",
       "path": [
-        "/planning/scenario_planning/motion_velocity_smoother",
+        "/control/trajectory_follower/controller_node_exe",
         ["/control/vehicle_cmd_gate", "/control/trajectory_follower/control_cmd"]
       ]
     },
     {
       "name": "e2e_sensing-to-localization",
-      "path": [
+      "path_blocks": [
         [
           "/sensing/lidar/top/velodyne_convert_node",
-          "/sensing/lidar/top/ring_outlier_filter",
-          "/localization/pose_twist_fusion_filter/stop_filter",
-          "/localization/localization_error_monitor"
+          "/localization/pose_twist_fusion_filter/stop_filter"
         ]
       ]
     },
     {
       "name": "e2e_sensing-to-control",
-      "path": [
+      "path_blocks": [
         [
           "/sensing/lidar/top/velodyne_convert_node",
           "/perception/object_recognition/detection/centerpoint/lidar_centerpoint",
@@ -91,10 +82,7 @@
             "/planning/scenario_planning/motion_velocity_smoother",
             "/planning/scenario_planning/trajectory"
           ],
-          [
-            "/control/trajectory_follower/controller_node_exe",
-            "/control/trajectory_follower/control_cmd"
-          ],
+          "/control/trajectory_follower/controller_node_exe",
           ["/control/vehicle_cmd_gate", "/control/trajectory_follower/control_cmd"]
         ]
       ]
