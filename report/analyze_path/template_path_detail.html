@@ -16,19 +16,19 @@
   <body>
     <div class="container">
       <h1>{{ title }}</h1>
-
+      <p><a href="../index.html">Back to Top </a>, <a href="./index.html">Back to Path List</a></p>
       <hr />
-      <h2><a href="../index.html">Back to Top </a></h2>
 
-      <hr />
-      <p>Note: "Response Time (worst)" includes delay at input node</p>
-
-      {% for path_info in stats %}
-      <hr />
-      <h2 id="{{ path_info.target_path_name }}">{{ path_info.target_path_name }}</h2>
+      {% set path_info = stats %}
 
       {% if path_info.best_avg == "---" %}
-      <div class="alert alert-danger" role="alert">There are no-traffic communications !!</div>
+      <div class="alert alert-danger" role="alert">No-traffic in the path !!</div>
+      {% endif %}
+
+      {% if "sensing" in path_info.target_path_name or "e2e" in path_info.target_path_name or "end" in path_info.target_path_name %}
+        {% set display_worst = true %}
+      {% else %}
+        {% set display_worst = false %}
       {% endif %}
 
       <h4>Node list in the path</h4>
@@ -67,7 +67,7 @@
               <td class="text-end">{{ '%0.3f' % path_info.best_p99|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_max|float }}</td>
             </tr>
-            {% if "sensing" in path_info.target_path_name or "e2e" in path_info.target_path_name or "end" in path_info.target_path_name %}
+            {% if display_worst == true %}
             <tr>
               <td>Response Time (worst)</td>
               <td class="text-end">{{ '%0.3f' % path_info.worst_avg|float }}</td>
@@ -80,18 +80,38 @@
           </tbody>
         </table>
       </div>
-      <br />
+
+      {% if display_worst == true %}
+      <p>Note: "Response Time (worst)" includes the worst external input latency</p>
+      {% endif %}
 
       <div class="row">
         <div class="col">
+          {% if display_worst == true %}
+          <iframe src="{{ path_info.filename_hist_worst }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
+          {% else %}
           <iframe src="{{ path_info.filename_hist_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
+          {% endif %}
         </div>
         <div class="col">
+          {% if display_worst == true %}
+          <iframe src="{{ path_info.filename_timeseries_worst }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
+          {% else %}
           <iframe src="{{ path_info.filename_timeseries_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
+          {% endif %}
         </div>
       </div>
-      {% endfor %}
-    </div>
-    <!-- container -->
+
+      <div>
+        {% set height_stacked_bar_graph = path_info.node_names|length * 60 + 400 %}
+        {% if display_worst == true %}
+        <iframe src="{{ path_info.filename_stacked_bar_worst }}.html" frameborder="0" width="100%" height="{{ height_stacked_bar_graph }}" scrolling="yes"></iframe>
+        {% else %}
+        <iframe src="{{ path_info.filename_stacked_bar_best }}.html" frameborder="0" width="100%" height="{{ height_stacked_bar_graph }}" scrolling="yes"></iframe>
+        {% endif %}
+      </div>
+
+    </div>  <!-- container -->
+
   </body>
 </html>

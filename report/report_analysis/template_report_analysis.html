@@ -26,7 +26,7 @@
       <ul>
         {% for path_info in stats_path %}
         <li>
-          <a href="analyze_path/index.html#{{ path_info['target_path_name'] }}">
+          <a href="analyze_path/{{ path_info['target_path_name'] }}.html">
             {{ path_info["target_path_name"] }}
           </a>
         </li>
@@ -60,18 +60,18 @@
         <table class="table table-hover table-bordered height">
           <tr class="table-primary text-center">
             <th width="50%">Callback Name</th>
-            <th width="10%">max [ms]</th>
+            <th width="10%">Avg [ms]</th>
+            <th width="10%">Median [ms]</th>
             <th width="10%">99%ile [ms]</th>
-            <th width="10%">avg [ms]</th>
-            <th width="10%">median [ms]</th>
+            <th width="10%">Max [ms]</th>
           </tr>
           {% for info in stats_node_dict[component_name]['latency_topk'] %}
           <tr>
             <td><a href="{{ info['link'] }}">{{ info['displayname'] }}</a></td>
-            <td class="text-end">{{ '%.3f' % info['max']|float }}</td>
-            <td class="text-end">{{ '%.3f' % info['p99']|float }}</td>
             <td class="text-end">{{ '%.3f' % info['avg']|float }}</td>
             <td class="text-end">{{ '%.3f' % info['p50']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['p99']|float }}</td>
+            <td class="text-end">{{ '%.3f' % info['max']|float }}</td>
           </tr>
           {% endfor %}
         </table>

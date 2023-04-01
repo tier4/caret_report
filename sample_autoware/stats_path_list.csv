@@ -1,1 +1,3 @@
-20230101,report_*
+version_aaaa,./output/report_*
+version_bbbb,./output/report_*
+latest_version,./output/report_*

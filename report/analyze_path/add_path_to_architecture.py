@@ -92,17 +92,18 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
             for index, _ in enumerate(target_path_json):
                 json_node_name, json_topic_name = get_node_topic(target_path_json[index])
                 is_ok = False
-                for index, node_name in enumerate(node_name_list):
+                for index_node, node_name in enumerate(node_name_list):
                     if re.fullmatch(json_node_name, node_name):
-                        is_ok =True
+                        is_ok = True
                         if json_topic_name:
                             # check topic name (sub or pub) if available
-                            if index > 0:
+                            is_ok = False
+                            if index_node > 0:
                                 # check sub topic name
-                                is_ok = re.fullmatch(json_topic_name, topic_name_list[index-1])
-                            if index < len(topic_name_list):
+                                is_ok = re.fullmatch(json_topic_name, topic_name_list[index_node-1])
+                            if index_node < len(topic_name_list):
                                 # check pub topic name
-                                is_ok = is_ok or re.fullmatch(json_topic_name, topic_name_list[index])
+                                is_ok = is_ok or re.fullmatch(json_topic_name, topic_name_list[index_node])
                     if is_ok:
                         break
                 if not is_ok:
@@ -194,7 +195,12 @@ def add_path_to_architecture(args, arch: Architecture):
     for target_path in target_path_json['target_path_list']:
         target_path_name = target_path['name']
         _logger.info(f'Processing: {target_path_name}')
-        target_path_info = target_path['path'] if isinstance(target_path['path'][0], list) else [target_path['path']]
+
+        # target path can be separated into multiple blocks
+        if 'path_blocks' in target_path:
+            target_path_info = target_path['path_blocks']
+        else:
+            target_path_info = [target_path['path']]
 
         found_path_list = []
         for block_index, target_path_block in enumerate(target_path_info):
