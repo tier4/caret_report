@@ -1,0 +1,2225 @@
+/planning/mission_planning/goal_pose_visualizer:
+  filename_timeseries: {}
+  callbacks:
+    /planning/mission_planning/goal_pose_visualizer/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/mission_planning/route
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+/planning/mission_planning/mission_planner:
+  filename_timeseries:
+    Frequency: Frequency_planning_mission_planning_mission_planner
+    Period: Period_planning_mission_planning_mission_planner
+    Latency: Latency_planning_mission_planning_mission_planner
+  callbacks:
+    /planning/mission_planning/mission_planner/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_mission_planning_mission_planner_callback_0_hist
+      Period:
+        avg: 19.989
+        std: 3.544
+        min: 3.260
+        max: 36.896
+        p50: 20.306
+        p95: 23.297
+        p99: 32.504
+        filename_hist: Period_planning_mission_planning_mission_planner_callback_0_hist
+      Latency:
+        avg: 0.013
+        std: 0.005
+        min: 0.005
+        max: 0.041
+        p50: 0.012
+        p95: 0.022
+        p99: 0.029
+        filename_hist: Latency_planning_mission_planning_mission_planner_callback_0_hist
+    /planning/mission_planning/mission_planner/callback_1:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/modified_goal
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/mission_planning/mission_planner/callback_2:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_mission_planning_mission_planner_callback_2_hist
+      Period:
+        avg: 19.989
+        std: 3.545
+        min: 3.279
+        max: 36.872
+        p50: 20.302
+        p95: 23.326
+        p99: 32.496
+        filename_hist: Period_planning_mission_planning_mission_planner_callback_2_hist
+      Latency:
+        avg: 0.007
+        std: 0.002
+        min: 0.003
+        max: 0.021
+        p50: 0.006
+        p95: 0.011
+        p99: 0.014
+        filename_hist: Latency_planning_mission_planning_mission_planner_callback_2_hist
+/planning/planning_diagnostics/planning_error_monitor:
+  filename_timeseries:
+    Frequency: Frequency_planning_planning_diagnostics_planning_error_monitor
+    Period: Period_planning_planning_diagnostics_planning_error_monitor
+    Latency: Latency_planning_planning_diagnostics_planning_error_monitor
+  callbacks:
+    /planning/planning_diagnostics/planning_error_monitor/callback_0:
+      callback_legend: timer_0
+      callback_type: timer_callback
+      period_ns: 1000000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 1.000
+        std: 0.000
+        min: 1.000
+        max: 1.000
+        p50: 1.000
+        p95: 1.000
+        p99: 1.000
+        filename_hist: Frequency_planning_planning_diagnostics_planning_error_monitor_callback_0_hist
+      Period:
+        avg: 1000.597
+        std: 6.271
+        min: 992.628
+        max: 1006.776
+        p50: 1003.438
+        p95: 1006.766
+        p99: 1006.774
+        filename_hist: Period_planning_planning_diagnostics_planning_error_monitor_callback_0_hist
+      Latency:
+        avg: 0.163
+        std: 0.069
+        min: 0.091
+        max: 0.296
+        p50: 0.136
+        p95: 0.278
+        p99: 0.292
+        filename_hist: Latency_planning_planning_diagnostics_planning_error_monitor_callback_0_hist
+    /planning/planning_diagnostics/planning_error_monitor/callback_1:
+      callback_legend: timer_1
+      callback_type: timer_callback
+      period_ns: 100000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 10.091
+        std: 0.944
+        min: 9.000
+        max: 11.000
+        p50: 10.000
+        p95: 11.000
+        p99: 11.000
+        filename_hist: Frequency_planning_planning_diagnostics_planning_error_monitor_callback_1_hist
+      Period:
+        avg: 100.013
+        std: 7.588
+        min: 77.913
+        max: 120.016
+        p50: 101.240
+        p95: 113.950
+        p99: 119.197
+        filename_hist: Period_planning_planning_diagnostics_planning_error_monitor_callback_1_hist
+      Latency:
+        avg: 0.173
+        std: 0.073
+        min: 0.050
+        max: 0.448
+        p50: 0.152
+        p95: 0.313
+        p99: 0.385
+        filename_hist: Latency_planning_planning_diagnostics_planning_error_monitor_callback_1_hist
+    /planning/planning_diagnostics/planning_error_monitor/callback_2:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/trajectory
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_planning_diagnostics_planning_error_monitor_callback_2_hist
+      Period:
+        avg: 99.714
+        std: 23.226
+        min: 30.084
+        max: 203.778
+        p50: 99.537
+        p95: 132.530
+        p99: 169.258
+        filename_hist: Period_planning_planning_diagnostics_planning_error_monitor_callback_2_hist
+      Latency:
+        avg: 0.006
+        std: 0.003
+        min: 0.003
+        max: 0.030
+        p50: 0.005
+        p95: 0.011
+        p99: 0.012
+        filename_hist: Latency_planning_planning_diagnostics_planning_error_monitor_callback_2_hist
+/planning/scenario_planning/external_velocity_limit_selector:
+  filename_timeseries: {}
+  callbacks:
+    /planning/scenario_planning/external_velocity_limit_selector/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/max_velocity_default
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/external_velocity_limit_selector/callback_1:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/max_velocity_candidates
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/external_velocity_limit_selector/callback_2:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/clear_velocity_limit
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner
+    Period: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner
+    Latency: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner
+  callbacks:
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_0:
+      callback_legend: timer_0
+      callback_type: timer_callback
+      period_ns: 100000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_0_hist
+      Period:
+        avg: 99.993
+        std: 7.494
+        min: 80.798
+        max: 118.977
+        p50: 101.346
+        p95: 114.838
+        p99: 118.362
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_0_hist
+      Latency:
+        avg: 2.925
+        std: 1.323
+        min: 1.348
+        max: 8.601
+        p50: 2.617
+        p95: 5.602
+        p99: 8.060
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_0_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_1:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_1_hist
+      Period:
+        avg: 19.989
+        std: 3.659
+        min: 2.597
+        max: 37.356
+        p50: 20.261
+        p95: 23.532
+        p99: 33.306
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_1_hist
+      Latency:
+        avg: 0.061
+        std: 0.351
+        min: 0.002
+        max: 3.981
+        p50: 0.006
+        p95: 0.013
+        p99: 1.568
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_1_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_2:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/acceleration
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_2_hist
+      Period:
+        avg: 19.990
+        std: 3.728
+        min: 2.921
+        max: 37.505
+        p50: 20.298
+        p95: 23.613
+        p99: 34.176
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_2_hist
+      Latency:
+        avg: 0.049
+        std: 0.316
+        min: 0.001
+        max: 3.937
+        p50: 0.004
+        p95: 0.012
+        p99: 1.385
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_2_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_3:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_3_hist
+      Period:
+        avg: 100.066
+        std: 8.307
+        min: 73.863
+        max: 119.429
+        p50: 101.139
+        p95: 116.415
+        p99: 118.607
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_3_hist
+      Latency:
+        avg: 0.017
+        std: 0.005
+        min: 0.007
+        max: 0.030
+        p50: 0.017
+        p95: 0.027
+        p99: 0.030
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_3_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_4:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/occupancy_grid_map/map
+      Frequency:
+        avg: 9.500
+        std: 0.707
+        min: 9.000
+        max: 11.000
+        p50: 9.000
+        p95: 10.550
+        p99: 10.910
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_4_hist
+      Period:
+        avg: 103.712
+        std: 33.333
+        min: 30.387
+        max: 199.931
+        p50: 99.481
+        p95: 157.487
+        p99: 185.574
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_4_hist
+      Latency:
+        avg: 0.016
+        std: 0.011
+        min: 0.004
+        max: 0.073
+        p50: 0.014
+        p95: 0.033
+        p99: 0.061
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_4_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_5:
+      callback_legend: subscription_4
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/scenario
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_5_hist
+      Period:
+        avg: 99.984
+        std: 8.203
+        min: 78.454
+        max: 121.941
+        p50: 101.201
+        p95: 117.555
+        p99: 119.275
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_5_hist
+      Latency:
+        avg: 0.005
+        std: 0.002
+        min: 0.002
+        max: 0.013
+        p50: 0.004
+        p95: 0.009
+        p99: 0.012
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_path_planner_callback_5_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_6:
+      callback_legend: subscription_5
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/mission_planning/route
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/callback_7:
+      callback_legend: subscription_6
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/input/lateral_offset
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner
+    Period: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner
+    Latency: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner
+  callbacks:
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_00:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_00_hist
+      Period:
+        avg: 100.002
+        std: 8.107
+        min: 80.018
+        max: 123.228
+        p50: 101.339
+        p95: 116.351
+        p99: 120.076
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_00_hist
+      Latency:
+        avg: 5.313
+        std: 2.844
+        min: 1.454
+        max: 19.301
+        p50: 4.887
+        p95: 10.314
+        p99: 17.232
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_00_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_01:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_01_hist
+      Period:
+        avg: 100.066
+        std: 8.315
+        min: 73.866
+        max: 119.547
+        p50: 101.084
+        p95: 116.505
+        p99: 118.561
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_01_hist
+      Latency:
+        avg: 0.005
+        std: 0.004
+        min: 0.002
+        max: 0.045
+        p50: 0.004
+        p95: 0.008
+        p99: 0.013
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_01_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_02:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/obstacle_segmentation/pointcloud
+      Frequency:
+        avg: 9.727
+        std: 0.647
+        min: 9.000
+        max: 11.000
+        p50: 10.000
+        p95: 10.500
+        p99: 10.900
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_02_hist
+      Period:
+        avg: 103.984
+        std: 34.310
+        min: 25.570
+        max: 191.616
+        p50: 100.738
+        p95: 166.067
+        p99: 186.896
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_02_hist
+      Latency:
+        avg: 1.599
+        std: 0.747
+        min: 0.639
+        max: 5.390
+        p50: 1.413
+        p95: 2.923
+        p99: 4.229
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_02_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_03:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_03_hist
+      Period:
+        avg: 19.989
+        std: 3.663
+        min: 2.911
+        max: 37.344
+        p50: 20.307
+        p95: 23.570
+        p99: 33.456
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_03_hist
+      Latency:
+        avg: 0.014
+        std: 0.007
+        min: 0.004
+        max: 0.110
+        p50: 0.013
+        p95: 0.022
+        p99: 0.027
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_03_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_04:
+      callback_legend: subscription_4
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/acceleration
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_04_hist
+      Period:
+        avg: 19.990
+        std: 3.732
+        min: 2.957
+        max: 37.540
+        p50: 20.295
+        p95: 23.631
+        p99: 34.205
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_04_hist
+      Latency:
+        avg: 0.005
+        std: 0.008
+        min: 0.001
+        max: 0.131
+        p50: 0.004
+        p95: 0.009
+        p99: 0.016
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_04_hist
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_05:
+      callback_legend: subscription_5
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/traffic_light_recognition/traffic_signals
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_06:
+      callback_legend: subscription_6
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/input/external_crosswalk_states
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_07:
+      callback_legend: subscription_7
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/input/external_intersection_states
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_08:
+      callback_legend: subscription_8
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/max_velocity_default
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_09:
+      callback_legend: subscription_9
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /external/traffic_light_recognition/traffic_signals
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/callback_10:
+      callback_legend: subscription_10
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/occupancy_grid_map/map
+      Frequency:
+        avg: 9.500
+        std: 0.707
+        min: 9.000
+        max: 11.000
+        p50: 9.000
+        p95: 10.550
+        p99: 10.910
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_10_hist
+      Period:
+        avg: 103.712
+        std: 33.337
+        min: 30.387
+        max: 199.957
+        p50: 99.151
+        p95: 157.508
+        p99: 185.550
+        filename_hist: Period_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_10_hist
+      Latency:
+        avg: 0.005
+        std: 0.003
+        min: 0.002
+        max: 0.024
+        p50: 0.004
+        p95: 0.010
+        p99: 0.015
+        filename_hist: Latency_planning_scenario_planning_lane_driving_behavior_planning_behavior_velocity_planner_callback_10_hist
+/planning/scenario_planning/lane_driving/behavior_planning/rtc_auto_mode_manager:
+  filename_timeseries: {}
+  callbacks: {}
+/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner
+    Period: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner
+    Latency: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner
+  callbacks:
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/behavior_planning/path
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_0_hist
+      Period:
+        avg: 99.809
+        std: 9.567
+        min: 78.322
+        max: 126.994
+        p50: 101.133
+        p95: 118.708
+        p99: 120.691
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_0_hist
+      Latency:
+        avg: 4.032
+        std: 10.567
+        min: 0.412
+        max: 68.090
+        p50: 1.349
+        p95: 15.983
+        p99: 65.422
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_0_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/callback_1:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 49.364
+        std: 1.206
+        min: 47.000
+        max: 51.000
+        p50: 49.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_1_hist
+      Period:
+        avg: 20.239
+        std: 5.348
+        min: 0.818
+        max: 73.228
+        p50: 20.325
+        p95: 24.158
+        p99: 36.455
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_1_hist
+      Latency:
+        avg: 0.006
+        std: 0.003
+        min: 0.001
+        max: 0.028
+        p50: 0.006
+        p95: 0.011
+        p99: 0.013
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_1_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/callback_2:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_2_hist
+      Period:
+        avg: 100.064
+        std: 14.911
+        min: 17.783
+        max: 180.549
+        p50: 100.809
+        p95: 116.663
+        p99: 146.182
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_2_hist
+      Latency:
+        avg: 0.030
+        std: 0.011
+        min: 0.013
+        max: 0.081
+        p50: 0.029
+        p95: 0.046
+        p99: 0.068
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_avoidance_planner_callback_2_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/callback_3:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/obstacle_avoidance_approval
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner
+    Period: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner
+    Latency: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner
+  callbacks:
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/obstacle_segmentation/pointcloud
+      Frequency:
+        avg: 9.727
+        std: 0.647
+        min: 9.000
+        max: 11.000
+        p50: 10.000
+        p95: 10.500
+        p99: 10.900
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_0_hist
+      Period:
+        avg: 103.986
+        std: 34.301
+        min: 24.347
+        max: 191.557
+        p50: 101.616
+        p95: 165.380
+        p99: 186.239
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_0_hist
+      Latency:
+        avg: 7.134
+        std: 3.818
+        min: 2.645
+        max: 21.215
+        p50: 6.050
+        p95: 14.003
+        p99: 19.196
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_0_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/callback_1:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter/trajectory
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_1_hist
+      Period:
+        avg: 99.725
+        std: 19.321
+        min: 12.687
+        max: 193.003
+        p50: 100.085
+        p95: 119.934
+        p99: 168.263
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_1_hist
+      Latency:
+        avg: 10.614
+        std: 8.019
+        min: 0.675
+        max: 32.246
+        p50: 12.154
+        p95: 23.815
+        p99: 27.265
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_1_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/callback_2:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_2_hist
+      Period:
+        avg: 19.989
+        std: 3.597
+        min: 2.698
+        max: 37.216
+        p50: 20.336
+        p95: 23.381
+        p99: 32.694
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_2_hist
+      Latency:
+        avg: 0.285
+        std: 1.452
+        min: 0.002
+        max: 20.905
+        p50: 0.006
+        p95: 1.435
+        p99: 6.831
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_2_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/callback_3:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/acceleration
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_3_hist
+      Period:
+        avg: 19.990
+        std: 3.698
+        min: 2.935
+        max: 37.122
+        p50: 20.298
+        p95: 23.537
+        p99: 34.252
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_3_hist
+      Latency:
+        avg: 0.267
+        std: 1.405
+        min: 0.001
+        max: 20.456
+        p50: 0.004
+        p95: 1.070
+        p99: 6.627
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_3_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/callback_4:
+      callback_legend: subscription_4
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_4_hist
+      Period:
+        avg: 100.065
+        std: 8.300
+        min: 73.859
+        max: 119.666
+        p50: 101.153
+        p95: 116.253
+        p99: 118.426
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_4_hist
+      Latency:
+        avg: 0.380
+        std: 1.410
+        min: 0.002
+        max: 10.149
+        p50: 0.013
+        p95: 2.084
+        p99: 6.825
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_stop_planner_callback_4_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/callback_5:
+      callback_legend: subscription_5
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/input/expand_stop_range
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+/planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter
+    Period: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter
+    Latency: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter
+  callbacks:
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/trajectory
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_0_hist
+      Period:
+        avg: 99.828
+        std: 19.197
+        min: 12.379
+        max: 193.091
+        p50: 100.106
+        p95: 120.002
+        p99: 168.456
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_0_hist
+      Latency:
+        avg: 0.261
+        std: 0.140
+        min: 0.080
+        max: 0.812
+        p50: 0.229
+        p95: 0.569
+        p99: 0.790
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_0_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter/callback_1:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/occupancy_grid_map/map
+      Frequency:
+        avg: 9.500
+        std: 0.707
+        min: 9.000
+        max: 11.000
+        p50: 9.000
+        p95: 10.550
+        p99: 10.910
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_1_hist
+      Period:
+        avg: 103.711
+        std: 33.338
+        min: 30.591
+        max: 199.933
+        p50: 99.560
+        p95: 157.445
+        p99: 185.597
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_1_hist
+      Latency:
+        avg: 0.013
+        std: 0.008
+        min: 0.003
+        max: 0.058
+        p50: 0.011
+        p95: 0.027
+        p99: 0.042
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_1_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter/callback_2:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/obstacle_segmentation/pointcloud
+      Frequency:
+        avg: 9.727
+        std: 0.647
+        min: 9.000
+        max: 11.000
+        p50: 10.000
+        p95: 10.500
+        p99: 10.900
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_2_hist
+      Period:
+        avg: 103.989
+        std: 34.419
+        min: 24.621
+        max: 192.317
+        p50: 101.269
+        p95: 166.359
+        p99: 186.383
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_2_hist
+      Latency:
+        avg: 0.016
+        std: 0.019
+        min: 0.003
+        max: 0.206
+        p50: 0.012
+        p95: 0.031
+        p99: 0.044
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_2_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter/callback_3:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_3_hist
+      Period:
+        avg: 100.067
+        std: 8.305
+        min: 74.200
+        max: 119.424
+        p50: 101.019
+        p95: 116.536
+        p99: 118.483
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_3_hist
+      Latency:
+        avg: 0.015
+        std: 0.006
+        min: 0.006
+        max: 0.041
+        p50: 0.013
+        p95: 0.025
+        p99: 0.040
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_3_hist
+    /planning/scenario_planning/lane_driving/motion_planning/obstacle_velocity_limiter/callback_4:
+      callback_legend: subscription_4
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_4_hist
+      Period:
+        avg: 19.989
+        std: 3.615
+        min: 2.701
+        max: 37.084
+        p50: 20.343
+        p95: 23.478
+        p99: 32.582
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_4_hist
+      Latency:
+        avg: 0.003
+        std: 0.001
+        min: 0.001
+        max: 0.014
+        p50: 0.002
+        p95: 0.006
+        p99: 0.008
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_obstacle_velocity_limiter_callback_4_hist
+/planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker
+    Period: Period_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker
+    Latency: Latency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker
+  callbacks:
+    /planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/callback_0:
+      callback_legend: timer_0
+      callback_type: timer_callback
+      period_ns: 100000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_0_hist
+      Period:
+        avg: 99.991
+        std: 7.502
+        min: 81.058
+        max: 118.683
+        p50: 101.370
+        p95: 114.773
+        p99: 118.352
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_0_hist
+      Latency:
+        avg: 6.127
+        std: 2.976
+        min: 2.410
+        max: 16.282
+        p50: 5.250
+        p95: 12.468
+        p99: 15.862
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_0_hist
+    /planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/callback_1:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/obstacle_segmentation/pointcloud
+      Frequency:
+        avg: 9.727
+        std: 0.647
+        min: 9.000
+        max: 11.000
+        p50: 10.000
+        p95: 10.500
+        p99: 10.900
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_1_hist
+      Period:
+        avg: 103.991
+        std: 34.403
+        min: 25.855
+        max: 192.074
+        p50: 101.564
+        p95: 164.956
+        p99: 186.327
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_1_hist
+      Latency:
+        avg: 0.021
+        std: 0.054
+        min: 0.003
+        max: 0.601
+        p50: 0.015
+        p95: 0.032
+        p99: 0.110
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_1_hist
+    /planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/callback_2:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_2_hist
+      Period:
+        avg: 100.065
+        std: 8.291
+        min: 73.892
+        max: 119.583
+        p50: 100.946
+        p95: 116.282
+        p99: 118.400
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_2_hist
+      Latency:
+        avg: 0.018
+        std: 0.006
+        min: 0.007
+        max: 0.046
+        p50: 0.016
+        p95: 0.028
+        p99: 0.036
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_2_hist
+    /planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/callback_3:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_3_hist
+      Period:
+        avg: 20.020
+        std: 4.214
+        min: 0.572
+        max: 42.715
+        p50: 20.330
+        p95: 24.630
+        p99: 35.622
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_3_hist
+      Latency:
+        avg: 0.006
+        std: 0.002
+        min: 0.002
+        max: 0.025
+        p50: 0.005
+        p95: 0.010
+        p99: 0.012
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_3_hist
+    /planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/callback_4:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_4_hist
+      Period:
+        avg: 20.020
+        std: 4.211
+        min: 0.406
+        max: 42.719
+        p50: 20.312
+        p95: 24.584
+        p99: 35.612
+        filename_hist: Period_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_4_hist
+      Latency:
+        avg: 0.007
+        std: 0.004
+        min: 0.002
+        max: 0.063
+        p50: 0.006
+        p95: 0.014
+        p99: 0.019
+        filename_hist: Latency_planning_scenario_planning_lane_driving_motion_planning_surround_obstacle_checker_callback_4_hist
+/planning/scenario_planning/motion_velocity_smoother:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_motion_velocity_smoother
+    Period: Period_planning_scenario_planning_motion_velocity_smoother
+    Latency: Latency_planning_scenario_planning_motion_velocity_smoother
+  callbacks:
+    /planning/scenario_planning/motion_velocity_smoother/callback_0:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/scenario_selector/trajectory
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_motion_velocity_smoother_callback_0_hist
+      Period:
+        avg: 99.789
+        std: 21.298
+        min: 25.904
+        max: 202.763
+        p50: 99.449
+        p95: 128.414
+        p99: 165.552
+        filename_hist: Period_planning_scenario_planning_motion_velocity_smoother_callback_0_hist
+      Latency:
+        avg: 6.307
+        std: 4.930
+        min: 1.096
+        max: 47.980
+        p50: 5.490
+        p95: 12.608
+        p99: 19.455
+        filename_hist: Latency_planning_scenario_planning_motion_velocity_smoother_callback_0_hist
+    /planning/scenario_planning/motion_velocity_smoother/callback_1:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 49.909
+        std: 0.944
+        min: 48.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_motion_velocity_smoother_callback_1_hist
+      Period:
+        avg: 20.082
+        std: 4.374
+        min: 0.663
+        max: 58.274
+        p50: 20.282
+        p95: 24.531
+        p99: 34.788
+        filename_hist: Period_planning_scenario_planning_motion_velocity_smoother_callback_1_hist
+      Latency:
+        avg: 0.006
+        std: 0.002
+        min: 0.001
+        max: 0.022
+        p50: 0.005
+        p95: 0.011
+        p99: 0.013
+        filename_hist: Latency_planning_scenario_planning_motion_velocity_smoother_callback_1_hist
+    /planning/scenario_planning/motion_velocity_smoother/callback_2:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/max_velocity
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+/planning/scenario_planning/parking/costmap_generator:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_parking_costmap_generator
+    Period: Period_planning_scenario_planning_parking_costmap_generator
+    Latency: Latency_planning_scenario_planning_parking_costmap_generator
+  callbacks:
+    /planning/scenario_planning/parking/costmap_generator/callback_0:
+      callback_legend: timer_0
+      callback_type: timer_callback
+      period_ns: 100000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 10.091
+        std: 1.044
+        min: 9.000
+        max: 11.000
+        p50: 11.000
+        p95: 11.000
+        p99: 11.000
+        filename_hist: Frequency_planning_scenario_planning_parking_costmap_generator_callback_0_hist
+      Period:
+        avg: 99.989
+        std: 7.755
+        min: 80.075
+        max: 120.069
+        p50: 101.417
+        p95: 114.004
+        p99: 119.193
+        filename_hist: Period_planning_scenario_planning_parking_costmap_generator_callback_0_hist
+      Latency:
+        avg: 0.006
+        std: 0.016
+        min: 0.002
+        max: 0.180
+        p50: 0.004
+        p95: 0.010
+        p99: 0.014
+        filename_hist: Latency_planning_scenario_planning_parking_costmap_generator_callback_0_hist
+    /planning/scenario_planning/parking/costmap_generator/callback_1:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/object_recognition/objects
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_parking_costmap_generator_callback_1_hist
+      Period:
+        avg: 100.065
+        std: 8.315
+        min: 73.838
+        max: 119.553
+        p50: 100.978
+        p95: 116.369
+        p99: 118.552
+        filename_hist: Period_planning_scenario_planning_parking_costmap_generator_callback_1_hist
+      Latency:
+        avg: 0.014
+        std: 0.005
+        min: 0.006
+        max: 0.033
+        p50: 0.013
+        p95: 0.024
+        p99: 0.029
+        filename_hist: Latency_planning_scenario_planning_parking_costmap_generator_callback_1_hist
+    /planning/scenario_planning/parking/costmap_generator/callback_2:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /perception/obstacle_segmentation/pointcloud
+      Frequency:
+        avg: 9.500
+        std: 0.707
+        min: 9.000
+        max: 11.000
+        p50: 9.000
+        p95: 10.550
+        p99: 10.910
+        filename_hist: Frequency_planning_scenario_planning_parking_costmap_generator_callback_2_hist
+      Period:
+        avg: 103.982
+        std: 34.353
+        min: 26.056
+        max: 192.261
+        p50: 100.989
+        p95: 166.731
+        p99: 186.953
+        filename_hist: Period_planning_scenario_planning_parking_costmap_generator_callback_2_hist
+      Latency:
+        avg: 0.031
+        std: 0.067
+        min: 0.003
+        max: 0.394
+        p50: 0.009
+        p95: 0.195
+        p99: 0.328
+        filename_hist: Latency_planning_scenario_planning_parking_costmap_generator_callback_2_hist
+    /planning/scenario_planning/parking/costmap_generator/callback_3:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/scenario
+      Frequency:
+        avg: 10.091
+        std: 0.944
+        min: 9.000
+        max: 11.000
+        p50: 10.000
+        p95: 11.000
+        p99: 11.000
+        filename_hist: Frequency_planning_scenario_planning_parking_costmap_generator_callback_3_hist
+      Period:
+        avg: 99.987
+        std: 7.676
+        min: 79.920
+        max: 118.951
+        p50: 101.183
+        p95: 115.112
+        p99: 118.470
+        filename_hist: Period_planning_scenario_planning_parking_costmap_generator_callback_3_hist
+      Latency:
+        avg: 0.006
+        std: 0.002
+        min: 0.002
+        max: 0.016
+        p50: 0.005
+        p95: 0.010
+        p99: 0.014
+        filename_hist: Latency_planning_scenario_planning_parking_costmap_generator_callback_3_hist
+/planning/scenario_planning/parking/freespace_planner:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_parking_freespace_planner
+    Period: Period_planning_scenario_planning_parking_freespace_planner
+    Latency: Latency_planning_scenario_planning_parking_freespace_planner
+  callbacks:
+    /planning/scenario_planning/parking/freespace_planner/callback_0:
+      callback_legend: timer_0
+      callback_type: timer_callback
+      period_ns: 100000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_parking_freespace_planner_callback_0_hist
+      Period:
+        avg: 99.993
+        std: 3.785
+        min: 89.053
+        max: 106.506
+        p50: 101.394
+        p95: 102.919
+        p99: 104.667
+        filename_hist: Period_planning_scenario_planning_parking_freespace_planner_callback_0_hist
+      Latency:
+        avg: 0.004
+        std: 0.002
+        min: 0.002
+        max: 0.009
+        p50: 0.004
+        p95: 0.008
+        p99: 0.009
+        filename_hist: Latency_planning_scenario_planning_parking_freespace_planner_callback_0_hist
+    /planning/scenario_planning/parking/freespace_planner/callback_1:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/mission_planning/route
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/parking/freespace_planner/callback_2:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/parking/costmap_generator/occupancy_grid
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/parking/freespace_planner/callback_3:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/scenario
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_parking_freespace_planner_callback_3_hist
+      Period:
+        avg: 99.987
+        std: 7.675
+        min: 79.914
+        max: 118.962
+        p50: 101.167
+        p95: 115.109
+        p99: 118.470
+        filename_hist: Period_planning_scenario_planning_parking_freespace_planner_callback_3_hist
+      Latency:
+        avg: 0.004
+        std: 0.001
+        min: 0.002
+        max: 0.010
+        p50: 0.004
+        p95: 0.007
+        p99: 0.008
+        filename_hist: Latency_planning_scenario_planning_parking_freespace_planner_callback_3_hist
+    /planning/scenario_planning/parking/freespace_planner/callback_4:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_parking_freespace_planner_callback_4_hist
+      Period:
+        avg: 19.989
+        std: 3.651
+        min: 3.085
+        max: 37.015
+        p50: 20.279
+        p95: 23.463
+        p99: 34.139
+        filename_hist: Period_planning_scenario_planning_parking_freespace_planner_callback_4_hist
+      Latency:
+        avg: 0.008
+        std: 0.003
+        min: 0.003
+        max: 0.021
+        p50: 0.007
+        p95: 0.014
+        p99: 0.017
+        filename_hist: Latency_planning_scenario_planning_parking_freespace_planner_callback_4_hist
+/planning/scenario_planning/scenario_selector:
+  filename_timeseries:
+    Frequency: Frequency_planning_scenario_planning_scenario_selector
+    Period: Period_planning_scenario_planning_scenario_selector
+    Latency: Latency_planning_scenario_planning_scenario_selector
+  callbacks:
+    /planning/scenario_planning/scenario_selector/callback_0:
+      callback_legend: timer_0
+      callback_type: timer_callback
+      period_ns: 100000000.000
+      subscribe_topic_name: ''
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_scenario_selector_callback_0_hist
+      Period:
+        avg: 99.988
+        std: 7.712
+        min: 79.864
+        max: 118.964
+        p50: 101.252
+        p95: 115.129
+        p99: 118.375
+        filename_hist: Period_planning_scenario_planning_scenario_selector_callback_0_hist
+      Latency:
+        avg: 0.107
+        std: 0.032
+        min: 0.040
+        max: 0.222
+        p50: 0.099
+        p95: 0.166
+        p99: 0.205
+        filename_hist: Latency_planning_scenario_planning_scenario_selector_callback_0_hist
+    /planning/scenario_planning/scenario_selector/callback_1:
+      callback_legend: subscription_0
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/lane_driving/trajectory
+      Frequency:
+        avg: 10.000
+        std: 0.000
+        min: 10.000
+        max: 10.000
+        p50: 10.000
+        p95: 10.000
+        p99: 10.000
+        filename_hist: Frequency_planning_scenario_planning_scenario_selector_callback_1_hist
+      Period:
+        avg: 99.892
+        std: 21.139
+        min: 25.951
+        max: 202.828
+        p50: 99.606
+        p95: 128.471
+        p99: 165.469
+        filename_hist: Period_planning_scenario_planning_scenario_selector_callback_1_hist
+      Latency:
+        avg: 0.085
+        std: 0.030
+        min: 0.043
+        max: 0.197
+        p50: 0.080
+        p95: 0.149
+        p99: 0.181
+        filename_hist: Latency_planning_scenario_planning_scenario_selector_callback_1_hist
+    /planning/scenario_planning/scenario_selector/callback_2:
+      callback_legend: subscription_1
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/parking/trajectory
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/scenario_selector/callback_3:
+      callback_legend: subscription_2
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/mission_planning/route
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+    /planning/scenario_planning/scenario_selector/callback_4:
+      callback_legend: subscription_3
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /localization/kinematic_state
+      Frequency:
+        avg: 50.091
+        std: 0.701
+        min: 49.000
+        max: 51.000
+        p50: 50.000
+        p95: 51.000
+        p99: 51.000
+        filename_hist: Frequency_planning_scenario_planning_scenario_selector_callback_4_hist
+      Period:
+        avg: 19.989
+        std: 3.603
+        min: 3.011
+        max: 36.845
+        p50: 20.341
+        p95: 23.610
+        p99: 34.147
+        filename_hist: Period_planning_scenario_planning_scenario_selector_callback_4_hist
+      Latency:
+        avg: 0.009
+        std: 0.003
+        min: 0.004
+        max: 0.024
+        p50: 0.008
+        p95: 0.015
+        p99: 0.019
+        filename_hist: Latency_planning_scenario_planning_scenario_selector_callback_4_hist
+    /planning/scenario_planning/scenario_selector/callback_5:
+      callback_legend: subscription_4
+      callback_type: subscription_callback
+      period_ns: -1.000
+      subscribe_topic_name: /planning/scenario_planning/parking/is_completed
+      Frequency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Period:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''
+      Latency:
+        avg: '---'
+        std: '---'
+        min: '---'
+        max: '---'
+        p50: '---'
+        p95: '---'
+        p99: '---'
+        filename_hist: ''

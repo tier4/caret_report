@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>graph</title>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
+    <script type="text/javascript">
+        Bokeh.set_log_level("info");
+    </script>
+  </head>
+  <body>
+    <div class="bk-root" id="7512a1af-3926-4f32-b824-cee029f2783e" data-root-id="169377"></div>
+  
+    <script type="application/json" id="169546">
+      {"5538b4a1-a8cb-46a2-8413-c4212cfa4285":{"defs":[],"roots":{"references":[{"attributes":{"source":{"id":"169410"}},"id":"169415","type":"CDSView"},{"attributes":{},"id":"169396","type":"PanTool"},{"attributes":{},"id":"169386","type":"LinearScale"},{"attributes":{"below":[{"id":"169388"}],"center":[{"id":"169391"},{"id":"169395"}],"height":400,"left":[{"id":"169392"}],"renderers":[{"id":"169414"}],"title":{"id":"169378"},"toolbar":{"id":"169403"},"x_range":{"id":"169380"},"x_scale":{"id":"169384"},"y_range":{"id":"169382"},"y_scale":{"id":"169386"}},"id":"169377","subtype":"Figure","type":"Plot"},{"attributes":{"active_scroll":{"id":"169397"},"tools":[{"id":"169396"},{"id":"169397"},{"id":"169398"},{"id":"169399"},{"id":"169400"},{"id":"169401"}]},"id":"169403","type":"Toolbar"},{"attributes":{},"id":"169389","type":"BasicTicker"},{"attributes":{},"id":"169397","type":"WheelZoomTool"},{"attributes":{},"id":"169423","type":"UnionRenderers"},{"attributes":{"bottom":{"value":0},"fill_alpha":{"value":0.2},"fill_color":{"value":"#1f77b4"},"hatch_alpha":{"value":0.2},"left":{"field":"left"},"line_alpha":{"value":0.2},"line_color":{"value":"white"},"right":{"field":"right"},"top":{"field":"top"}},"id":"169413","type":"Quad"},{"attributes":{},"id":"169382","type":"DataRange1d"},{"attributes":{},"id":"169384","type":"LinearScale"},{"attributes":{"bottom_units":"screen","coordinates":null,"fill_alpha":0.5,"fill_color":"lightgrey","group":null,"left_units":"screen","level":"overlay","line_alpha":1.0,"line_color":"black","line_dash":[4,4],"line_width":2,"right_units":"screen","syncable":false,"top_units":"screen"},"id":"169402","type":"BoxAnnotation"},{"attributes":{"data":{"left":[993.0,994.0,995.0,996.0,997.0,998.0,999.0,1000.0,1001.0,1002.0,1003.0,1004.0,1005.0,1006.0,1007.0],"right":[994.0,995.0,996.0,997.0,998.0,999.0,1000.0,1001.0,1002.0,1003.0,1004.0,1005.0,1006.0,1007.0,1008.0],"top":[1,1,2,0,0,0,0,0,0,0,1,1,1,2,0]},"selected":{"id":"169424"},"selection_policy":{"id":"169423"}},"id":"169410","type":"ColumnDataSource"},{"attributes":{"axis_label":"Count","coordinates":null,"formatter":{"id":"169418"},"group":null,"major_label_policy":{"id":"169419"},"ticker":{"id":"169393"}},"id":"169392","type":"LinearAxis"},{"attributes":{"axis":{"id":"169388"},"coordinates":null,"group":null,"ticker":null},"id":"169391","type":"Grid"},{"attributes":{"axis":{"id":"169392"},"coordinates":null,"dimension":1,"group":null,"ticker":null},"id":"169395","type":"Grid"},{"attributes":{},"id":"169421","type":"BasicTickFormatter"},{"attributes":{"bottom":{"value":0},"fill_alpha":{"value":0.5},"fill_color":{"value":"#1f77b4"},"hatch_alpha":{"value":0.5},"left":{"field":"left"},"line_alpha":{"value":0.5},"line_color":{"value":"white"},"right":{"field":"right"},"top":{"field":"top"}},"id":"169411","type":"Quad"},{"attributes":{},"id":"169419","type":"AllLabels"},{"attributes":{},"id":"169422","type":"AllLabels"},{"attributes":{},"id":"169401","type":"HelpTool"},{"attributes":{"bottom":{"value":0},"fill_alpha":{"value":0.1},"fill_color":{"value":"#1f77b4"},"hatch_alpha":{"value":0.1},"left":{"field":"left"},"line_alpha":{"value":0.1},"line_color":{"value":"white"},"right":{"field":"right"},"top":{"field":"top"}},"id":"169412","type":"Quad"},{"attributes":{},"id":"169424","type":"Selection"},{"attributes":{},"id":"169399","type":"SaveTool"},{"attributes":{},"id":"169400","type":"ResetTool"},{"attributes":{},"id":"169393","type":"BasicTicker"},{"attributes":{"axis_label":"period [ms]","coordinates":null,"formatter":{"id":"169421"},"group":null,"major_label_policy":{"id":"169422"},"ticker":{"id":"169389"}},"id":"169388","type":"LinearAxis"},{"attributes":{"overlay":{"id":"169402"}},"id":"169398","type":"BoxZoomTool"},{"attributes":{},"id":"169418","type":"BasicTickFormatter"},{"attributes":{"coordinates":null,"group":null,"text":"timer_0: 1000.0ms"},"id":"169378","type":"Title"},{"attributes":{},"id":"169380","type":"DataRange1d"},{"attributes":{"coordinates":null,"data_source":{"id":"169410"},"glyph":{"id":"169411"},"group":null,"hover_glyph":null,"muted_glyph":{"id":"169413"},"nonselection_glyph":{"id":"169412"},"view":{"id":"169415"}},"id":"169414","type":"GlyphRenderer"}],"root_ids":["169377"]},"title":"Bokeh Application","version":"2.4.3"}}
+    </script>
+    <script type="text/javascript">
+      (function() {
+        const fn = function() {
+          Bokeh.safely(function() {
+            (function(root) {
+              function embed_document(root) {
+              const docs_json = document.getElementById('169546').textContent;
+              const render_items = [{"docid":"5538b4a1-a8cb-46a2-8413-c4212cfa4285","root_ids":["169377"],"roots":{"169377":"7512a1af-3926-4f32-b824-cee029f2783e"}}];
+              root.Bokeh.embed.embed_items(docs_json, render_items);
+              }
+              if (root.Bokeh !== undefined) {
+                embed_document(root);
+              } else {
+                let attempts = 0;
+                const timer = setInterval(function(root) {
+                  if (root.Bokeh !== undefined) {
+                    clearInterval(timer);
+                    embed_document(root);
+                  } else {
+                    attempts++;
+                    if (attempts > 100) {
+                      clearInterval(timer);
+                      console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+                    }
+                  }
+                }, 10, root)
+              }
+            })(window);
+          });
+        };
+        if (document.readyState != "loading") fn();
+        else document.addEventListener("DOMContentLoaded", fn);
+      })();
+    </script>
+  </body>
+</html>
