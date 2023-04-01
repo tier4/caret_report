@@ -37,7 +37,7 @@ app = flask.Flask(__name__)
 # value_name_list = ['best_avg', 'best_min', 'best_max', 'best_p50', 'best_p95', 'best_p99',
 #               'worst_avg', 'worst_min', 'worst_max', 'worst_p50', 'worst_p95', 'worst_p99']
 value_name_list = ['best_max', 'best_p99', 'best_p50', 'best_avg']
-value_name_display_list = ['max', '99%ile', 'median', 'avg']
+value_name_display_list = ['Max', '99%ile', 'Median', 'Avg']
 color_list = ['red', 'orange', 'blue', 'green', 'purple', 'black', 'brown', 'pink', 'gray', 'olive', 'cyan']
 
 

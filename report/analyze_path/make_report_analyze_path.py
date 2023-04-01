@@ -49,8 +49,14 @@ def make_report(stats_path: str):
     report_name = stats_path.split('/')[-3]
 
     destination_path = f'{stats_dir}/index.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_path.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_path_index.html'
     render_page(stats, report_name, destination_path, template_path)
+
+    for path_info in stats:
+        target_path_name = path_info['target_path_name']
+        destination_path = f'{stats_dir}/{target_path_name}.html'
+        template_path = f'{Path(__file__).resolve().parent}/template_path_detail.html'
+        render_page(path_info, target_path_name, destination_path, template_path)
 
 
 def parse_arg():
