@@ -3,8 +3,8 @@
 # CARET_report
 
 - This repository contains report creation scripts for CARET
-- Open [./report](./report) to find explanation of how to use the scripts
-- [sample report page](https://tier4.github.io/CARET_report/) is here
+  - [sample report page](https://tier4.github.io/CARET_report/)
+- Please refer to [report](./report) to find explanation of how to use the scripts
 - Please refer to [sample_autoware](./sample_autoware) to find sample settings and a full explanation of how to analyze Autoware with CARET
 
 ## Requirements
