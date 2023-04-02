@@ -80,7 +80,7 @@ sh ${script_path}/make_report.sh
   - validate_callback
   - validate_topic
 
-```py:component_list.json
+```py
 {
   # Component name information
   # Pairs of "component_name" and "regular expression for nodes belonging to the component"
@@ -141,7 +141,7 @@ sh ${script_path}/make_report.sh
     - It is useful when the path is complicated and is not found or searching the path takes too many time
     - example. <https://github.com/tier4/CARET_report/blob/f13b70c1bb2fdb16651f9535537d279822958733/sample_autoware/target_path.json#L63>
 
-```py:target_path.json
+```py
 {
   # List of topics to be ignored while searching paths
   "ignore_topic_list": [
@@ -199,8 +199,8 @@ sh ${script_path}/make_report.sh
 - Scripts using this file
   - track_path
 
-```csv:stats_path_list.csv
-# Pairs of "version name" and "path to 'stats_path.yaml'"
+```csv
+# "version name" and "path to 'stats_path.yaml'"
 version_aaaa,./output/report_*
 version_bbbb,./output/report_*
 latest_version,./output/report_*
