@@ -93,9 +93,9 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
 
 ```sh
 cd ${autoware_dir}
-source ${caret_dir}/install/local_setup.bash
+ulimit -n 16384
+source ${caret_dir}/setenv_caret.bash
 source ./install/local_setup.bash
-export LD_PRELOAD=$(readlink -f ${caret_dir}/install/caret_trace/lib/libcaret.so)
 source ./caret_topic_filter.bash
 
 ros2 launch autoware_launch logging_simulator.launch.xml map_path:=$HOME/work/rosbag_map/universe/sample-map-rosbag vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit
@@ -119,9 +119,9 @@ ros2 caret record -f 10000 --light
 
 ```sh
 cd ${autoware_dir}
-source ${caret_dir}/install/local_setup.bash
+ulimit -n 16384
+source ${caret_dir}/setenv_caret.bash
 source ./install/local_setup.bash
-export LD_PRELOAD=$(readlink -f ${caret_dir}/install/caret_trace/lib/libcaret.so)
 source ./caret_topic_filter.bash
 
 ros2 launch caret_autoware_launch logging_simulator.launch.xml map_path:=$HOME/work/rosbag_map/universe/sample-map-rosbag vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit
@@ -146,22 +146,20 @@ ros2 caret check_ctf -d ~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 ## 6. Create analysis report
 
 ```sh
+source ${caret_dir}/install/local_setup.bash
 cd ${path-to-this-repo}/sample_autoware
-
-export trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss    # modify for your environment
-export start_strip=25
-export end_strip=0
-export component_list_json=./component_list.json
-export target_path_json=./target_path.json
-export max_node_depth=20
-export timeout=120
-export draw_all_message_flow=false
-export stats_path_list_csv=./stats_path_list.csv
-
-sh ../report/report_analysis/make_report.sh
+sh ./run.sh
 ```
 
-- Note: Setting files in this directory are just a sample, and may not work with your trace data. Please modify them as you want
+- Before running the script, please modify the settings in `sample_autoware/run.sh`
+  - `trace_data`: path to trace data
+  - `start_strip`: Start strip [sec] to load trace data
+  - `end_strip`: End strip [sec] to load trace data
+  - Setting files in this directory are just a sample, and may not work with your trace data. 
+    - Please modify them for your case. ([Explanation](../report/README.md))
+- Reports are created in `sample_autoware/output/`
+  - `report_{trace_data_name}/index.html`: general analysis report
+  - `val_{trace_data_name}/index.html`: validation report
 
 ## FAQ
 

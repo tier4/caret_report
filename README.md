@@ -1,15 +1,10 @@
 [![Test with Autoware](https://github.com/tier4/CARET_report/actions/workflows/test_autoware.yaml/badge.svg)](https://github.com/tier4/CARET_report/actions/workflows/test_autoware.yaml)
 
-# Report creation scripts for CARET
+# CARET_report
 
-- [./report/report_analysis](./report/report_analysis)
-  - create general analysis report
-- [./report/report_validation](./report/report_validation)
-  - create validation report
-
-## Sample
-
-- [sample report page](https://tier4.github.io/CARET_report/)
+- This repository contains report creation scripts for CARET
+- Open [./report](./report) to find explanation of how to use the scripts
+- [sample report page](https://tier4.github.io/CARET_report/) is here
 - Please refer to [sample_autoware](./sample_autoware) to find sample settings and a full explanation of how to analyze Autoware with CARET
 
 ## Requirements
@@ -20,7 +15,6 @@
 - The following software is also needed
 
 ```sh
-# Flask 2.1.0 (need to specify version) is required to create html report pages
 pip3 install Flask==2.1.0 anytree
 ```
 
@@ -31,6 +25,10 @@ pip3 install Flask==2.1.0 anytree
 - It uses lots of memory
   - 64GB or more is recommended
   - In case crash happens due to memory shortage, increase swap space
+
+### About sim_time
+
+The analysis scripts don't support sim_time. So, please be careful when you analyze trace data which have been created with `ros2 bag play` with `-r` option. For instance, "Frequency" will be half when you add `-r 0.5` option.
 
 ### How to run regression test
 
