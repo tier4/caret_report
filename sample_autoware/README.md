@@ -155,7 +155,7 @@ sh ./run.sh
   - `trace_data`: path to trace data
   - `start_strip`: Start strip [sec] to load trace data
   - `end_strip`: End strip [sec] to load trace data
-  - Setting files in this directory are just a sample, and may not work with your trace data. 
+  - Setting files in this directory are just a sample, and may not work with your trace data.
     - Please modify them for your case. ([Explanation](../report/README.md))
 - Reports are created in `sample_autoware/output/`
   - `report_{trace_data_name}/index.html`: general analysis report
