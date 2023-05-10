@@ -4,7 +4,7 @@
 
 set -e
 
-script_path=$(cd "$(dirname "$0")"/../.. && pwd)
+script_path=$(cd "$(dirname "$0")"/.. && pwd)
 work_dir="$(pwd)"/work_verify
 
 . /opt/ros/"$ROS_DISTRO"/setup.sh
@@ -47,4 +47,4 @@ cd "${work_dir}" || exit
 report_dir_1=./reference_result
 report_dir_2=./report_autoware_launch_trace_20221227-150253_universe_rosbag
 export report_dir_1 report_dir_2
-sh "${script_path}"/report/compare/compare.sh
+sh "${script_path}"/compare/compare.sh
