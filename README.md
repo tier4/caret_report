@@ -34,5 +34,5 @@ The analysis scripts don't support sim_time. So, please be careful when you anal
 
 ```sh
 # cd to this repo cloned
-sh ./report/compare/makereport_and_compare.sh
+sh ./compare/makereport_and_compare.sh
 ```
