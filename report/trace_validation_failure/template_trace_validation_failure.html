@@ -16,10 +16,10 @@
   <body>
     <div class="container" style="white-space: nowrap; margin: 0px;">
       <hr />
-      sample:<br />
+      Legend:<br />
       /the_terminal_node_with_failure (callback trigger)<br />
       └── /preceding_node_with_failure (callback trigger)<br />
-      * the start-edge node (colored node) may be the cause of the failure
+      * <span style = "color:blue;">Colored node</span>: The beginning node. It may be the cause of the failure. The same node is assigned the same color and the color itself has no meaning.
       {% for trace in trace_list %}
         <hr />
         {% for line in trace %}

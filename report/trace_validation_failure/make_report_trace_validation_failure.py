@@ -91,10 +91,11 @@ def get_callback_legend(callback_name: str, callback_stats_list: list[dict]) -> 
             period_ns = callback_stats['stats']['period_ns']
             subscribe_topic_name = callback_stats['stats']['subscribe_topic_name']
             if period_ns == -1:
-                return node_name, subscribe_topic_name
+                return node_name, f'subscription cb: {subscribe_topic_name}'
             else:
-                return node_name, f'{period_ns*1e-6}ms'
+                return node_name, f'timer cb: {period_ns*1e-6}ms'
     return callback_name, '---'
+
 
 def get_callback_stats_list(node_name: str, callback_stats_list: list[dict]):
     found_list = [callback_stats for callback_stats in callback_stats_list if callback_stats['stats']['node_name'] == node_name]
