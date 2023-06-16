@@ -25,13 +25,31 @@
       {% if note_text_top %} {{ note_text_top | safe }} {% endif %}
 
       <ul>
-        <li>Result Summary</li>
+        <li>Validation Result</li>
         <ul>
           <li>
-            Topic: {{ summary_topic_dict["cnt_pass"] }} / {{ summary_topic_dict["cnt_pass"] + summary_topic_dict["cnt_failed"] }}
+            <i class="bi bi-circle-fill" style = "color:green;"></i>: All tests passed,
+            <i class="bi bi-circle-fill" style = "color:red;"></i>: Some tests failed,
+            <i class="bi bi-circle-fill" style = "color:#DDDD00;"></i>: Some tests were not measured
           </li>
           <li>
-            Callback: {{ summary_callback_dict["cnt_pass"] }} / {{ summary_callback_dict["cnt_pass"] + summary_callback_dict["cnt_failed"] }}
+            <i class="bi bi-square-fill" style = "color:gray;"></i>(rectangle): <i>The number of passed callbacks</i> / <i>The total number of tested callbacks in a component</i>
+          </li>
+          <li>
+            <i class="bi bi-arrow-right" style = "color:black;"></i>(arrow): <i>The number of passed topics</i> / <i>The total number of tested topics b/w components</i>
+          </li>
+          <li>
+            Summary
+          </li>
+          <li>
+            <ul>
+              <li>
+                Callback: {{ summary_callback_dict["cnt_pass"] }} / {{ summary_callback_dict["cnt_pass"] + summary_callback_dict["cnt_failed"] }}
+              </li>
+              <li>
+                Topic: {{ summary_topic_dict["cnt_pass"] }} / {{ summary_topic_dict["cnt_pass"] + summary_topic_dict["cnt_failed"] }}
+              </li>
+            </ul>
           </li>
         </ul>
       </ul>
