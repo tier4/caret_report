@@ -106,12 +106,17 @@ def trace_failure_node(parent: Node, arch: Architecture, node_name: str, callbac
     found_list = get_callback_stats_list(node_name, callback_stats_list)
     for callback_stats in found_list:
         result_status = callback_stats['result_status']
-        if result_status == 'FAILED':
+        if result_status == 'FAILED' or result_status == 'NOT_MEASURED':
             node_name = callback_stats['stats']['node_name']
             callback_name = callback_stats['stats']['callback_name']
             period_ns = callback_stats['stats']['period_ns']
             subscribe_topic_name = callback_stats['stats']['subscribe_topic_name']
             node = Node(callback_name, parent=parent)
+            if result_status == 'NOT_MEASURED':
+                _logger.warning(f'{callback_name} is not measured but treated as FAILED')
+            if node.depth > 100:
+                _logger.error(f'Too depth: {parent.name} -> {callback_name}')
+                continue
             if period_ns != -1:
                 # end
                 pass
