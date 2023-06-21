@@ -32,8 +32,8 @@
         <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
         <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
         <li><i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
-        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }}</li>
-        <li>DONT_CARE: {{ summary_dict['cnt_dont_care'] }}</li>
+        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }} (Callbacks whose operational cycle is not defined)</li>
+        <li>DONT_CARE: {{ summary_dict['cnt_dont_care'] }} (Callbacks whose operational cycle is not constant)</li>
       </ul>
 
       <table id="result_table" class="table table-hover table-bordered" style="word-break:normal">

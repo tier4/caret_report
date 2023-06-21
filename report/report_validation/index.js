@@ -248,9 +248,9 @@ for (let componentpair in summary_topic_dict_component_pair_metrics) {
         text: cnt_pass + " / " + cnt_total,
       },
     });
-    if (pub_component_name == "localization") {
-      cy.getElementById(componentpair).style("source-text-offset", 100);
-    }
+    // if (pub_component_name == "localization") {
+    //   cy.getElementById(componentpair).style("source-text-offset", 100);
+    // }
   } else if (pub_component_name == "external" && sub_component_name != "external") {
     ext = sub_component_name + "_ext";
     cy.getElementById(ext).style("visibility", "visible");

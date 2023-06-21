@@ -81,7 +81,7 @@ class Expectation():
         self.lower_limit = lower_limit or self.value * 0.8
         self.upper_limit = upper_limit or self.value * 1.2
         self.ratio = ratio or 0.2
-        self.burst_num = burst_num or 2
+        self.burst_num = burst_num or 5
 
     @staticmethod
     def find_expectation(expectation_list: list, topic_name, publish_node_name, subscribe_node_name):
@@ -92,7 +92,7 @@ class Expectation():
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str, publish_component_name: Optional[str], subscribe_component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=2) -> List:
+    def from_csv(expectation_csv_filename: str, publish_component_name: Optional[str], subscribe_component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=5) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")

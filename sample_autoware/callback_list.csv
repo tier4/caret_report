@@ -25,7 +25,7 @@
 /localization/pose_twist_fusion_filter/ekf_localizer,timer_callback,20000000,50
 /localization/pose_twist_fusion_filter/stop_filter,subscription_callback,/localization/pose_twist_fusion_filter/kinematic_state,50
 /localization/pose_twist_fusion_filter/twist2accel,subscription_callback,/localization/kinematic_state,50
-/localization/pose_twist_fusion_filter/twist2accel,subscription_callback,/localization/twist_estimator/twist_with_covariance,29
+/localization/pose_twist_fusion_filter/twist2accel,subscription_callback,/localization/twist_estimator/twist_with_covariance,28
 /planning/mission_planning/mission_planner,subscription_callback,/localization/kinematic_state,50
 /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner,subscription_callback,/localization/kinematic_state,50
 /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner,subscription_callback,/localization/acceleration,50
@@ -77,7 +77,7 @@
 /system/emergency_handler,subscription_callback,/control/command/control_cmd,33.33
 /system/emergency_handler,subscription_callback,/localization/kinematic_state,50
 /system/emergency_handler,subscription_callback,/system/emergency/hazard_status,10
-/system/emergency_handler,subscription_callback,/vehicle/status/control_mode,29
+/system/emergency_handler,subscription_callback,/vehicle/status/control_mode,28
 /system/emergency_handler,subscription_callback,/system/mrm/comfortable_stop/status,10.0
 /system/emergency_handler,subscription_callback,/system/mrm/emergency_stop/status,30.0
 /system/emergency_handler,timer_callback,100000000,10
