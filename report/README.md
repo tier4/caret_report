@@ -140,6 +140,9 @@ sh ${script_path}/make_report.sh
   - `path_blocks` can be used instead of `path` so that path can be divided
     - It is useful when the path is complicated and is not found or searching the path takes too many time
     - example. <https://github.com/tier4/CARET_report/blob/f13b70c1bb2fdb16651f9535537d279822958733/sample_autoware/target_path.json#L63>
+- `"include_first_callback"` , `"include_last_callback"` (optional)
+  - The latency in the first/last callback is added to the path
+  - If these parameters are not set, `true` is used as default
 
 ```py
 {
@@ -170,7 +173,9 @@ sh ${script_path}/make_report.sh
         "/sensing/lidar/top/distortion_corrector_node",
         "/sensing/lidar/top/ring_outlier_filter",
         "/sensing/lidar/concatenate_data"
-      ]
+      ],
+      "include_first_callback": false,
+      "include_last_callback": true
     }
   ]
 }
