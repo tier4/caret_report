@@ -23,6 +23,7 @@ import shutil
 import argparse
 from distutils.util import strtobool
 import logging
+import json
 import yaml
 import numpy as np
 from bokeh.plotting import Figure, figure
@@ -178,14 +179,14 @@ def check_the_first_last_callback_is_valid(records: RecordsInterface):
     return is_first_valid, is_last_valid
 
 
-def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, target_path_name: str):
+def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, target_path_name: str, include_first_last_callback: dict):
     """Analyze a path"""
     _logger.info(f'Processing: {target_path_name}')
     target_path = app.get_path(target_path_name)
 
     # Include the first and last callback if availble
-    target_path.include_first_callback = True
-    target_path.include_last_callback = True
+    target_path.include_first_callback = include_first_last_callback[target_path_name][0]
+    target_path.include_last_callback = include_first_last_callback[target_path_name][1]
     records = target_path.to_records()
     is_first_valid, is_last_valid = check_the_first_last_callback_is_valid(records)
     if (not is_first_valid) or (not is_last_valid):
@@ -247,6 +248,28 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     return stats
 
 
+def get_include_first_last_callback(args, arch: Architecture):
+    include_first_last_callback = {}
+    for target_path in arch.paths:
+        target_path_name = target_path.path_name
+        include_first_last_callback[target_path_name] = (True, True)
+
+    def modify_dictionary(dictionary, target_string, new_value):
+        for key in dictionary:
+            if target_string in key:
+                dictionary[key] = new_value
+
+    with open(args.target_path_json, encoding='UTF-8') as f_json:
+        target_path_json = json.load(f_json)
+        for target_path in target_path_json['target_path_list']:
+            target_path_name = target_path['name']
+            include_first_callback = target_path['include_first_callback'] if 'include_first_callback' in target_path else True
+            include_last_callback = target_path['include_last_callback'] if 'include_last_callback' in target_path else True
+            modify_dictionary(include_first_last_callback, target_path_name, (include_first_callback, include_last_callback))
+
+    return include_first_last_callback
+
+
 def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: str):
     """Analyze paths"""
     global _logger
@@ -255,6 +278,8 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     _logger.info('<<< Analyze Paths: Start >>>')
     make_destination_dir(dest_dir, args.force, _logger)
     shutil.copy(args.architecture_file_path, dest_dir)
+
+    include_first_last_callback = get_include_first_last_callback(args, arch)
 
     stats_list = []
 
@@ -270,7 +295,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     # Analyze each path
     for target_path in arch.paths:
         target_path_name = target_path.path_name
-        stats = analyze_path(args, dest_dir, arch, app, target_path_name)
+        stats = analyze_path(args, dest_dir, arch, app, target_path_name, include_first_last_callback)
         stats_list.append(vars(stats))
 
     # Save stats file
@@ -288,6 +313,7 @@ def parse_arg():
                 description='Script to analyze path')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('dest_dir', nargs=1, type=str)
+    parser.add_argument('--target_path_json', type=str, default='target_path.json')
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('-m', '--message_flow', type=strtobool, default=False,
                         help='Output message flow graph')
@@ -310,6 +336,7 @@ def main():
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
     _logger.debug(f'dest_dir: {args.dest_dir[0]}')
+    _logger.debug(f'target_path_json: {args.target_path_json}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     args.message_flow = True if args.message_flow == 1 else False
