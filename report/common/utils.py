@@ -15,6 +15,7 @@
 Utility functions
 """
 from __future__ import annotations
+import datetime
 import os
 import sys
 import shutil
@@ -23,6 +24,8 @@ import re
 import json
 import itertools
 import pandas as pd
+import subprocess
+import yaml
 from caret_analyze import Application, Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.runtime.node import Node
@@ -256,3 +259,71 @@ class ComponentManager:
         if component_name == self.get_component_name(node_name):
             return True
         return False
+
+
+def read_note_text(trace_data_dir, note_text_top_path, note_text_bottom_path) -> tuple[str, str]:
+    note_text_top = None
+    note_text_bottom = None
+    if os.path.exists(note_text_top_path):
+        with open(note_text_top_path, encoding='UTF-8') as note:
+            note_text_top = note.read()
+    if os.path.exists(note_text_bottom_path):
+        with open(note_text_bottom_path, encoding='UTF-8') as note:
+            note_text_bottom = note.read()
+
+    note_text_top += '<ul>\n'
+    # trace data info
+    trace_data_name = trace_data_dir.split('/')[-1]
+    trace_datetime = re.search(r'\d{14}', trace_data_name)
+    if trace_datetime:
+        trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d%H%M%S')
+    else:
+        trace_datetime = re.search(r'\d{8}-\d{6}', trace_data_name)
+        if trace_datetime:
+            trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d-%H%M%S')
+        else:
+            trace_datetime = 'unknown'
+    note_text_top += f'<li>trace_data: {trace_data_name}</li>\n'
+    note_text_top += f'<li>trace_start_datetime: {trace_datetime}</li>\n'
+
+    # version info
+    try:
+        caret_analysis_version = subprocess.run(['ros2', 'caret', 'version'], text=True, stdout=subprocess.PIPE).stdout
+    except:
+        caret_analysis_version = 'unknown'
+    note_text_top += f'<li>caret_analysis_version: {caret_analysis_version}</li>\n'
+
+    try:
+        repo_url_lines = subprocess.run(['git', 'remote', '-v'], text=True, stdout=subprocess.PIPE).stdout
+        repo_url_line = repo_url_lines.split('\n')[0]
+        repo_name = 'unknown'
+        for repo_url in repo_url_line.split():
+            if ('https://' in repo_url or 'git@' in repo_url) and '.git' in repo_url:
+                repo_url = repo_url.split('/')[-1]
+                repo_name = repo_url.split('.git')[0]
+        report_setting_version = subprocess.run(['git', 'log', '-n 1', '--format=%H'], text=True, stdout=subprocess.PIPE).stdout
+    except:
+        repo_name = 'unknown'
+        report_setting_version = 'unknown'
+    note_text_top += f'<li>report_setting_repo: {repo_name}</li>\n'
+    note_text_top += f'<li>report_setting_version: {report_setting_version}</li>\n'
+    note_text_top += '</ul>\n'
+
+    # overwrite note_text_top if caret_record_info.yaml exists
+    caret_record_info_path = f'{trace_data_dir}/caret_record_info.yaml'
+    if os.path.exists(caret_record_info_path):
+        with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
+            note_text_top = '<ul>\n'
+            note_text_top += f'<li>trace_data: {trace_data_name}</li>\n'
+            note_text_top += f'<li>trace_start_datetime: {trace_datetime}</li>\n'
+            caret_record_info = yaml.safe_load(f_yaml)
+            if 'caret_version' in caret_record_info:
+                caret_record_info['caret_version'] = caret_record_info.pop('caret_version')
+            for key, value in caret_record_info.items():
+                note_text_top += f'<li>{key}: {value}</li>\n'
+            note_text_top += f'<li>caret_analysis_version: {caret_analysis_version}</li>\n'
+            note_text_top += f'<li>report_setting_repo: {repo_name}</li>\n'
+            note_text_top += f'<li>report_setting_version: {report_setting_version}</li>\n'
+            note_text_top += '</ul>\n'
+
+    return note_text_top, note_text_bottom
