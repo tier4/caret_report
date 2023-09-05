@@ -27,7 +27,7 @@ sudo reboot yes
 
 ```sh
 cd CARET_report
-docker image build -t caret/caret_report --build-arg CARET_VERSION="v0.3.3" ./docker
+docker image build -t caret/caret_report --build-arg CARET_VERSION="main" ./docker
 ```
 
 ## Run scripts to create report in Docker
@@ -38,6 +38,8 @@ cd CARET_report
 script_path=`pwd`
 trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 work_dir=`pwd`/sample_autoware
+report_store_dir="${work_dir}"/output
+export trace_data_name=`basename ${trace_data}`
 export start_strip=25
 export end_strip=0
 export component_list_json=component_list.json
@@ -45,15 +47,17 @@ export target_path_json=target_path.json
 export max_node_depth=20
 export timeout=120
 export draw_all_message_flow=false
-export stats_path_list_csv=stats_path_list.csv
+export report_store_mount_name=report_store_dir
 
 # Run script
 docker run -it --rm \
     --user $(id -u):$(id -g) \
     -v /etc/localtime:/etc/localtime:ro \
     -v ${script_path}:/CARET_report \
-    -v ${trace_data}:/trace_data \
+    -v ${trace_data}:/${trace_data_name} \
     -v ${work_dir}:/work \
+    -v ${report_store_dir}:/report_store_dir \
+    -e trace_data_name \
     -e start_strip \
     -e end_strip \
     -e component_list_json \
@@ -61,6 +65,6 @@ docker run -it --rm \
     -e max_node_depth \
     -e timeout \
     -e draw_all_message_flow \
-    -e stats_path_list_csv \
+    -e report_store_mount_name \
     caret/caret_report
 ```

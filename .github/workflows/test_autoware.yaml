@@ -82,6 +82,8 @@ jobs:
           script_path=`pwd`
           trace_data=`pwd`/autoware_launch_trace_20221227-150253_universe_rosbag
           work_dir=`pwd`/sample_autoware
+          report_store_dir="${work_dir}"/output
+          export trace_data_name=`basename ${trace_data}`
           export start_strip=25
           export end_strip=0
           export component_list_json=component_list.json
@@ -89,14 +91,16 @@ jobs:
           export max_node_depth=20
           export timeout=120
           export draw_all_message_flow=false
-          export stats_path_list_csv=stats_path_list.csv
+          export report_store_mount_name=report_store_dir
 
           docker run --rm \
               --user $(id -u):$(id -g) \
               -v /etc/localtime:/etc/localtime:ro \
               -v ${script_path}:/CARET_report \
-              -v ${trace_data}:/trace_data \
+              -v ${trace_data}:/${trace_data_name} \
               -v ${work_dir}:/work \
+              -v ${report_store_dir}:/report_store_dir \
+              -e trace_data_name \
               -e start_strip \
               -e end_strip \
               -e component_list_json \
@@ -104,15 +108,15 @@ jobs:
               -e max_node_depth \
               -e timeout \
               -e draw_all_message_flow \
-              -e stats_path_list_csv \
+              -e report_store_mount_name \
               ${{ env.TAGS }}
 
       - name: Upload report
         if: ${{ matrix.do_test }}
         uses: actions/upload-artifact@v3
         with:
-          name: report_trace_data
-          path: ./sample_autoware/output/report_trace_data
+          name: report_autoware_launch_trace_20221227-150253_universe_rosbag
+          path: ./sample_autoware/output/report_autoware_launch_trace_20221227-150253_universe_rosbag
 
       - name: Compare report contents
         if: ${{ matrix.do_test }}
@@ -122,5 +126,5 @@ jobs:
           unzip report_autoware_launch_trace_20221227-150253_universe_rosbag.zip
           mv report_autoware_launch_trace_20221227-150253_universe_rosbag reference_result
           export report_dir_1=`pwd`/reference_result
-          export report_dir_2=`pwd`/sample_autoware/output/report_trace_data
+          export report_dir_2=`pwd`/sample_autoware/output/report_autoware_launch_trace_20221227-150253_universe_rosbag
           sh `pwd`/compare/compare.sh

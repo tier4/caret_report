@@ -23,16 +23,8 @@ sudo chmod u-s /usr/sbin/groupadd
 . /ros2_caret_ws/install/local_setup.sh
 
 cd /work
-export component_list_json=/work/${component_list_json}
-export target_path_json=/work/${target_path_json}
-export stats_path_list_csv=/work/${stats_path_list_csv}
-
-# export start_time=15
-# export duration_time=600
-# export max_node_depth=20
-# export draw_all_message_flow=false
-
-export trace_data=/trace_data
+export trace_data=/${trace_data_name}
+export report_store_dir=/report_store_dir
 
 sh /CARET_report/report/report_analysis/make_report.sh
 

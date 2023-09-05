@@ -4,12 +4,16 @@
 
 set -e
 
-mkdir -p output
-
 # Variable settings
 script_path=$(dirname "$0")/..
 trace_data_name=$(basename "${trace_data}")
 report_dir_name=output/val_"${trace_data_name}"
+
+mkdir -p "${report_dir_name}"
+
+if [ -f "${trace_data}"/caret_record_info.yaml ]; then
+    cp "${trace_data}"/caret_record_info.yaml "${report_dir_name}"/.
+fi
 
 # Generate topic expectation list
 python3 "${script_path}"/validate_topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --topic_list_filename="${topic_list_csv}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv"
@@ -34,7 +38,7 @@ python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" "${report_
 python3 "${script_path}"/analyze_path/make_report_analyze_path.py "${report_dir_name}"
 
 # Track of response time
-python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" "${stats_path_list_csv}"
+python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" "${report_store_dir}" --report_store_mount_name="${report_store_mount_name}"
 
 # Index page
 python3 "${script_path}"/report_validation/make_report_validation.py "${trace_data}" "${report_dir_name}" --component_list_json="${component_list_json}" --note_text_top="${note_text_top}" --note_text_bottom="${note_text_bottom}"
