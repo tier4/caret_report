@@ -38,7 +38,7 @@ cd CARET_report
 script_path=`pwd`
 trace_data=~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
 work_dir=`pwd`/sample_autoware
-report_store_dir="${work_dir}"/output
+report_store_dir="${work_dir}"
 export trace_data_name=`basename ${trace_data}`
 export start_strip=25
 export end_strip=0

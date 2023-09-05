@@ -198,21 +198,6 @@ sh ${script_path}/make_report.sh
   - Before: `/node_name_xyz_abc1234567_1234567_1234567891234567891`
   - After: `/node_name_xyz.*`
 
-### stats_path_list.csv
-
-- `track_path` script creates graph plotting the response time for each version
-- To create the graph, the following information is needed
-  - "version name", "path to 'stats_path.yaml' file"(output of analyze_path)
-- Scripts using this file
-  - track_path
-
-```csv
-# "version name" and "path to 'stats_path.yaml'"
-version_aaaa,./output/report_*
-version_bbbb,./output/report_*
-latest_version,./output/report_*
-```
-
 ### callback_list.csv
 
 - This file contains expected callback frequency for validation
