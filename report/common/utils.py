@@ -262,8 +262,8 @@ class ComponentManager:
 
 
 def read_note_text(trace_data_dir, note_text_top_path, note_text_bottom_path) -> tuple[str, str]:
-    note_text_top = None
-    note_text_bottom = None
+    note_text_top = ''
+    note_text_bottom = ''
     if os.path.exists(note_text_top_path):
         with open(note_text_top_path, encoding='UTF-8') as note:
             note_text_top = note.read()
