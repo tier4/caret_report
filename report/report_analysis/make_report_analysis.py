@@ -23,19 +23,21 @@ import yaml
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import ComponentManager
+from common.utils import read_note_text
 
 app = flask.Flask(__name__)
 
 
-def render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
+def render_page(trace_data_dir, destination_path, template_path, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom):
     """Render html page"""
+    title = f'Analysis report'
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
-                title=report_name,
+                title=title,
                 component_list=component_list,
                 stats_node_dict=stats_node_dict,
                 stats_path=stats_path,
@@ -99,22 +101,10 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
     stats_node['latency_topk'] = callback_latency_list
 
 
-def read_note_text(args) -> tuple[str, str]:
-    note_text_top = None
-    note_text_bottom = None
-    if os.path.exists(args.note_text_top):
-        with open(args.note_text_top, encoding='UTF-8') as note:
-            note_text_top = note.read()
-    if os.path.exists(args.note_text_bottom):
-        with open(args.note_text_bottom, encoding='UTF-8') as note:
-            note_text_bottom = note.read()
-    return note_text_top, note_text_bottom
-
-
 def make_report(args, index_filename: str='index'):
     """Make report page"""
-    dest_dir = str(Path(args.dest_dir[0]))
-    report_name = dest_dir.split('/')[-1]
+    trace_data_dir = args.trace_data[0].rstrip('/')
+    dest_dir = args.dest_dir[0].rstrip('/')
     ComponentManager().initialize('component_list.json')
 
     component_list = get_component_list(dest_dir)
@@ -124,11 +114,11 @@ def make_report(args, index_filename: str='index'):
 
     stats_path = get_stats_path(dest_dir)
 
-    note_text_top, note_text_bottom = read_note_text(args)
+    note_text_top, note_text_bottom = read_note_text(trace_data_dir, args.note_text_top, args.note_text_bottom)
 
     destination_path = f'{dest_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
-    render_page(destination_path, template_path, report_name, component_list, stats_node_dict,
+    render_page(trace_data_dir, destination_path, template_path, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom)
 
 
@@ -136,6 +126,7 @@ def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
                 description='Script to make report page')
+    parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--note_text_top', type=str, default='')
     parser.add_argument('--note_text_bottom', type=str, default='')

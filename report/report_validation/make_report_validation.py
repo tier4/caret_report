@@ -22,6 +22,7 @@ from pathlib import Path
 import sys
 import flask
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+from common.utils import read_note_text
 from common.utils import ComponentManager
 from common.utils_validation import make_stats_dict_node_callback_metrics, summarize_callback_result
 from common.utils_validation import make_stats_dict_topic_pubsub_metrics, summarize_topic_result
@@ -61,8 +62,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
         summary_topic_dict['cnt_pass'] += summary[Metrics.FREQUENCY.name]['cnt_pass']
         summary_topic_dict['cnt_failed'] += summary[Metrics.FREQUENCY.name]['cnt_failed']
 
-    title = f'Validation result'
-    trace_name = report_dir.split('/')[-1]
+    title = f'Validation report'
     destination_path = f'{report_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_validation.html'
 
@@ -72,7 +72,6 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
             rendered = flask.render_template_string(
                 template_string,
                 title=title,
-                trace_name=trace_name,
                 summary_callback_dict_component_metrics=summary_callback_dict_component_metrics,
                 summary_topic_dict_component_pair_metrics=summary_topic_dict_component_pair_metrics,
                 summary_callback_dict=summary_callback_dict,
@@ -88,23 +87,12 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
     shutil.copy(script_path, report_dir)
 
 
-def read_note_text(args) -> tuple[str, str]:
-    note_text_top = None
-    note_text_bottom = None
-    if os.path.exists(args.note_text_top):
-        with open(args.note_text_top, encoding='UTF-8') as note:
-            note_text_top = note.read()
-    if os.path.exists(args.note_text_bottom):
-        with open(args.note_text_bottom, encoding='UTF-8') as note:
-            note_text_bottom = note.read()
-    return note_text_top, note_text_bottom
-
-
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
                 description='Script to make report page')
-    parser.add_argument('report_directory', nargs=1, type=str)
+    parser.add_argument('trace_data', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--note_text_top', type=str, default='')
     parser.add_argument('--note_text_bottom', type=str, default='')
@@ -116,8 +104,9 @@ def main():
     """Main function"""
     args = parse_arg()
 
-    report_dir = args.report_directory[0]
-    note_text_top, note_text_bottom = read_note_text(args)
+    trace_data_dir = args.trace_data[0].rstrip('/')
+    report_dir = args.dest_dir[0].rstrip('/')
+    note_text_top, note_text_bottom = read_note_text(trace_data_dir, args.note_text_top, args.note_text_bottom)
     make_report(report_dir, args.component_list_json, note_text_top, note_text_bottom)
     print('<<< OK. report page is created >>>')
 
