@@ -28,7 +28,7 @@ from common.utils import read_note_text
 app = flask.Flask(__name__)
 
 
-def render_page(trace_data_dir, destination_path, template_path, component_list, stats_node_dict,
+def render_page(destination_path, template_path, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom):
     """Render html page"""
     title = f'Analysis report'
@@ -114,11 +114,11 @@ def make_report(args, index_filename: str='index'):
 
     stats_path = get_stats_path(dest_dir)
 
-    note_text_top, note_text_bottom = read_note_text(trace_data_dir, args.note_text_top, args.note_text_bottom)
+    note_text_top, note_text_bottom = read_note_text(trace_data_dir, dest_dir, args.note_text_top, args.note_text_bottom)
 
     destination_path = f'{dest_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
-    render_page(trace_data_dir, destination_path, template_path, component_list, stats_node_dict,
+    render_page(destination_path, template_path, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom)
 
 

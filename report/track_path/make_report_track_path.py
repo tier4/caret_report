@@ -22,6 +22,9 @@ import glob
 import math
 import logging
 import csv
+import datetime
+import re
+import subprocess
 import yaml
 import numpy as np
 import pandas as pd
@@ -66,42 +69,72 @@ def render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, de
             f_html.write(rendered)
 
 
-def make_stats_file_dict(dest_dir: str, stats_list_file: str) -> list[tuple[str,str]]:
+def get_datetime_from_trace_data_name(trace_data_name: str):
+    trace_datetime = re.search(r'\d{14}', trace_data_name)
+    if trace_datetime:
+        trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d%H%M%S')
+    else:
+        trace_datetime = re.search(r'\d{8}-\d{6}', trace_data_name)
+        if trace_datetime:
+            trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d-%H%M%S')
+        else:
+            trace_datetime = 'unknown'
+    return str(trace_datetime)
+
+
+def get_trace_data_info_from_yaml(yaml_dir: str):
+    caret_record_info_path = Path(yaml_dir).joinpath('caret_record_info.yaml')
+    autoware_version, map, route = '', '', ''
+    if os.path.exists(caret_record_info_path):
+        with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
+            caret_record_info = yaml.safe_load(f_yaml)
+            if 'autoware_version' in caret_record_info:
+                autoware_version = caret_record_info['autoware_version'].split('/')[-1]
+            if 'map' in caret_record_info:
+                map = caret_record_info['map']
+            if 'route' in caret_record_info:
+                route = caret_record_info['route']
+    return autoware_version, map, route
+
+
+def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str,str]]:
     """Make file list"""
     stats_file_dict = {}
-    if not os.path.isfile(stats_list_file):
-        _logger.error(f"Unable to read csv: {stats_list_file}")
-        return []
-    with open(stats_list_file, 'r', encoding='utf-8') as f_csv:
-        for row in csv.DictReader(f_csv, ['version', 'stats_file']):
-            stats_file = row['stats_file']  # this can be directory or file.yaml with wild card
-            stats_file_candidate_list = [
-                Path(stats_file).expanduser(),  # abs
-                Path(stats_file).resolve(),     # from current
-                Path.joinpath(Path(os.path.dirname(stats_list_file)).resolve(), stats_file),    # from csv
-                Path.joinpath(Path(os.path.dirname(dest_dir)).resolve(), stats_file),           # from dest
-                Path.joinpath(Path(os.path.dirname(dest_dir)).resolve().parent, stats_file),    # from dest parent
-            ]
-            for stats_file_candidate in stats_file_candidate_list:
-                # For stats_file as directory
-                stats_path_list = glob.glob(f'{stats_file_candidate}/**/stats_path.yaml', recursive=True)
-                if len(stats_path_list) > 0 and os.path.isfile(stats_path_list[0]):
-                    stats_file_dict[row['version']] = stats_path_list[0]
-                    break
-                # For stats_file as file
-                stats_path_list = glob.glob(f'{stats_file_candidate}', recursive=True)
-                if len(stats_path_list) > 0 and os.path.isfile(stats_path_list[0]):
-                    stats_file_dict[row['version']] = stats_path_list[0]
-                    break
-            if row['version'] not in stats_file_dict:
-                _logger.error(f"Unable to find stats file for {row['version']}")
+
+    current_report_name = dest_dir.split('/')[-2]
+    current_report_type = current_report_name[:4]
+    report_store_dir = report_store_dir.rstrip('/')
+    past_report_list = subprocess.run(['find', report_store_dir, '-name', f'{current_report_type}*', '-type', 'd'], text=True, stdout=subprocess.PIPE).stdout
+    past_report_list = past_report_list.strip('\n').split('\n')
+    if report_store_dir in past_report_list:
+        past_report_list.remove(report_store_dir)
+    past_report_list = sorted(past_report_list)
+
+    current_report = str(Path(dest_dir).parent)
+    report_list = past_report_list + [current_report]
+
+    for report_dir in report_list:
+        report_dir = report_dir.rstrip('/')
+        report_name = report_dir.split('/')[-1]
+        datetime = get_datetime_from_trace_data_name(report_name)
+        autoware_version, map, route = get_trace_data_info_from_yaml(report_dir)
+        if autoware_version != '':
+            version = autoware_version + ', ' + datetime + ', ' + map + ', ' + route
+        else:
+            version = datetime
+
+        stats_path_list = glob.glob(f'{report_dir}/**/stats_path.yaml', recursive=True)
+        if len(stats_path_list) > 0 and os.path.isfile(stats_path_list[0]):
+            stats_file_dict[version] = stats_path_list[0]
+        else:
+            _logger.error(f"Unable to find stats file for {report_dir}")
 
     return stats_file_dict
 
 
-def make_stats(dest_dir: str, stats_list_file: str):
+def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: str):
     """Make stats"""
-    stats_file_dict = make_stats_file_dict(dest_dir, stats_list_file)
+    stats_file_dict = make_stats_file_dict(dest_dir, report_store_dir)
 
     reportpath_version_dict = {}   # key: version, value: path to report
     for version, stats_file in stats_file_dict.items():
@@ -110,6 +143,10 @@ def make_stats(dest_dir: str, stats_list_file: str):
         if path_report_file.exists():
             path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
+            if report_store_mount_name != '' and report_store_mount_name in top_report_file:
+                # Create a new relpath assuming the current report is created under report_store_mount_name
+                path_report_file = '../../../../' + path_report_file.split(report_store_mount_name)[-1]
+                top_report_file = '../../../../' + top_report_file.split(report_store_mount_name)[-1]
         else:
             path_report_file = ''
             top_report_file = ''
@@ -151,7 +188,7 @@ def make_stats(dest_dir: str, stats_list_file: str):
             fig.line(x=range(len(df.index)), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], line_width=2)
             fig.circle(x=range(len(df.index)), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], size=5)
         fig.y_range.start = 0
-        fig.xaxis.major_label_overrides = {i: df.index[i] for i in range(len(df.index))}
+        fig.xaxis.major_label_overrides = {i: df.index[i].replace(', ', '\n', 2) for i in range(len(df.index))}
         fig.xaxis.major_label_orientation = -math.pi/2
         fig.xaxis.ticker = FixedTicker(ticks=list(range(len(df.index))))
         fig.add_layout(fig.legend[0], "right")
@@ -171,9 +208,9 @@ def make_stats(dest_dir: str, stats_list_file: str):
     return reportpath_version_dict, stats_path_dict, filename_path_dict
 
 
-def make_report(dest_dir: str, stats_list_file: str):
+def make_report(dest_dir: str, report_store_dir: str, report_store_mount_name: str):
     """Make report page"""
-    reportpath_version_dict, stats_path_dict, filename_path_dict = make_stats(dest_dir, stats_list_file)
+    reportpath_version_dict, stats_path_dict, filename_path_dict = make_stats(dest_dir, report_store_dir, report_store_mount_name)
     destination_path = f'{dest_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_track_path.html'
     render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, destination_path, template_path)
@@ -183,8 +220,9 @@ def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
                 description='Script to make report page')
-    parser.add_argument('report_directory', nargs=1, type=str)
-    parser.add_argument('stats_list_file', nargs=1, type=str)
+    parser.add_argument('dest_dir', nargs=1, type=str)
+    parser.add_argument('report_store_dir', nargs=1, type=str)
+    parser.add_argument('--report_store_mount_name', type=str, default='')
     args = parser.parse_args()
     return args
 
@@ -193,13 +231,15 @@ def main():
     """main function"""
     args = parse_arg()
 
-    dest_dir = args.report_directory[0] + '/track_path'
-    stats_list_file = args.stats_list_file[0]
+    dest_dir = args.dest_dir[0] + '/track_path'
+    report_store_dir = args.report_store_dir[0]
+    report_store_mount_name = args.report_store_mount_name
     _logger.info(f'dest_dir: {dest_dir}')
-    _logger.info(f'stats_list_file: {stats_list_file}')
+    _logger.info(f'report_store_dir: {report_store_dir}')
+    _logger.info(f'report_store_mount_name: {report_store_mount_name}')
     os.makedirs(dest_dir, exist_ok=True)
 
-    make_report(dest_dir, stats_list_file)
+    make_report(dest_dir, report_store_dir, report_store_mount_name)
     print('<<< OK. report_track_path is created >>>')
 
 

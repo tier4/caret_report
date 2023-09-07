@@ -105,9 +105,9 @@ def main():
     args = parse_arg()
 
     trace_data_dir = args.trace_data[0].rstrip('/')
-    report_dir = args.dest_dir[0].rstrip('/')
-    note_text_top, note_text_bottom = read_note_text(trace_data_dir, args.note_text_top, args.note_text_bottom)
-    make_report(report_dir, args.component_list_json, note_text_top, note_text_bottom)
+    dest_dir = args.dest_dir[0].rstrip('/')
+    note_text_top, note_text_bottom = read_note_text(trace_data_dir, dest_dir, args.note_text_top, args.note_text_bottom)
+    make_report(dest_dir, args.component_list_json, note_text_top, note_text_bottom)
     print('<<< OK. report page is created >>>')
 
 

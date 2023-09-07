@@ -22,7 +22,8 @@ export target_path_json=./target_path.json           # Path to setting file
 export max_node_depth=20                             # The number of depth to search path. Increase it in case path is not found
 export timeout=120                                   # Timeout[sec] to search path. Increase it in case path is not found
 export draw_all_message_flow=false                   # Flag to a create message flow graph for a whole time period (this will increase report creation time)
-export stats_path_list_csv=./stats_path_list.csv     # Path to setting file
+export report_store_dir=./output                     # Path to past report store if exist
+export report_store_mount_name=report_store_dir      # (optional) Links to past reports will be created assuming the current report is stored in the directory named this paraemter
 export note_text_top=./note_text_top.txt             # Path to setting file
 export note_text_bottom=./note_text_bottom.txt       # Path to setting file
 export start_strip=120                               # strip time at the start [sec] for analysis
@@ -53,7 +54,8 @@ export target_path_json=./target_path.json           # Path to setting file
 export max_node_depth=20                             # The number of depth to search path. Increase it in case path is not found
 export timeout=120                                   # Timeout[sec] to search path. Increase it in case path is not found
 export draw_all_message_flow=false                   # Flag to a create message flow graph for a whole time period (this will increase report creation time)
-export stats_path_list_csv=./stats_path_list.csv     # Path to setting file
+export report_store_dir=./output                     # Path to past report store if exist
+export report_store_mount_name=report_store_dir      # (optional) Links to past reports will be created assuming the current report is stored in the directory named this paraemter
 export callback_list_csv=./callback_list.csv         # Path to setting file
 export topic_list_csv=./topic_list.csv               # Path to setting file
 export note_text_top=./note_text_top.txt             # Path to setting file
@@ -195,21 +197,6 @@ sh ${script_path}/make_report.sh
 - In case a node name varies for each execution, you can write node name in JSON like the following
   - Before: `/node_name_xyz_abc1234567_1234567_1234567891234567891`
   - After: `/node_name_xyz.*`
-
-### stats_path_list.csv
-
-- `track_path` script creates graph plotting the response time for each version
-- To create the graph, the following information is needed
-  - "version name", "path to 'stats_path.yaml' file"(output of analyze_path)
-- Scripts using this file
-  - track_path
-
-```csv
-# "version name" and "path to 'stats_path.yaml'"
-version_aaaa,./output/report_*
-version_bbbb,./output/report_*
-latest_version,./output/report_*
-```
 
 ### callback_list.csv
 

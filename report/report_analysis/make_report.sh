@@ -4,12 +4,16 @@
 
 set -e
 
-mkdir -p output
-
 # Variable settings
 script_path=$(dirname "$0")/..
 trace_data_name=$(basename "${trace_data}")
 report_dir_name=output/report_"${trace_data_name}"
+
+mkdir -p "${report_dir_name}"
+
+if [ -f "${trace_data}"/caret_record_info.yaml ]; then
+    cp "${trace_data}"/caret_record_info.yaml "${report_dir_name}"/.
+fi
 
 # Path analysis
 python3 "${script_path}"/analyze_path/add_path_to_architecture.py "${trace_data}" "${target_path_json}" --architecture_file_path=architecture_path.yaml --max_node_depth="${max_node_depth}" --timeout="${timeout}" -v
@@ -17,7 +21,7 @@ python3 "${script_path}"/analyze_path/analyze_path.py "${trace_data}" "${report_
 python3 "${script_path}"/analyze_path/make_report_analyze_path.py "${report_dir_name}"
 
 # Track of response time
-python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" "${stats_path_list_csv}"
+python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" "${report_store_dir}" --report_store_mount_name="${report_store_mount_name}"
 
 # Node analysis
 python3 "${script_path}"/analyze_node/analyze_node.py "${trace_data}" "${report_dir_name}" --component_list_json="${component_list_json}" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v

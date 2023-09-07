@@ -261,7 +261,7 @@ class ComponentManager:
         return False
 
 
-def read_note_text(trace_data_dir, note_text_top_path, note_text_bottom_path) -> tuple[str, str]:
+def read_note_text(trace_data_dir, dest_dir, note_text_top_path, note_text_bottom_path) -> tuple[str, str]:
     note_text_top = ''
     note_text_bottom = ''
     if os.path.exists(note_text_top_path):
@@ -310,7 +310,7 @@ def read_note_text(trace_data_dir, note_text_top_path, note_text_bottom_path) ->
     note_text_top += '</ul>\n'
 
     # overwrite note_text_top if caret_record_info.yaml exists
-    caret_record_info_path = f'{trace_data_dir}/caret_record_info.yaml'
+    caret_record_info_path = f'{dest_dir}/caret_record_info.yaml'
     if os.path.exists(caret_record_info_path):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
             note_text_top = '<ul>\n'
