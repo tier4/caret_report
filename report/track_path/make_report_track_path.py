@@ -69,16 +69,24 @@ def render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, de
             f_html.write(rendered)
 
 
-def get_datetime_from_trace_data_name(trace_data_name: str):
-    trace_datetime = re.search(r'\d{14}', trace_data_name)
-    if trace_datetime:
-        trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d%H%M%S')
-    else:
-        trace_datetime = re.search(r'\d{8}-\d{6}', trace_data_name)
-        if trace_datetime:
-            trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d-%H%M%S')
+def get_datetime_from_report_name(report_dir: str):
+    # use the last or the 2nd last dir name for report name
+    report_dir_split = report_dir.split('/')
+    report_name_list = [report_dir_split[-1], report_dir_split[-2]] if len(report_dir_split) >= 2 else [report_dir_split[-1]]
+    trace_datetime = None
+    for report_name in report_name_list:
+        trace_datetime_re = re.search(r'\d{14}', report_name)
+        if trace_datetime_re:
+            trace_datetime = datetime.datetime.strptime(trace_datetime_re.group(), '%Y%m%d%H%M%S')
+            break
         else:
-            trace_datetime = 'unknown'
+            trace_datetime_re = re.search(r'\d{8}-\d{6}', report_name)
+            if trace_datetime_re:
+                trace_datetime = datetime.datetime.strptime(trace_datetime_re.group(), '%Y%m%d-%H%M%S')
+                break
+    if trace_datetime is None:
+        _logger.warning(f"Unable to get datetime for {report_dir}")
+        trace_datetime = 'unknown'
     return str(trace_datetime)
 
 
@@ -89,7 +97,7 @@ def get_trace_data_info_from_yaml(yaml_dir: str):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
             caret_record_info = yaml.safe_load(f_yaml)
             if 'autoware_version' in caret_record_info:
-                autoware_version = caret_record_info['autoware_version'].split('/')[-1]
+                autoware_version = str(caret_record_info['autoware_version']).split('/')[-1]
             if 'map' in caret_record_info:
                 map = caret_record_info['map']
             if 'route' in caret_record_info:
@@ -102,10 +110,11 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
     stats_file_dict = {}
 
     current_report_name = dest_dir.split('/')[-2]
-    current_report_type = current_report_name[:4]
+    current_report_type = current_report_name[:3]    # rep or val
     report_store_dir = report_store_dir.rstrip('/')
-    past_report_list = subprocess.run(['find', report_store_dir, '-name', f'{current_report_type}*', '-type', 'd'], text=True, stdout=subprocess.PIPE).stdout
+    past_report_list = subprocess.run(['find', report_store_dir, '-name', f'{current_report_type}*', '-type', 'd', '-maxdepth', '3'], text=True, stdout=subprocess.PIPE).stdout
     past_report_list = past_report_list.strip('\n').split('\n')
+    past_report_list = [e for e in past_report_list if 'validate_' not in e and e != '']
     if report_store_dir in past_report_list:
         past_report_list.remove(report_store_dir)
     past_report_list = sorted(past_report_list)
@@ -115,17 +124,18 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
 
     for report_dir in report_list:
         report_dir = report_dir.rstrip('/')
-        report_name = report_dir.split('/')[-1]
-        datetime = get_datetime_from_trace_data_name(report_name)
+        datetime = get_datetime_from_report_name(report_dir)
         autoware_version, map, route = get_trace_data_info_from_yaml(report_dir)
         if autoware_version != '':
             version = autoware_version + ', ' + datetime + ', ' + map + ', ' + route
         else:
             version = datetime
-
-        stats_path_list = glob.glob(f'{report_dir}/**/stats_path.yaml', recursive=True)
-        if len(stats_path_list) > 0 and os.path.isfile(stats_path_list[0]):
-            stats_file_dict[version] = stats_path_list[0]
+        stats_path = f'{report_dir}/analyze_path/stats_path.yaml'
+        if os.path.isfile(stats_path):
+            if version in stats_file_dict:
+                _logger.warning(f"New report found. version: {version}, report_dir: {report_dir}")
+                stats_file_dict.pop(version)
+            stats_file_dict[version] = stats_path
         else:
             _logger.error(f"Unable to find stats file for {report_dir}")
 
@@ -145,8 +155,8 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
             if report_store_mount_name != '' and report_store_mount_name in top_report_file:
                 # Create a new relpath assuming the current report is created under report_store_mount_name
-                path_report_file = '../../../../' + path_report_file.split(report_store_mount_name)[-1]
-                top_report_file = '../../../../' + top_report_file.split(report_store_mount_name)[-1]
+                path_report_file = '../../../..' + path_report_file.split(report_store_mount_name)[-1]
+                top_report_file = '../../../..' + top_report_file.split(report_store_mount_name)[-1]
         else:
             path_report_file = ''
             top_report_file = ''
@@ -163,8 +173,9 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
 
     target_path_name_list = []
     if len(stats_version_dict)> 0:
-        stats_latest = next(reversed(stats_version_dict.values()))
-        target_path_name_list = [target_path_info['target_path_name'] for target_path_info in stats_latest]
+        current_version = next(reversed(stats_version_dict))
+        curent_stats = stats_version_dict[current_version]
+        target_path_name_list = [target_path_info['target_path_name'] for target_path_info in curent_stats]
 
     # Create dataframe for each target path (index=version, column=avg, max, min, etc.)
     df_per_path = pd.DataFrame(columns=pd.MultiIndex.from_product([target_path_name_list, value_name_list]), dtype=float)
