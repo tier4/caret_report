@@ -53,9 +53,11 @@
               <th>{{ path_info.target_path_name}}</th>
               <th>Avg [ms]</th>
               <th>Median [ms]</th>
+              <th>Min [ms]</th>
               <th>95%ile [ms]</th>
               <th>99%ile [ms]</th>
               <th>Max [ms]</th>
+              <th>Std [ms]</th>
             </tr>
           </thead>
           <tbody>
@@ -63,18 +65,22 @@
               <td>Response Time (best)</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_avg|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_p50|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.best_min|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_p95|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_p99|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.best_max|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.best_std|float }}</td>
             </tr>
             {% if display_worst == true %}
             <tr>
               <td>Response Time (worst)</td>
               <td class="text-end">{{ '%0.3f' % path_info.worst_avg|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.worst_p50|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_min|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.worst_p95|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.worst_p99|float }}</td>
               <td class="text-end">{{ '%0.3f' % path_info.worst_max|float }}</td>
+              <td class="text-end">{{ '%0.3f' % path_info.worst_std|float }}</td>
             </tr>
             {% endif %}
           </tbody>

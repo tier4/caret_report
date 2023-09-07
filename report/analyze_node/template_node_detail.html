@@ -32,11 +32,15 @@
 
         <table class="table table-hover table-bordered">
           <tr class="table-primary text-center">
-            <th width="15%">Callback Name</th>
-            <th width="40%">Trigger</th>
-            <th width="15%">Avg {{ metrics_unit[loop.index0] }}</th>
-            <th width="15%">Min {{ metrics_unit[loop.index0] }}</th>
-            <th width="15%">Max {{ metrics_unit[loop.index0] }}</th>
+            <th width="10%">Callback Name</th>
+            <th width="30%">Trigger</th>
+            <th>Avg {{ metrics_unit[loop.index0] }}</th>
+            <th>Median {{ metrics_unit[loop.index0] }}</th>
+            <th>Min {{ metrics_unit[loop.index0] }}</th>
+            <th>95%ile {{ metrics_unit[loop.index0] }}</th>
+            <th>99%ile {{ metrics_unit[loop.index0] }}</th>
+            <th>Max {{ metrics_unit[loop.index0] }}</th>
+            <th>Std {{ metrics_unit[loop.index0] }}</th>
           </tr>
           {% for callback_name, callback_stats in node_info['callbacks'].items() %}
             {% if callback_stats[metrics] %}
@@ -49,8 +53,12 @@
                   {% endif %}
                 {% if callback_stats[metrics] and callback_stats[metrics]['filename_hist'] != '' %}
                   <td class="text-end">{{ '%.3f' % callback_stats[metrics]['avg']|float }}</td>
+                  <td class="text-end">{{ '%.3f' % callback_stats[metrics]['p50']|float }}</td>
                   <td class="text-end">{{ '%.3f' % callback_stats[metrics]['min']|float }}</td>
+                  <td class="text-end">{{ '%.3f' % callback_stats[metrics]['p95']|float }}</td>
+                  <td class="text-end">{{ '%.3f' % callback_stats[metrics]['p99']|float }}</td>
                   <td class="text-end">{{ '%.3f' % callback_stats[metrics]['max']|float }}</td>
+                  <td class="text-end">{{ '%.3f' % callback_stats[metrics]['std']|float }}</td>
                 {% else %}
                   <td>---</td>
                   <td>---</td>
