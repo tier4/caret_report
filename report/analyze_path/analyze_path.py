@@ -47,12 +47,14 @@ class Stats():
         self.target_path_name = target_path_name
         self.node_names = node_names
         self.best_avg = '---'
+        self.best_std = '---'
         self.best_min = '---'
         self.best_max = '---'
         self.best_p50 = '---'
         self.best_p95 = '---'
         self.best_p99 = '---'
         self.worst_avg = '---'
+        self.worst_std = '---'
         self.worst_min = '---'
         self.worst_max = '---'
         self.worst_p50 = '---'
@@ -76,6 +78,7 @@ class Stats():
         if len(df_best) > 1:
             self.best_min = round(float(np.min(df_best)), 3)
             self.best_max = round(float(np.max(df_best)), 3)
+            self.best_std = round(float(np.std(df_best)), 3)
             self.best_p50 = round(float(np.quantile(df_best, 0.5)), 3)
             self.best_p95 = round(float(np.quantile(df_best, 0.95)), 3)
             self.best_p99 = round(float(np.quantile(df_best, 0.99)), 3)
@@ -83,6 +86,7 @@ class Stats():
         self.worst_avg = round(float(np.average(df_worst)), 3)
         if len(df_worst) > 1:
             self.worst_min = round(float(np.min(df_worst)), 3)
+            self.worst_std = round(float(np.std(df_worst)), 3)
             self.worst_max = round(float(np.max(df_worst)), 3)
             self.worst_p50 = round(float(np.quantile(df_worst, 0.5)), 3)
             self.worst_p95 = round(float(np.quantile(df_worst, 0.95)), 3)
