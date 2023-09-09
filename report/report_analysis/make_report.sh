@@ -11,9 +11,13 @@ report_dir_name=output/report_"${trace_data_name}"
 
 mkdir -p "${report_dir_name}"
 
+# Save misc files
 if [ -f "${trace_data}"/caret_record_info.yaml ]; then
     cp "${trace_data}"/caret_record_info.yaml "${report_dir_name}"/.
 fi
+cp "${component_list_json}" "${report_dir_name}"/.
+cp "${target_path_json}" "${report_dir_name}"/.
+
 # Save parameters for report creation
 report_param_script="${script_path}"/common/report_param.py
 report_param_file="${report_dir_name}"/report_param.yaml
