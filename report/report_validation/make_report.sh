@@ -14,6 +14,19 @@ mkdir -p "${report_dir_name}"
 if [ -f "${trace_data}"/caret_record_info.yaml ]; then
     cp "${trace_data}"/caret_record_info.yaml "${report_dir_name}"/.
 fi
+# Save parameters for report creation
+report_param_script="${script_path}"/common/report_param.py
+report_param_file="${report_dir_name}"/report_param.yaml
+python3 ${report_param_script} ${report_param_file} ${trace_data_name} save start_strip "${start_strip}"
+python3 ${report_param_script} ${report_param_file} ${trace_data_name} save end_strip "${end_strip}"
+python3 ${report_param_script} ${report_param_file} ${trace_data_name} save max_node_depth "${max_node_depth}"
+python3 ${report_param_script} ${report_param_file} ${trace_data_name} save timeout "${timeout}"
+set +e
+caret_config_version=`git log -n 1 --format=%H`
+python3 ${report_param_script} ${report_param_file} ${trace_data_name} save caret_config_version "${caret_config_version}"
+caret_version=`ros2 caret version`
+python3 ${report_param_script} ${report_param_file} ${trace_data_name} save caret_version "${caret_version}"
+set -e
 
 # Generate topic expectation list
 python3 "${script_path}"/validate_topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --topic_list_filename="${topic_list_csv}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv"
