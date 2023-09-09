@@ -117,7 +117,6 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
     past_report_list = [e for e in past_report_list if 'validate_' not in e and e != '']
     if report_store_dir in past_report_list:
         past_report_list.remove(report_store_dir)
-    past_report_list = sorted(past_report_list)
 
     current_report = str(Path(dest_dir).parent)
     report_list = past_report_list + [current_report]
@@ -138,6 +137,15 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
             stats_file_dict[version] = stats_path
         else:
             _logger.error(f"Unable to find stats file for {report_dir}")
+        if report_dir == current_report:
+            current_version = version
+
+    stats_file_list = sorted(stats_file_dict.items())    # sort by version
+    stats_file_dict = {}
+    for key, value in stats_file_list:
+        stats_file_dict[key] = value
+        if key == current_version:          # use until the current version
+            break
 
     return stats_file_dict
 
@@ -150,7 +158,7 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
     for version, stats_file in stats_file_dict.items():
         path_report_file = Path(stats_file).parent.joinpath('index.html')
         top_report_file = Path(stats_file).parent.parent.joinpath('index.html')
-        if path_report_file.exists():
+        if path_report_file.exists() or True:    # Always create link
             path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
             if report_store_mount_name != '' and report_store_mount_name in top_report_file:
@@ -160,10 +168,6 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
         else:
             path_report_file = ''
             top_report_file = ''
-        # if top_report_file.exists() or True:  # do not check top_report_file because it's created later
-        #     top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
-        # else:
-        #     top_report_file = ''
         reportpath_version_dict[version] = (path_report_file, top_report_file)
 
     stats_version_dict = {}  # key: version, value: stats

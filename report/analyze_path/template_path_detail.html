@@ -27,6 +27,8 @@
 
       {% if "sensing" in path_info.target_path_name or "e2e" in path_info.target_path_name or "end" in path_info.target_path_name %}
         {% set display_worst = true %}
+        <!-- don't use worst case -->
+        {% set display_worst = false %}
       {% else %}
         {% set display_worst = false %}
       {% endif %}
