@@ -22,9 +22,9 @@ python3 ${report_param_script} ${report_param_file} ${trace_data_name} save end_
 python3 ${report_param_script} ${report_param_file} ${trace_data_name} save max_node_depth "${max_node_depth}"
 python3 ${report_param_script} ${report_param_file} ${trace_data_name} save timeout "${timeout}"
 set +e
-caret_config_version=`git log -n 1 --format=%H`
+caret_config_version=$(git log -n 1 --format=%H)
 python3 ${report_param_script} ${report_param_file} ${trace_data_name} save caret_config_version "${caret_config_version}"
-caret_version=`ros2 caret version`
+caret_version=$(ros2 caret version)
 python3 ${report_param_script} ${report_param_file} ${trace_data_name} save caret_version "${caret_version}"
 set -e
 
