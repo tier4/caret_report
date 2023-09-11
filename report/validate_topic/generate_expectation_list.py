@@ -106,9 +106,10 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
 
     make_destination_dir(dest_dir, False, _logger)
 
-    with open(f'{dest_dir}/{expectation_csv_filename}', 'w', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=expectation_list[0].keys())
-        writer.writerows(expectation_list)
+    if len(expectation_list) > 0:
+        with open(f'{dest_dir}/{expectation_csv_filename}', 'w', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=expectation_list[0].keys())
+            writer.writerows(expectation_list)
 
     with open(f'{dest_dir}/topic_list_unknown.csv', 'w', encoding='utf-8') as csvfile:
         csvfile.writelines('\n'.join(unknown_topic_name_list))

@@ -112,7 +112,7 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
     current_report_name = dest_dir.split('/')[-2]
     current_report_type = current_report_name[:3]    # rep or val
     report_store_dir = report_store_dir.rstrip('/')
-    past_report_list = subprocess.run(['find', report_store_dir, '-name', f'{current_report_type}*', '-type', 'd', '-maxdepth', '3'], text=True, stdout=subprocess.PIPE).stdout
+    past_report_list = subprocess.run(['find', report_store_dir, '-maxdepth', '3', '-name', f'{current_report_type}*'], text=True, stdout=subprocess.PIPE).stdout
     past_report_list = past_report_list.strip('\n').split('\n')
     past_report_list = [e for e in past_report_list if 'validate_' not in e and e != '']
     if report_store_dir in past_report_list:
