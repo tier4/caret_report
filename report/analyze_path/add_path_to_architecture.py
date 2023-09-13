@@ -53,7 +53,7 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
                 result_obj['result'] = arch.search_paths(*node_names, max_node_depth=max_node_depth,
                                                          node_filter=node_filter, communication_filter=comm_filter)
             except:
-                _logger.error(f'path not found: {node_names}')
+                _logger.warning(f'path not found')
                 result_obj['result'] = []
 
         result_obj = {}
@@ -66,14 +66,17 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
 
     # Find all candidate paths which have the same nodes as JSON
     found_path_list = []
-    node_name_list = []
+    original_node_name_list = []
     for node_topic in target_path_json:
         node_name = get_node_topic(node_topic)[0]
         if '[' not in node_name and '.' not in node_name and '*' not in node_name:
             # collect node name which doesn't contain regular expressions
-            node_name_list.append(node_name)
+            original_node_name_list.append(node_name)
+    _logger.info(f'node_name_list = {original_node_name_list}')
+
     for depth in range(1, max_node_depth):
-        found_path_list = search_paths_with_timeout(arch, node_name_list, max_node_depth=depth, timeout=timeout)
+        _logger.info(f'depth = {depth}')
+        found_path_list = search_paths_with_timeout(arch, original_node_name_list, max_node_depth=depth, timeout=timeout)
         if found_path_list is None:
             _logger.warning('Timeout happens. Please specify more details for the path')
             break
@@ -194,7 +197,6 @@ def add_path_to_architecture(args, arch: Architecture):
     # Find path from architecture
     for target_path in target_path_json['target_path_list']:
         target_path_name = target_path['name']
-        _logger.info(f'Processing: {target_path_name}')
 
         # target path can be separated into multiple blocks
         if 'path_blocks' in target_path:
@@ -204,6 +206,7 @@ def add_path_to_architecture(args, arch: Architecture):
 
         found_path_list = []
         for block_index, target_path_block in enumerate(target_path_info):
+            _logger.info(f'<Processing: {target_path_name}_{block_index}>')
             found_path_block_list = find_path(arch, comm_filter, node_filter, target_path_block, max_node_depth=args.max_node_depth, timeout=args.timeout)
             if len(found_path_block_list) > 0:
                 _logger.info(f'Target path found: {target_path_name}_{block_index}')
