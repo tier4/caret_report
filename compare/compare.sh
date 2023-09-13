@@ -25,7 +25,7 @@ fi
 
 echo "[compare] 2/3 yaml files"
 diff "${report_dir_1}" "${report_dir_2}" -r \
-    --exclude=*.html --exclude=*.git --exclude=*.png \
+    --exclude=*.html --exclude=*.git --exclude=*.png --exclude=caret_report_info.yaml \
     -I "filename_messageflow:*" \
     >diff_yaml.txt
 
