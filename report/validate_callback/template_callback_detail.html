@@ -65,8 +65,6 @@
                 <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
                 {% elif stats['result_status'] == 'FAILED' %}
                 <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
-                {% elif stats['result_status'] == 'NOT_MEASURED' %}
-                <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
                 {% else %}
                 {{ stats['result_status']}}
                 {% endif %}

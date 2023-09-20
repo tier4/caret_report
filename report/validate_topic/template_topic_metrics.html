@@ -32,9 +32,9 @@
       <ul>
         <li><i class="bi bi-check-square-fill" style = "color:green;"></i> PASS: {{ summary_dict['cnt_pass'] }}</li>
         <li><i class="bi bi-x-circle-fill" style = "color:red;"></i> FAILED: {{ summary_dict['cnt_failed'] }}</li>
-        <li><i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }}</li>
-        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }} (Topics whose operational cycle is not defined)</li>
         <li>DONT_CARE: {{ summary_dict['cnt_dont_care'] }} (Topics whose operational cycle is not constant)</li>
+        <li>OUT_OF_SCOPE: {{ summary_dict['cnt_out_of_scope'] }} (Topics whose operational cycle is not defined)</li>
+        <li>NOT_MEASURED: {{ summary_dict['cnt_not_measured'] }} (Topics which are not measured)</li>
       </ul>
 
       <p class="text-end"><b>*: Measured / Acceptable(Expected)</b></p>
@@ -89,8 +89,6 @@
               <i class="bi bi-check-square-fill" style = "color:green;"></i> {{ stats['result_status']}}
               {% elif stats['result_status'] == 'FAILED' %}
               <i class="bi bi-x-circle-fill" style = "color:red;"></i> {{ stats['result_status']}}
-              {% elif stats['result_status'] == 'NOT_MEASURED' %}
-              <i class="bi bi-exclamation-triangle-fill" style = "color:#DDDD00;"></i> {{ stats['result_status']}}
               {% else %}
               {{ stats['result_status']}}
               {% endif %}
