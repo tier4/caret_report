@@ -304,7 +304,7 @@ def validate_topic(app: Application, component_pair: tuple[str], target_comm_lis
 
     for expectation in expectation_validated_list.copy():
         # Comm was invalid. Try to validate using subscription callback
-        if metrics == Metrics.LATENCY:
+        if metrics != Metrics.FREQUENCY:
             continue
         _logger.debug(f'Processing as callback({metrics.name}): {component_pair}, {expectation.topic_name}: {expectation.publish_node_name} -> {expectation.subscribe_node_name}')
         stats, df = create_stats_for_callback_as_topic(app, component_pair, expectation, metrics, dest_dir)

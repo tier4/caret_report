@@ -124,13 +124,15 @@ def analyze_callback(callback_name: str, callback_legend: str, metrics_str: str,
     return callback_stats
 
 
-def analyze_node(node: Node, dest_dir: str) -> dict:
+def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200) -> dict:
     """Analyze a node"""
+    _logger.info(f'Processing {node.node_name}')
     all_metrics_dict = {'Frequency': Plot.create_frequency_timeseries_plot,
                         'Period': Plot.create_period_timeseries_plot,
                         'Latency': Plot.create_latency_timeseries_plot}
     node_stats = StatsNode()
 
+    callbacks_for_graph = node.callbacks  # callbacks with high frequency is not displayed
     for metrics, method in all_metrics_dict.items():
         try:
             p_timeseries = method(node.callbacks)
@@ -154,10 +156,18 @@ def analyze_node(node: Node, dest_dir: str) -> dict:
                                               metrics_str, df_callback, metrics, dest_dir)
             node_stats.set_callback(node.get_callback(callback_name), get_callback_legend(node, callback_name, False),
                                     metrics, callback_stats)
+            if metrics == 'Frequency':
+                freq = callback_stats.avg
+                if isinstance(freq, int) or isinstance(freq, float):
+                    if freq >= threshold_freq_not_display:
+                        _logger.info(f'{callback_name} is not displayed in graph')
+                        callbacks_for_graph.remove(node.get_callback(callback_name))
 
         if has_valid_data:
             try:
-                p_timeseries = p_timeseries.figure()
+                if metrics != 'Frequency':
+                    p_timeseries = method(callbacks_for_graph)
+                p_timeseries = p_timeseries.figure()  # note: this API is heavy when callback runs with high frequency
                 p_timeseries.frame_width = 1000
                 p_timeseries.frame_height = 350
                 p_timeseries.y_range.start = 0

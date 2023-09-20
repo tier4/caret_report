@@ -116,7 +116,7 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
 
 
 def create_topic_from_callback(callback_list_filename: str, dest_dir: str, topic_list_filename):
-    topic_list = []
+    topic_list = {}
     with open(callback_list_filename, 'r', encoding='utf-8') as csvfile:
         for row in csv.DictReader(csvfile, ['node_name', 'callback_type', 'trigger', 'value']):
             try:
@@ -127,10 +127,20 @@ def create_topic_from_callback(callback_list_filename: str, dest_dir: str, topic
                 _logger.error(f"Error at reading: {row}")
                 continue
             if callback_type == 'subscription_callback':
-                topic_list.append({'topic_name': trigger, 'value': value})
+                if trigger not in topic_list:
+                    topic_list[trigger] = value
+                else:
+                    if isinstance(value, int) or isinstance(value, float):
+                        topic_list[trigger] = value
+                    else:
+                        # don't update
+                        pass
+
+    topic_list = sorted(topic_list.items())
     with open(f'{dest_dir}/{topic_list_filename}', 'w', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=['topic_name', 'value'])
-        writer.writerows(topic_list)
+        writer = csv.writer(csvfile)
+        for topic_name, value in topic_list:
+            writer.writerow([topic_name, value])
 
 
 def parse_arg():
