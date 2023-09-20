@@ -41,13 +41,13 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
 
     ComponentManager().initialize(component_list_json, _logger)
 
-    if not os.path.isfile(topic_list_filename):
-        _logger.error(f"Unable to read expectation csv: {topic_list_filename}")
+    if not os.path.isfile(f'{dest_dir}/{topic_list_filename}'):
+        _logger.error(f"Unable to read expectation csv: {dest_dir}/{topic_list_filename}")
         return
 
     unknown_topic_name_list = []
 
-    with open(topic_list_filename, 'r', encoding='utf-8') as csvfile:
+    with open(f'{dest_dir}/{topic_list_filename}', 'r', encoding='utf-8') as csvfile:
         all_comms = arch.communications
         expectation_list = []
         for row in csv.DictReader(csvfile, ['topic_name', 'value']):
@@ -104,8 +104,6 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
             ComponentManager().check_if_ignore(expectation['subscribe_node_name']):
             expectation_list.remove(expectation)
 
-    make_destination_dir(dest_dir, False, _logger)
-
     if len(expectation_list) > 0:
         with open(f'{dest_dir}/{expectation_csv_filename}', 'w', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=expectation_list[0].keys())
@@ -117,6 +115,24 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
     _logger.info(f'<<< Generate topic list finish >>>')
 
 
+def create_topic_from_callback(callback_list_filename: str, dest_dir: str, topic_list_filename):
+    topic_list = []
+    with open(callback_list_filename, 'r', encoding='utf-8') as csvfile:
+        for row in csv.DictReader(csvfile, ['node_name', 'callback_type', 'trigger', 'value']):
+            try:
+                callback_type = row['callback_type']
+                trigger = row['trigger']
+                value = row['value']
+            except:
+                _logger.error(f"Error at reading: {row}")
+                continue
+            if callback_type == 'subscription_callback':
+                topic_list.append({'topic_name': trigger, 'value': value})
+    with open(f'{dest_dir}/{topic_list_filename}', 'w', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=['topic_name', 'value'])
+        writer.writerows(topic_list)
+
+
 def parse_arg():
     """Parse arguments"""
     parser = argparse.ArgumentParser(
@@ -124,6 +140,7 @@ def parse_arg():
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--report_directory', type=str, default='')
     parser.add_argument('--component_list_json', type=str, default='component_list.json')
+    parser.add_argument('--callback_list_filename', type=str, default='callback_list.csv')
     parser.add_argument('--topic_list_filename', type=str, default='topic_list.csv')
     parser.add_argument('--expectation_csv_filename', type=str, default='expectation_topic.csv')
     parser.add_argument('-v', '--verbose', action='store_true', default=True)
@@ -140,8 +157,12 @@ def main():
     dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
     logger.debug(f'component_list_json: {args.component_list_json}')
+    logger.debug(f'callback_list_filename: {args.callback_list_filename}')
     logger.debug(f'topic_list_filename: {args.topic_list_filename}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
+
+    make_destination_dir(dest_dir, False, _logger)
+    create_topic_from_callback(args.callback_list_filename, dest_dir, args.topic_list_filename)
 
     arch = Architecture('lttng', str(args.trace_data[0]))
     # lttng = read_trace_data(args.trace_data[0], 0, 0)

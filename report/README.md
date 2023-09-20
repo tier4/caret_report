@@ -57,7 +57,6 @@ export draw_all_message_flow=false                   # Flag to a create message 
 export report_store_dir=./output                     # Path to past report store if exist
 export report_store_mount_name=report_store_dir      # (optional) Links to past reports will be created assuming the current report is stored in the directory named this paraemter
 export callback_list_csv=./callback_list.csv         # Path to setting file
-export topic_list_csv=./topic_list.csv               # Path to setting file
 export note_text_top=./note_text_top.txt             # Path to setting file
 export note_text_bottom=./note_text_bottom.txt       # Path to setting file
 export start_strip=120                               # strip time at the start [sec] for analysis
@@ -213,24 +212,4 @@ sh ${script_path}/make_report.sh
 # "node name" , "callback type" , "trigger" , "expected Hz"
 /sensing/lidar/top/velodyne_convert_node,subscription_callback,/sensing/lidar/top/velodyne_packets,10
 /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner,timer_callback,100000000,10
-```
-
-### topic_list.csv
-
-- This file contains expected topic frequency for validation
-- Scripts using this file
-  - validate_topic
-- The following files are generated in the created report directory, and they are helpful to update this file
-  - topic_list_unknown.csv
-    - The list of topics which are described in topic_list.csv, but are actually not used
-  - topic_list_new.csv
-    - The list of topics which are not described in topic_list.csv, but are actually used
-  - topic_list_deleted.csv
-    - The list of topics which are described in topic_list.csv, but are actually not used
-
-```csv
-# "topic name" , "expected Hz"
-/sensing/gnss/ublox/nav_sat_fix,5
-/sensing/lidar/left/velodyne_packets,10
-/sensing/lidar/top/velodyne_packets,10
 ```
