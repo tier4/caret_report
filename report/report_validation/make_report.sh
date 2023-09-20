@@ -18,7 +18,6 @@ fi
 cp "${component_list_json}" "${report_dir_name}"/.
 cp "${target_path_json}" "${report_dir_name}"/.
 cp "${callback_list_csv}" "${report_dir_name}"/.
-cp "${topic_list_csv}" "${report_dir_name}"/.
 
 # Save parameters for report creation
 report_info_access="${script_path}"/common/report_info_access.py
@@ -40,14 +39,14 @@ python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save 
 set -e
 
 # Generate topic expectation list
-python3 "${script_path}"/validate_topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --topic_list_filename="${topic_list_csv}" --expectation_csv_filename="${topic_list_csv}_pubsub.csv"
+python3 "${script_path}"/validate_topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --callback_list_filename="${callback_list_csv}" --topic_list_filename=topic_list.csv --expectation_csv_filename=topic_list_pubsub.csv
 
 # Validate Callback
 python3 "${script_path}"/validate_callback/validate_callback.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${callback_list_csv}" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/validate_callback/make_report_validate_callback.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
 # Validate Topic
-python3 "${script_path}"/validate_topic/validate_topic.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${report_dir_name}/${topic_list_csv}_pubsub.csv" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
+python3 "${script_path}"/validate_topic/validate_topic.py "${trace_data}" --report_directory="${report_dir_name}" --component_list_json="${component_list_json}" --expectation_csv_filename="${report_dir_name}/topic_list_pubsub.csv" --start_strip "${start_strip}" --end_strip "${end_strip}" -f -v
 python3 "${script_path}"/validate_topic/make_report_validate_topic.py "${report_dir_name}" --component_list_json="${component_list_json}"
 
 # Trace Validation failure

@@ -198,7 +198,8 @@ for (let component_name in summary_callback_dict_component_metrics) {
   let cnt_total = cnt_pass + cnt_failed;
   let class_name = "pass";
   if (cnt_not_measured > 0) {
-    class_name = "not_measured";
+    // Do not show not_measured because expectation list contains old topics/calbacks
+    // class_name = "not_measured";
   }
   if (cnt_failed > 0) {
     class_name = "failed";

@@ -25,7 +25,6 @@ export draw_all_message_flow=false
 export report_store_dir=./output
 # export report_store_mount_name=report_store_dir
 export callback_list_csv=./callback_list.csv
-export topic_list_csv=./topic_list.csv
 export note_text_top=./note_text_top.txt
 export note_text_bottom=./note_text_bottom.txt
 export start_strip=25
