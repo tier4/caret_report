@@ -29,7 +29,6 @@ RUN wget -nv https://github.com/mozilla/geckodriver/releases/download/v0.31.0/ge
     tar xzvf geckodriver-v0.31.0-linux64.tar.gz && \
     mv geckodriver /usr/local/bin/.
 
-ADD "https://www.random.org/sequences/?min=1&max=52&col=1&format=plain&rnd=new" /dev/null
 # Build CARET (Galactic)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3003

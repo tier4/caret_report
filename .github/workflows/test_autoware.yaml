@@ -66,8 +66,25 @@ jobs:
           push: false
           load: true
           tags: ${{ env.TAGS }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          no-cache: true
+
+      - name: Get package list
+        if: ${{ matrix.do_test }}
+        run: |
+          docker run --rm \
+              --user $(id -u):$(id -g) \
+              -v `pwd`:/work \
+              ${{ env.TAGS }} \
+              bash -c "dpkg -l > /work/package_list.txt; pip3 list > /work/pip_list.txt"
+
+      - name: Upload package list
+        if: ${{ matrix.do_test }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: package_list
+          path: |
+            package_list.txt
+            pip_list.txt
 
       - name: Get reference trace data
         if: ${{ matrix.do_test }}
