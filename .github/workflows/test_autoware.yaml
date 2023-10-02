@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -29,44 +29,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3.1.0
 
-      # - name: Cache Docker layers
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: /tmp/.buildx-cache
-      #     key: ${{ github.ref }}-${{ github.sha }}
-      #     restore-keys: |
-      #       ${{ github.ref }}-${{ github.sha }}
-      #       ${{ github.ref }}
-      #       refs/head/main
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-
       - name: Create tag
         run: |
           SHA=${{ github.sha }}
           TAG=${IMAGE}_${{ matrix.ros_version }}:$(TZ=UTC-9 date '+%Y%m')-${SHA:0:7}
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            LATEST=${IMAGE}:latest
-            # echo "TAGS=$TAG,$LATEST" >> $GITHUB_ENV
-            echo "TAGS=$TAG" >> $GITHUB_ENV
-          else
-            echo "TAGS=$TAG" >> $GITHUB_ENV
-          fi
+          echo "TAGS=$TAG" >> $GITHUB_ENV
           echo TAG $TAG
 
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v4
-        with:
-          context: ./docker
-          file: ./docker/${{ matrix.dockerfile }}
-          builder: ${{ steps.buildx.outputs.name }}
-          push: false
-          load: true
-          tags: ${{ env.TAGS }}
-          no-cache: true
+      - name: Docker Build
+        run: |
+          docker pull osrf/ros:${{ matrix.ros_version }}-desktop
+          docker image build --no-cache=true -t ${{ env.TAGS }} -f ./docker/${{ matrix.dockerfile }} ./docker
 
       - name: Get package list
         if: ${{ matrix.do_test }}
