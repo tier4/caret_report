@@ -3,7 +3,7 @@ FROM osrf/ros:galactic-desktop
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        locales=2.31-0ubuntu9.9 \
+        locales \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -13,11 +13,11 @@ ENV LANG en_US.UTF-8
 # Install requirements for CARET_report (Flask, selenium, firefox, geckodriver, Helvetica alternative font)
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        unzip=6.0-25ubuntu1 \
-        wget=1.20.3-1ubuntu2 \
-        nano=4.8-1ubuntu1 \
+        unzip \
+        wget \
+        nano \
         firefox \
-        python3-pip=20.0.2-5ubuntu1.9 \
+        python3-pip \
         fonts-urw-base35=20170801.1-3 \
         && \
     apt-get clean && \

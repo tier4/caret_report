@@ -12,7 +12,7 @@ RUN chmod u+s /usr/sbin/useradd \
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        locales=2.35-0ubuntu3.3 \
+        locales \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -22,11 +22,11 @@ ENV LANG en_US.UTF-8
 # Install requirements for CARET_report (Flask, selenium, firefox, geckodriver, Helvetica alternative font)
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        unzip=6.0-26ubuntu3 \
-        wget=1.21.2-2ubuntu1 \
-        nano=6.2-1 \
-        libdbus-glib-1-2=0.112-2build1 \
-        python3-pip=22.0.2+dfsg-1 \
+        unzip \
+        wget \
+        nano \
+        libdbus-glib-1-2 \
+        python3-pip \
         fonts-urw-base35=20200910-1 \
         && \
     apt-get clean && \
