@@ -25,25 +25,14 @@ RUN apt-get update -y && \
         unzip \
         wget \
         nano \
-        libdbus-glib-1-2 \
         python3-pip \
         fonts-urw-base35=20200910-1 \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Firefox is not installed by apt in Ubuntu 22.04. installed libdbus-glib by apt above
-RUN wget -nv "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" -O firefox.tar.bz2 && \
-    tar jxf firefox.tar.bz2 && \
-    mv firefox /opt && \
-    ln -s /opt/firefox/firefox /usr/local/bin/firefox
-
-RUN pip3 install --no-cache-dir Flask==2.1.0 selenium==4.4.3 pandas==1.5.0 bokeh==2.4.1 pandas-bokeh==0.5.5
+RUN pip3 install --no-cache-dir Flask==2.1.0 bokeh==2.4.1 pandas-bokeh bottleneck anytree
 RUN pip3 install --no-cache-dir werkzeug==2.3.7  # workaround (https://github.com/Azure-Samples/azure-search-openai-demo/issues/694)
-
-RUN wget -nv https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz && \
-    tar xzvf geckodriver-v0.31.0-linux64.tar.gz && \
-    mv geckodriver /usr/local/bin/.
 
 # Build CARET (Humble)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
