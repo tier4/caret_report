@@ -18,9 +18,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - ros_version: galactic
-            dockerfile: Dockerfile_galactic.dockerfile
-            do_test: false
+          # - ros_version: galactic
+          #   dockerfile: Dockerfile_galactic.dockerfile
+          #   do_test: false
           - ros_version: humble
             dockerfile: Dockerfile
             do_test: true
