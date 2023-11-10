@@ -24,7 +24,7 @@ import math
 import yaml
 import numpy as np
 import pandas as pd
-from bokeh.plotting import Figure, figure
+from bokeh.plotting import figure
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
@@ -89,7 +89,7 @@ class StatsNode():
         self.callbacks[callback.callback_name][metrics] = vars(callback_stats)
 
 
-def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
+def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> figure:
     """Draw histogram graph"""
     def _to_histogram(data: pd.DataFrame, binsize: int, density: bool):
         binsize = max(1, binsize)
@@ -103,7 +103,7 @@ def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> Figure:
         _logger.info(f'len = 0: {title}')
         return None
     hist, bin_edges = _to_histogram(data, (max(data) - min(data)) / 30, False)
-    figure_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom', title=title,
+    figure_hist = figure(width=600, height=400, active_scroll='wheel_zoom', title=title,
                          x_axis_label=metrics_str, y_axis_label='Count')
     figure_hist.quad(top=hist, bottom=0, left=bin_edges[:-1], right=bin_edges[1:],
                      line_color='white', alpha=0.5)
@@ -168,8 +168,6 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
                 if metrics != 'Frequency':
                     p_timeseries = method(callbacks_for_graph)
                 p_timeseries = p_timeseries.figure()  # note: this API is heavy when callback runs with high frequency
-                p_timeseries.frame_width = 1000
-                p_timeseries.frame_height = 350
                 p_timeseries.y_range.start = 0
                 filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
                 export_graph(p_timeseries, dest_dir, filename_timeseries, with_png=False, logger=_logger)

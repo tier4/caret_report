@@ -266,8 +266,6 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
             timeseries_plot = get_node_plot(callbacks, metrics)
             figure = timeseries_plot.figure()  # note: this API is heavy when callback runs with high frequency
             figure.y_range.start = 0
-            figure.width = 1000
-            figure.height = 350
             export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
         except:
             _logger.info(f'Failed to export graph')

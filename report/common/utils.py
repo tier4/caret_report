@@ -29,7 +29,7 @@ import yaml
 from caret_analyze import Application, Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.runtime.node import Node
-from bokeh.plotting import Figure, save
+from bokeh.plotting import figure, save
 from bokeh.resources import CDN
 from bokeh.io import export_png
 
@@ -118,7 +118,7 @@ def get_callback_legend(node: Node, callback_name: str, with_trigger: bool=True)
     return callback_legend
 
 
-def export_graph(figure: Figure, dest_dir: str, filename: str, title='graph',
+def export_graph(figure: figure, dest_dir: str, filename: str, title='graph',
                  with_png=True, logger: logging.Logger = None) -> None:
     """Export graph as html and image"""
     save(figure, filename=f'{dest_dir}/{filename}.html', title=title, resources=CDN)

@@ -23,7 +23,7 @@ import logging
 import statistics
 import yaml
 import pandas as pd
-from bokeh.plotting import Figure, figure
+from bokeh.plotting import figure
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.communication import Communication
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
@@ -135,7 +135,7 @@ def match_pubsub_freq(pub_freq: tuple[list[float], list[int]],
 
 
 def make_graph(pub_freq: tuple[list[float], list[int]],
-               sub_freq: tuple[list[float], list[int]]) -> Figure:
+               sub_freq: tuple[list[float], list[int]]) -> figure:
     """Create timeseries graph(pub/sub freq vs time)"""
     graph = figure(x_axis_label="Time [sec]", y_axis_label="Frequency [Hz]",
                    width=1000, height=300, active_scroll='wheel_zoom')

@@ -28,7 +28,6 @@ import csv
 import yaml
 import numpy as np
 import pandas as pd
-from bokeh.plotting import Figure, figure
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
@@ -235,8 +234,6 @@ def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metri
         timeseries_plot = get_comm_plot(comm, metrics)
         figure = timeseries_plot.figure()
         figure.y_range.start = 0
-        figure.width = 1000
-        figure.height = 350
         graph_filename = metrics.name + comm.topic_name.replace('/', '_') + comm.publish_node_name.replace('/', '_') + comm.subscribe_node_name.replace('/', '_')
         graph_filename = graph_filename[:250]
         df_comm = timeseries_plot.to_dataframe()
