@@ -15,7 +15,7 @@
 - The following software is also needed
 
 ```sh
-pip3 install Flask==2.1.0 anytree
+pip3 install 'Flask>=3' anytree
 ```
 
 ## FAQ and Troubleshooting

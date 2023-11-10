@@ -21,6 +21,7 @@ import argparse
 from pathlib import Path
 import yaml
 import flask
+from markupsafe import Markup
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import ComponentManager
 from common.utils import read_note_text
@@ -87,7 +88,7 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
             trigger = callback_info['subscribe_topic_name'] if callback_info['period_ns'] == -1 else f'{float(callback_info["period_ns"]) / 1e6} [ms]'
             callback_latency_list.append({
                 'link': f'analyze_node/{component_name}/index{node_name.replace("/", "_")}.html',
-                'displayname': flask.Markup(node_name + '<br>' + callback_info['callback_legend'] + ': ' + trigger),
+                'displayname': Markup(node_name + '<br>' + callback_info['callback_legend'] + ': ' + trigger),
                 'avg': callback_info['Latency']['avg'] if isinstance(callback_info['Latency']['avg'], (int, float)) else 0,
                 'min': callback_info['Latency']['min'] if isinstance(callback_info['Latency']['min'], (int, float)) else 0,
                 'max': callback_info['Latency']['max'] if isinstance(callback_info['Latency']['max'], (int, float)) else 0,
