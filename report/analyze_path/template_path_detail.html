@@ -45,7 +45,8 @@
       <a href="{{ path_info.filename_messageflow }}.html" target="_blank"> message flow (full) </a>
       <br />
       {% endif %}
-      <iframe src="{{ path_info.filename_messageflow_short }}.html" frameborder="0" width="100%" height="{{ path_info.graph_height }}" scrolling="yes"></iframe>
+      {% set height_messageflow_graph = path_info.node_names|length * 2 * 18 + 50 + 100 %}
+      <iframe src="{{ path_info.filename_messageflow_short }}.html" frameborder="0" width="100%" height="{{ height_messageflow_graph }}" scrolling="yes"></iframe>
 
       <h4>Response Time</h4>
       <div class="w-75">
@@ -96,22 +97,22 @@
       <div class="row">
         <div class="col">
           {% if display_worst == true %}
-          <iframe src="{{ path_info.filename_hist_worst }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
-          {% else %}
-          <iframe src="{{ path_info.filename_hist_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
-          {% endif %}
-        </div>
-        <div class="col">
-          {% if display_worst == true %}
           <iframe src="{{ path_info.filename_timeseries_worst }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
           {% else %}
           <iframe src="{{ path_info.filename_timeseries_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
           {% endif %}
         </div>
+        <div class="col">
+          {% if display_worst == true %}
+          <iframe src="{{ path_info.filename_hist_worst }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
+          {% else %}
+          <iframe src="{{ path_info.filename_hist_best }}.html" frameborder="0" width="620" height="420" scrolling="yes"></iframe>
+          {% endif %}
+        </div>
       </div>
 
       <div>
-        {% set height_stacked_bar_graph = path_info.node_names|length * 60 + 400 %}
+        {% set height_stacked_bar_graph = path_info.node_names|length * 2 * 30 + 400 %}
         {% if display_worst == true %}
         <iframe src="{{ path_info.filename_stacked_bar_worst }}.html" frameborder="0" width="100%" height="{{ height_stacked_bar_graph }}" scrolling="yes"></iframe>
         {% else %}

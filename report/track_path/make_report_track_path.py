@@ -28,7 +28,7 @@ import subprocess
 import yaml
 import numpy as np
 import pandas as pd
-from bokeh.plotting import Figure, figure, show, save
+from bokeh.plotting import figure, save
 from bokeh.models import FixedTicker
 from bokeh.resources import CDN
 import flask
@@ -197,11 +197,11 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
     filename_path_dict = {}
     for target_path_name in target_path_name_list:
         df = df_per_path[target_path_name]
-        fig = figure(plot_width=1000, plot_height=400, active_scroll='wheel_zoom',
+        fig = figure(width=1000, height=400, active_scroll='wheel_zoom',
                      x_axis_label='Version', y_axis_label='Response Time [ms]')
         for index, value_name in enumerate(value_name_list):
-            fig.line(x=range(len(df.index)), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], line_width=2)
-            fig.circle(x=range(len(df.index)), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], size=5)
+            fig.line(x=list(range(len(df.index))), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], line_width=2)
+            fig.circle(x=list(range(len(df.index))), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], size=5)
         fig.y_range.start = 0
         fig.xaxis.major_label_overrides = {i: df.index[i].replace(', ', '\n', 2) for i in range(len(df.index))}
         fig.xaxis.major_label_orientation = -math.pi/2
@@ -216,8 +216,9 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
         stats = {}
         df = df_per_path[target_path_name]
         for index, value_name in enumerate(value_name_list):
+            df_row = df.loc[:, value_name]
             stats[value_name_display_list[index]] = {
-                version: df[value_name][version_index] for version_index, version in enumerate(reportpath_version_dict.keys())}
+                version: df_row.iloc[version_index] for version_index, version in enumerate(reportpath_version_dict.keys())}
         stats_path_dict[target_path_name] = stats
 
     return reportpath_version_dict, stats_path_dict, filename_path_dict

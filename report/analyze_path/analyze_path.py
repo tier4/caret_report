@@ -26,7 +26,7 @@ import logging
 import json
 import yaml
 import numpy as np
-from bokeh.plotting import Figure, figure
+from bokeh.plotting import figure
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.record import ResponseTime
@@ -69,7 +69,6 @@ class Stats():
         self.filename_hist_worst = ''
         self.filename_timeseries_worst = ''
         self.filename_stacked_bar_worst = ''
-        self.graph_height = ''
 
     def calc_stats(self, df_best: np.ndarray, df_worst: np.ndarray):
         df_best = df_best * 1e-6    # nsec -> msec
@@ -92,7 +91,7 @@ class Stats():
             self.worst_p95 = round(float(np.quantile(df_worst, 0.95)), 3)
             self.worst_p99 = round(float(np.quantile(df_worst, 0.99)), 3)
 
-    def store_filename(self, target_path_name: str, save_long_graph: bool, graph_height: int):
+    def store_filename(self, target_path_name: str, save_long_graph: bool):
         if save_long_graph:
             self.filename_messageflow = f'{target_path_name}_messageflow'
         self.filename_messageflow_short = f'{target_path_name}_messageflow_short'
@@ -102,13 +101,12 @@ class Stats():
         self.filename_hist_worst = f'{target_path_name}_hist_worst'
         self.filename_timeseries_worst = f'{target_path_name}_timeseries_worst'
         self.filename_stacked_bar_worst = f'{target_path_name}_stacked_bar_worst'
-        self.graph_height = graph_height
 
 
-def draw_response_time(response_time: ResponseTime, target_path_name, with_best=True, with_worst=True) -> tuple[Figure, Figure]:
-    fig_timeseries = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
+def draw_response_time(response_time: ResponseTime, target_path_name, with_best=True, with_worst=True) -> tuple[figure, figure]:
+    fig_timeseries = figure(width=600, height=400, active_scroll='wheel_zoom',
                  x_axis_label='Response Time [sec]', y_axis_label='Response Time [ms]')
-    fig_hist = figure(plot_width=600, plot_height=400, active_scroll='wheel_zoom',
+    fig_hist = figure(width=600, height=400, active_scroll='wheel_zoom',
                     x_axis_label='Response Time [ms]', y_axis_label='Count')
 
     df_best = response_time.to_best_case_timeseries()
@@ -209,16 +207,13 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     graph_short = Plot.create_message_flow_plot(target_path,
                 lstrip_s=duration / 2,
                 rstrip_s=max(duration / 2 - (3 + 0.1), 0)).figure(full_legends=True)
-    message_flow_width = 1200
-    message_flow_height = max(200, 18 * len(target_path.child_names) + 50)
-    graph_short.max_width = graph_short.min_width = message_flow_width  # width doesn't work for some reasons...
-    graph_short.max_height = graph_short.min_height = message_flow_height  # height doesn't work for some reasons...
+    message_flow_height = 18 * len(target_path.child_names) + 50
+    graph_short.frame_height = message_flow_height  # height doesn't work for some reasons...
     export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name, with_png=False)
 
     if args.message_flow:
         graph = Plot.create_message_flow_plot(target_path).figure(full_legends=True)
-        graph.max_width = graph.min_width = message_flow_width
-        graph.max_height = graph.min_height = message_flow_height
+        graph.frame_height = message_flow_height
         export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name, with_png=False)
 
     _logger.info('  response time')
@@ -245,7 +240,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
         df_worst = response_time.to_worst_case_timeseries()
         stats.calc_stats(df_best[1], df_worst[1])
 
-    stats.store_filename(target_path_name, args.message_flow, message_flow_height + 17)
+    stats.store_filename(target_path_name, args.message_flow)
     _logger.info(f'---{target_path_name}---')
     _logger.debug(vars(stats))
 
