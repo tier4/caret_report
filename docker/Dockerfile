@@ -31,8 +31,7 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir Flask==2.1.0 bokeh==2.4.1 pandas-bokeh bottleneck anytree
-RUN pip3 install --no-cache-dir werkzeug==2.3.7  # workaround (https://github.com/Azure-Samples/azure-search-openai-demo/issues/694)
+RUN pip3 install --no-cache-dir 'Flask>=3' anytree
 
 # Build CARET (Humble)
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
