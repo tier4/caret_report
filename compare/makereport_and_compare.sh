@@ -29,7 +29,7 @@ mv report_session-20231114050140 reference_result
 # Create report
 trace_data="$(pwd)"/session-20231114050140
 sample_autoware_dir="${script_path}"/sample_autoware
-start_strip=25
+start_strip=0
 end_strip=0
 component_list_json=component_list.json
 target_path_json=target_path.json
