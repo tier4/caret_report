@@ -187,7 +187,10 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
             fig_timeseries.y_range.start = 0
             fig_timeseries.legend.visible = False
             fig_hist.legend.visible = False
-            fig_hist.height = fig_timeseries.height = 400
+            fig_timeseries.frame_width = 500  # width doesn't work for some reasons...
+            fig_timeseries.frame_height = 320  # height doesn't work for some reasons...
+            fig_hist.width = 600
+            fig_hist.height = 400
             export_graph(fig_timeseries, dest_dir, target_path_name + f'_timeseries_{case_str}', target_path_name, with_png=False)
             export_graph(fig_hist, dest_dir, target_path_name + f'_hist_{case_str}', target_path_name, with_png=False)
             try:

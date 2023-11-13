@@ -102,6 +102,7 @@ def analyze_callback(df_callback: pd.DataFrame, node: Node, callback_name: str,
         callback = node.get_callback(callback_name)
         fig_hist = method_hist(callback).figure()
         fig_hist.height = 350
+        fig_hist.width = 600
         fig_hist.legend.visible = False
         fig_hist.title = get_callback_legend(node, callback_name)
         filename_hist = f"{metrics}{callback.callback_name.replace('/', '_')}_hist"[:250]
