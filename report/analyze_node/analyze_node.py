@@ -39,6 +39,10 @@ from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
 
+# Suppress log for Bokeh "BokehUserWarning: out of range integer may result in loss of precision"
+import warnings
+warnings.simplefilter("ignore")
+
 _logger: logging.Logger = None
 
 
@@ -89,36 +93,20 @@ class StatsNode():
         self.callbacks[callback.callback_name][metrics] = vars(callback_stats)
 
 
-def draw_histogram(data: pd.DataFrame, title: str, metrics_str: str) -> figure:
-    """Draw histogram graph"""
-    def _to_histogram(data: pd.DataFrame, binsize: int, density: bool):
-        binsize = max(1, binsize)
-        range_min = math.floor(min(data) / binsize) * binsize
-        range_max = math.ceil(max(data) / binsize) * binsize + binsize
-        bin_num = math.ceil((range_max - range_min) / binsize)
-        return np.histogram(
-            data, bins=bin_num, range=(range_min, range_max), density=density)
-
-    if len(data) == 0:
-        _logger.info(f'len = 0: {title}')
-        return None
-    hist, bin_edges = _to_histogram(data, (max(data) - min(data)) / 30, False)
-    figure_hist = figure(width=600, height=400, active_scroll='wheel_zoom', title=title,
-                         x_axis_label=metrics_str, y_axis_label='Count')
-    figure_hist.quad(top=hist, bottom=0, left=bin_edges[:-1], right=bin_edges[1:],
-                     line_color='white', alpha=0.5)
-    return figure_hist
-
-
-def analyze_callback(callback_name: str, callback_legend: str, metrics_str: str,
-                     data: pd.DataFrame, metrics: str, dest_dir_path: str):
+def analyze_callback(df_callback: pd.DataFrame, node: Node, callback_name: str,
+                     metrics: str, dest_dir_path: str, method_hist):
     """Analyze a callback"""
     callback_stats = StatsCallback()
-    callback_stats.calculate(data)
-    figure_hist = draw_histogram(data, callback_legend, metrics_str)
-    if figure_hist:
-        filename_hist = f"{metrics}{callback_name.replace('/', '_')}_hist"[:250]
-        export_graph(figure_hist, dest_dir_path, filename_hist, with_png=False, logger=_logger)
+    callback_stats.calculate(df_callback)
+    if len(df_callback) > 0:
+        callback = node.get_callback(callback_name)
+        fig_hist = method_hist(callback).figure()
+        fig_hist.height = 350
+        fig_hist.width = 600
+        fig_hist.legend.visible = False
+        fig_hist.title = get_callback_legend(node, callback_name)
+        filename_hist = f"{metrics}{callback.callback_name.replace('/', '_')}_hist"[:250]
+        export_graph(fig_hist, dest_dir_path, filename_hist, with_png=False, logger=_logger)
         callback_stats.set_filename_hist(filename_hist)
 
     return callback_stats
@@ -127,15 +115,15 @@ def analyze_callback(callback_name: str, callback_legend: str, metrics_str: str,
 def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200) -> dict:
     """Analyze a node"""
     _logger.info(f'Processing {node.node_name}')
-    all_metrics_dict = {'Frequency': Plot.create_frequency_timeseries_plot,
-                        'Period': Plot.create_period_timeseries_plot,
-                        'Latency': Plot.create_latency_timeseries_plot}
+    all_metrics_dict = {'Frequency':(Plot.create_frequency_timeseries_plot, Plot.create_frequency_histogram_plot),
+                        'Period': (Plot.create_period_timeseries_plot, Plot.create_period_histogram_plot),
+                        'Latency': (Plot.create_latency_timeseries_plot, Plot.create_latency_histogram_plot)}
     node_stats = StatsNode()
 
     callbacks_for_graph = node.callbacks  # callbacks with high frequency is not displayed
     for metrics, method in all_metrics_dict.items():
         try:
-            p_timeseries = method(node.callbacks)
+            p_timeseries = method[0](node.callbacks)
             measurement = p_timeseries.to_dataframe()
         except:
             _logger.info(f'This node is not called: {node.node_name}')
@@ -152,8 +140,7 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
             df_callback = trail_df(df_callback, end_strip_num=2, start_strip_num=1)
             if len(df_callback) > 0:
                 has_valid_data = True
-            callback_stats = analyze_callback(callback_name, get_callback_legend(node, callback_name),
-                                              metrics_str, df_callback, metrics, dest_dir)
+            callback_stats = analyze_callback(df_callback, node, callback_name, metrics, dest_dir, method[1])
             node_stats.set_callback(node.get_callback(callback_name), get_callback_legend(node, callback_name, False),
                                     metrics, callback_stats)
             if metrics == 'Frequency':
@@ -166,11 +153,11 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
         if has_valid_data:
             try:
                 if metrics != 'Frequency':
-                    p_timeseries = method(callbacks_for_graph)
-                p_timeseries = p_timeseries.figure()  # note: this API is heavy when callback runs with high frequency
-                p_timeseries.y_range.start = 0
+                    p_timeseries = method[0](callbacks_for_graph)
+                fig_timeseries = p_timeseries.figure()  # note: this API is heavy when callback runs with high frequency
+                fig_timeseries.y_range.start = 0
                 filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
-                export_graph(p_timeseries, dest_dir, filename_timeseries, with_png=False, logger=_logger)
+                export_graph(fig_timeseries, dest_dir, filename_timeseries, with_png=False, logger=_logger)
                 node_stats.set_filename_timeseries(metrics, filename_timeseries)
             except:
                 _logger.info(f'Failed to export graph')

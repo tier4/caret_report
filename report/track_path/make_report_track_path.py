@@ -92,17 +92,19 @@ def get_datetime_from_report_name(report_dir: str):
 
 def get_trace_data_info_from_yaml(yaml_dir: str):
     caret_record_info_path = Path(yaml_dir).joinpath('caret_record_info.yaml')
-    autoware_version, map, route = '', '', ''
+    autoware_version, env, route = '', '', ''
     if os.path.exists(caret_record_info_path):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
             caret_record_info = yaml.safe_load(f_yaml)
             if 'autoware_version' in caret_record_info:
                 autoware_version = str(caret_record_info['autoware_version']).split('/')[-1]
-            if 'map' in caret_record_info:
-                map = caret_record_info['map']
+            if 'env' in caret_record_info:
+                env = caret_record_info['env']
+            elif 'map' in caret_record_info:
+                env = caret_record_info['map']
             if 'route' in caret_record_info:
                 route = caret_record_info['route']
-    return autoware_version, map, route
+    return autoware_version, env, route
 
 
 def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str,str]]:
@@ -124,9 +126,9 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
     for report_dir in report_list:
         report_dir = report_dir.rstrip('/')
         datetime = get_datetime_from_report_name(report_dir)
-        autoware_version, map, route = get_trace_data_info_from_yaml(report_dir)
+        autoware_version, env, route = get_trace_data_info_from_yaml(report_dir)
         if autoware_version != '':
-            version = autoware_version + ', ' + datetime + ', ' + map + ', ' + route
+            version = datetime + ', ' + autoware_version + ', ' + env + ',' + route
         else:
             version = datetime
         stats_path = f'{report_dir}/analyze_path/stats_path.yaml'

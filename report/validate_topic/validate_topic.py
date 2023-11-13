@@ -44,6 +44,10 @@ from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
 
+# Suppress log for Bokeh "BokehUserWarning: out of range integer may result in loss of precision"
+import warnings
+warnings.simplefilter("ignore")
+
 _logger: logging.Logger = None
 
 

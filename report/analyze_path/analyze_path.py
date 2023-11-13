@@ -26,10 +26,8 @@ import logging
 import json
 import yaml
 import numpy as np
-from bokeh.plotting import figure
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
-from caret_analyze.record import ResponseTime
 from caret_analyze.plot import Plot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, make_destination_dir, read_trace_data, export_graph, round_yaml
@@ -38,6 +36,10 @@ from common.utils import create_logger, make_destination_dir, read_trace_data, e
 from logging import getLogger, FATAL
 logger = getLogger()
 logger.setLevel(FATAL)
+
+# Suppress log for Bokeh "BokehUserWarning: out of range integer may result in loss of precision"
+import warnings
+warnings.simplefilter("ignore")
 
 _logger: logging.Logger = None
 
@@ -71,8 +73,6 @@ class Stats():
         self.filename_stacked_bar_worst = ''
 
     def calc_stats(self, df_best: np.ndarray, df_worst: np.ndarray):
-        df_best = df_best * 1e-6    # nsec -> msec
-        df_worst = df_worst * 1e-6
         self.best_avg = round(float(np.average(df_best)), 3)
         if len(df_best) > 1:
             self.best_min = round(float(np.min(df_best)), 3)
@@ -101,48 +101,6 @@ class Stats():
         self.filename_hist_worst = f'{target_path_name}_hist_worst'
         self.filename_timeseries_worst = f'{target_path_name}_timeseries_worst'
         self.filename_stacked_bar_worst = f'{target_path_name}_stacked_bar_worst'
-
-
-def draw_response_time(response_time: ResponseTime, target_path_name, with_best=True, with_worst=True) -> tuple[figure, figure]:
-    fig_timeseries = figure(width=600, height=400, active_scroll='wheel_zoom',
-                 x_axis_label='Response Time [sec]', y_axis_label='Response Time [ms]')
-    fig_hist = figure(width=600, height=400, active_scroll='wheel_zoom',
-                    x_axis_label='Response Time [ms]', y_axis_label='Count')
-
-    df_best = response_time.to_best_case_timeseries()
-    if len(df_best[1]) == 0:
-        _logger.warning(f'No data: {target_path_name}')
-        return fig_timeseries, fig_hist
-
-    df_best_val = df_best[1] * 1e-6
-    offset = df_best[0][0]
-    df_best_x = [(t - offset) * 1e-9 for t in df_best[0]]
-    df_worst = response_time.to_worst_case_timeseries()
-    df_worst_val = df_worst[1] * 1e-6
-    df_worst_x = [(t - offset) * 1e-9 for t in df_worst[0]]
-    # print(f'best:  avg={df_best_val.mean():.1f}ms, max={df_best_val.max():.1f}ms')
-    # print(f'worst: avg={df_worst_val.mean():.1f}ms, max={df_worst_val.max():.1f}ms')
-    fig_timeseries.y_range.start = 0
-    if with_best:
-        fig_timeseries.line(x=df_best_x, y=df_best_val, color='blue', legend_label='best')
-    if with_worst:
-        fig_timeseries.line(x=df_worst_x, y=df_worst_val, color='red', legend_label='worst')
-    fig_timeseries.xaxis.major_label_overrides = {0: datetime.datetime.fromtimestamp(offset*10**-9).strftime('%Y-%m-%d %H:%M:%S')}
-    fig_timeseries.legend.click_policy = 'hide'
-
-    hist_best, bin_edges_best = response_time.to_best_case_histogram(10**7)  # binsize = 10ms
-    bin_edges_best = bin_edges_best * 10**-6  # nanoseconds to milliseconds
-    hist_worst, bin_edges_worst = response_time.to_worst_case_histogram(10**7)  # binsize = 10ms
-    bin_edges_worst = bin_edges_worst * 10**-6  # nanoseconds to milliseconds
-    if with_best:
-        fig_hist.quad(top=hist_best, bottom=0, left=bin_edges_best[:-1], right=bin_edges_best[1:],
-                    line_color='white', alpha=0.5, color='blue', legend_label='best')
-    if with_worst:
-        fig_hist.quad(top=hist_worst, bottom=0, left=bin_edges_worst[:-1], right=bin_edges_worst[1:],
-                line_color='white', alpha=0.5, color='red', legend_label='worst')
-    fig_hist.legend.click_policy = 'hide'
-
-    return fig_timeseries, fig_hist
 
 
 def get_messageflow_durationtime(records: RecordsInterface, check_by_input: bool = True):
@@ -220,25 +178,27 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     if get_messageflow_durationtime(records, check_by_input=False) is None:
         _logger.warning(f'    No-traffic in the path: {target_path_name}')
     else:
-        response_time = ResponseTime(records)
-        fig_timeseries, fig_hist = draw_response_time(response_time, target_path_name, with_worst=False)
-        export_graph(fig_timeseries, dest_dir, target_path_name + '_timeseries_best', target_path_name, with_png=False)
-        export_graph(fig_hist, dest_dir, target_path_name + '_hist_best', target_path_name, with_png=False)
-
-        fig_timeseries, fig_hist = draw_response_time(response_time, target_path_name)
-        export_graph(fig_timeseries, dest_dir, target_path_name + '_timeseries_worst', target_path_name, with_png=False)
-        export_graph(fig_hist, dest_dir, target_path_name + '_hist_worst', target_path_name, with_png=False)
-
-        try:
-            Plot.create_response_time_stacked_bar_plot(target_path, case='worst').save(export_path=f'{dest_dir}/{target_path_name}_stacked_bar_worst.html', full_legends=True)
-            Plot.create_response_time_stacked_bar_plot(target_path, case='best').save(export_path=f'{dest_dir}/{target_path_name}_stacked_bar_best.html', full_legends=True)
-        except Exception as e:
-            _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}')
-            _logger.warning(str(e))
-
-        df_best = response_time.to_best_case_timeseries()
-        df_worst = response_time.to_worst_case_timeseries()
-        stats.calc_stats(df_best[1], df_worst[1])
+        df_response_time = {}
+        for case_str in ['best', 'worst', 'all']:
+            plot_timeseries = Plot.create_response_time_timeseries_plot(target_path, case=case_str)
+            fig_timeseries = plot_timeseries.figure(full_legends=False)
+            df_response_time[case_str] = plot_timeseries.to_dataframe()
+            fig_hist = Plot.create_response_time_histogram_plot(target_path, case=case_str).figure(full_legends=False)
+            fig_timeseries.y_range.start = 0
+            fig_timeseries.legend.visible = False
+            fig_hist.legend.visible = False
+            fig_timeseries.frame_width = 500  # width doesn't work for some reasons...
+            fig_timeseries.frame_height = 320  # height doesn't work for some reasons...
+            fig_hist.width = 600
+            fig_hist.height = 400
+            export_graph(fig_timeseries, dest_dir, target_path_name + f'_timeseries_{case_str}', target_path_name, with_png=False)
+            export_graph(fig_hist, dest_dir, target_path_name + f'_hist_{case_str}', target_path_name, with_png=False)
+            try:
+                Plot.create_response_time_stacked_bar_plot(target_path, case=case_str).save(export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
+            except Exception as e:
+                _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}, {case_str}')
+                _logger.warning(str(e))
+        stats.calc_stats(df_response_time['best'].iloc[:, 1], df_response_time['worst'].iloc[:, 1])
 
     stats.store_filename(target_path_name, args.message_flow)
     _logger.info(f'---{target_path_name}---')
