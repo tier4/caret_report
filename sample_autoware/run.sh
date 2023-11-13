@@ -10,10 +10,10 @@ export report_store_dir=./output
 # export report_store_mount_name=report_store_dir
 export note_text_top=./note_text_top.txt
 export note_text_bottom=./note_text_bottom.txt
-export start_strip=25
+export start_strip=0
 export end_strip=0
 
-export trace_data=~/work/tracedata/universe/autoware_launch_trace_20221227-150253_universe_rosbag
+export trace_data=~/work/caret_tracedata/universe/session-20231114050140/session-20231114050140
 sh ../report/report_analysis/make_report.sh
 
 # Create validation report
@@ -27,8 +27,8 @@ export report_store_dir=./output
 export callback_list_csv=./callback_list.csv
 export note_text_top=./note_text_top.txt
 export note_text_bottom=./note_text_bottom.txt
-export start_strip=25
+export start_strip=0
 export end_strip=0
 
-export trace_data=~/work/tracedata/universe/autoware_launch_trace_20221227-150253_universe_rosbag
+export trace_data=~/work/caret_tracedata/universe/session-20231114050140/session-20231114050140
 sh ../report/report_validation/make_report.sh
