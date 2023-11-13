@@ -1,15 +1,10 @@
 {
-  "ignore_topic_list": [
-    "/tf",
-    "/tf_static",
-    "/diagnostics"
-  ],
+  "ignore_topic_list": ["/tf", "/tf_static", "/diagnostics"],
   "ignore_node_list": [
     "/_ros2cli_/*",
     "/launch_ros_*",
     "/planning/scenario_planning/external_velocity_limit_selector",
     "/control/shift_decider"
-
   ],
   "target_path_list": [
     {
@@ -56,7 +51,10 @@
     {
       "name": "component_planning",
       "path": [
-        ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+        [
+          "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+          "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+        ],
         "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
         "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
         "/planning/planning_validator"
@@ -90,7 +88,10 @@
           ]
         ],
         [
-          ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+          [
+            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+            "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+          ],
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
           "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
           "/planning/planning_validator"
@@ -125,7 +126,10 @@
       "name": "e2e_planning-to-control",
       "path_blocks": [
         [
-          ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+          [
+            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+            "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+          ],
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
           "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
           "/planning/planning_validator"
