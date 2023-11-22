@@ -20,6 +20,9 @@
   <body>
     <div class="container">
       <h1>{{ title }}</h1>
+      {% if link_back != "" %}
+      <p><a href="../index.html">{{ link_back }}</a></p>
+      {% endif %}
 
       <hr />
       {% if note_text_top %} {{ note_text_top | safe }} {% endif %}
