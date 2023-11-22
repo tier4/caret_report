@@ -17,6 +17,9 @@
     <div class="container">
       <!-- <div> -->
       <h1>{{ title }}</h1>
+      {% if link_back != "" %}
+      <p><a href={{ link_back }}>Back</a></p>
+      {% endif %}
 
       <hr />
       {% if note_text_top %} {{ note_text_top | safe }} {% endif %}

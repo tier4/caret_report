@@ -17,6 +17,7 @@ Script to make report page
 import os
 import sys
 import argparse
+from distutils.util import strtobool
 from pathlib import Path
 import glob
 import math
@@ -152,24 +153,25 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
     return stats_file_dict
 
 
-def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: str):
+def make_stats(dest_dir: str, report_store_dir: str, relpath_from_report_store_dir: bool):
     """Make stats"""
     stats_file_dict = make_stats_file_dict(dest_dir, report_store_dir)
 
     reportpath_version_dict = {}   # key: version, value: path to report
     for version, stats_file in stats_file_dict.items():
-        path_report_file = Path(stats_file).parent.joinpath('index.html')
-        top_report_file = Path(stats_file).parent.parent.joinpath('index.html')
-        if path_report_file.exists() or True:    # Always create link
+        path_report_file = Path(stats_file).parent.joinpath('index.html').resolve()
+        top_report_file = Path(stats_file).parent.parent.joinpath('index.html').resolve()
+        if relpath_from_report_store_dir and report_store_dir in str(top_report_file):
+            # Create a relpath assuming the current report is created under report_store_dir
+            path_report_file = os.path.relpath(path_report_file, Path(report_store_dir).resolve())
+            top_report_file = os.path.relpath(top_report_file, Path(report_store_dir).resolve())
+            relpath_report_store_dir = Path('../../../../')
+            path_report_file = relpath_report_store_dir.joinpath(path_report_file)
+            top_report_file = relpath_report_store_dir.joinpath(top_report_file)
+        else:
+            # Create a relpath from dest_dir
             path_report_file = os.path.relpath(path_report_file, Path(dest_dir).resolve())
             top_report_file = os.path.relpath(top_report_file, Path(dest_dir).resolve())
-            if report_store_mount_name != '' and report_store_mount_name in top_report_file:
-                # Create a new relpath assuming the current report is created under report_store_mount_name
-                path_report_file = '../../../..' + path_report_file.split(report_store_mount_name)[-1]
-                top_report_file = '../../../..' + top_report_file.split(report_store_mount_name)[-1]
-        else:
-            path_report_file = ''
-            top_report_file = ''
         reportpath_version_dict[version] = (path_report_file, top_report_file)
 
     stats_version_dict = {}  # key: version, value: stats
@@ -226,9 +228,9 @@ def make_stats(dest_dir: str, report_store_dir: str, report_store_mount_name: st
     return reportpath_version_dict, stats_path_dict, filename_path_dict
 
 
-def make_report(dest_dir: str, report_store_dir: str, report_store_mount_name: str):
+def make_report(dest_dir: str, report_store_dir: str, relpath_from_report_store_dir: bool):
     """Make report page"""
-    reportpath_version_dict, stats_path_dict, filename_path_dict = make_stats(dest_dir, report_store_dir, report_store_mount_name)
+    reportpath_version_dict, stats_path_dict, filename_path_dict = make_stats(dest_dir, report_store_dir, relpath_from_report_store_dir)
     destination_path = f'{dest_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_track_path.html'
     render_page(reportpath_version_dict, stats_path_dict, filename_path_dict, destination_path, template_path)
@@ -240,7 +242,7 @@ def parse_arg():
                 description='Script to make report page')
     parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('report_store_dir', nargs=1, type=str)
-    parser.add_argument('--report_store_mount_name', type=str, default='')
+    parser.add_argument('--relpath_from_report_store_dir', type=strtobool, default=False)
     args = parser.parse_args()
     return args
 
@@ -251,13 +253,13 @@ def main():
 
     dest_dir = args.dest_dir[0] + '/track_path'
     report_store_dir = args.report_store_dir[0]
-    report_store_mount_name = args.report_store_mount_name
+    relpath_from_report_store_dir = args.relpath_from_report_store_dir
     _logger.info(f'dest_dir: {dest_dir}')
     _logger.info(f'report_store_dir: {report_store_dir}')
-    _logger.info(f'report_store_mount_name: {report_store_mount_name}')
+    _logger.info(f'relpath_from_report_store_dir: {relpath_from_report_store_dir}')
     os.makedirs(dest_dir, exist_ok=True)
 
-    make_report(dest_dir, report_store_dir, report_store_mount_name)
+    make_report(dest_dir, report_store_dir, relpath_from_report_store_dir)
     print('<<< OK. report_track_path is created >>>')
 
 

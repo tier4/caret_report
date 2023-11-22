@@ -47,7 +47,7 @@ export target_path_json=target_path.json
 export max_node_depth=20
 export timeout=120
 export draw_all_message_flow=false
-export report_store_mount_name=report_store_dir
+export relpath_from_report_store_dir=false
 
 # Run script
 docker run -it --rm \
@@ -65,6 +65,6 @@ docker run -it --rm \
     -e max_node_depth \
     -e timeout \
     -e draw_all_message_flow \
-    -e report_store_mount_name \
+    -e relpath_from_report_store_dir \
     caret/caret_report
 ```

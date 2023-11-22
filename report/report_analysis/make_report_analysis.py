@@ -30,7 +30,7 @@ app = flask.Flask(__name__)
 
 
 def render_page(destination_path, template_path, component_list, stats_node_dict,
-                stats_path, note_text_top, note_text_bottom):
+                stats_path, note_text_top, note_text_bottom, num_back):
     """Render html page"""
     title = f'Analysis report'
     with app.app_context():
@@ -43,7 +43,8 @@ def render_page(destination_path, template_path, component_list, stats_node_dict
                 stats_node_dict=stats_node_dict,
                 stats_path=stats_path,
                 note_text_top=note_text_top,
-                note_text_bottom=note_text_bottom
+                note_text_bottom=note_text_bottom,
+                link_back='../' * num_back + 'index.html' if num_back > 0 else ''
             )
 
         with open(destination_path, 'w', encoding='utf-8') as f_html:
@@ -120,7 +121,7 @@ def make_report(args, index_filename: str='index'):
     destination_path = f'{dest_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
     render_page(destination_path, template_path, component_list, stats_node_dict,
-                stats_path, note_text_top, note_text_bottom)
+                stats_path, note_text_top, note_text_bottom, args.num_back)
 
 
 def parse_arg():
@@ -131,6 +132,7 @@ def parse_arg():
     parser.add_argument('dest_dir', nargs=1, type=str)
     parser.add_argument('--note_text_top', type=str, default='')
     parser.add_argument('--note_text_bottom', type=str, default='')
+    parser.add_argument('--num_back', type=int, default=0)
     args = parser.parse_args()
     return args
 
