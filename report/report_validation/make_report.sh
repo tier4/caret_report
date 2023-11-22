@@ -19,25 +19,6 @@ cp "${component_list_json}" "${report_dir_name}"/.
 cp "${target_path_json}" "${report_dir_name}"/.
 cp "${callback_list_csv}" "${report_dir_name}"/.
 
-# Save parameters for report creation
-report_info_access="${script_path}"/common/report_info_access.py
-caret_report_info_file="${report_dir_name}"/caret_report_info.yaml
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save start_strip "${start_strip}"
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save end_strip "${end_strip}"
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save max_node_depth "${max_node_depth}"
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save timeout "${timeout}"
-set +e
-caret_version=$(ros2 caret version)
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save caret_version "${caret_version}"
-caret_config_version=$(git log -n 1 --format=%H)
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save caret_config_version "${caret_config_version}"
-current_dir=$(pwd)
-cd ${script_path}
-caret_report_version=$(git log -n 1 --format=%H)
-cd ${current_dir}
-python3 ${report_info_access} ${caret_report_info_file} ${trace_data_name} save caret_report_version "${caret_report_version}"
-set -e
-
 # Generate topic expectation list
 python3 "${script_path}"/validate_topic/generate_expectation_list.py "${trace_data}" --report_directory="${report_dir_name}" --callback_list_filename="${callback_list_csv}" --topic_list_filename=topic_list.csv --expectation_csv_filename=topic_list_pubsub.csv
 
