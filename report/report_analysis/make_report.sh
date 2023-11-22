@@ -37,6 +37,6 @@ python3 "${script_path}"/analyze_node/make_report_analyze_node.py "${report_dir_
 # python3 "${script_path}"/check_callback_timer/make_report_timer.py "${report_dir_name}"
 
 # Make top page
-python3 "${script_path}"/report_analysis/make_report_analysis.py "${trace_data}" "${report_dir_name}" --note_text_top "${note_text_top}" --note_text_bottom "${note_text_bottom}"
+python3 "${script_path}"/report_analysis/make_report_analysis.py "${trace_data}" "${report_dir_name}" --note_text_top "${note_text_top}" --note_text_bottom "${note_text_bottom}" --num_back 3
 
 echo "<<< OK. All report pages are created >>>"

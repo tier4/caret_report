@@ -33,7 +33,7 @@ app = flask.Flask(__name__)
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 
-def make_report(report_dir: str, component_list_json: str, note_text_top, note_text_bottom, link_back: str):
+def make_report(report_dir: str, component_list_json: str, note_text_top, note_text_bottom, num_back):
     ComponentManager().initialize(component_list_json)
 
     summary_callback_dict = {
@@ -78,7 +78,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
                 summary_topic_dict=summary_topic_dict,
                 note_text_top=note_text_top,
                 note_text_bottom=note_text_bottom,
-                link_back=link_back
+                link_back='../' * num_back + 'index.html' if num_back > 0 else ''
             )
 
         with open(destination_path, 'w', encoding='utf-8') as f_html:
@@ -97,7 +97,7 @@ def parse_arg():
     parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--note_text_top', type=str, default='')
     parser.add_argument('--note_text_bottom', type=str, default='')
-    parser.add_argument('--link_back', type=str, default='Back')
+    parser.add_argument('--num_back', type=int, default=0)
     args = parser.parse_args()
     return args
 
@@ -109,7 +109,7 @@ def main():
     trace_data_dir = args.trace_data[0].rstrip('/')
     dest_dir = args.dest_dir[0].rstrip('/')
     note_text_top, note_text_bottom = read_note_text(trace_data_dir, dest_dir, args.note_text_top, args.note_text_bottom)
-    make_report(dest_dir, args.component_list_json, note_text_top, note_text_bottom, args.link_back)
+    make_report(dest_dir, args.component_list_json, note_text_top, note_text_bottom, args.num_back)
     print('<<< OK. report page is created >>>')
 
 
