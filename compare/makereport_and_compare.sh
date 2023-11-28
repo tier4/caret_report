@@ -37,7 +37,8 @@ max_node_depth=20
 timeout=120
 draw_all_message_flow=false
 report_store_dir=./output
-export trace_data start_strip end_strip component_list_json target_path_json max_node_depth timeout draw_all_message_flow report_store_dir
+relpath_from_report_store_dir=false
+export trace_data start_strip end_strip component_list_json target_path_json max_node_depth timeout draw_all_message_flow report_store_dir relpath_from_report_store_dir
 cd "${sample_autoware_dir}" || exit
 sh "${script_path}"/report/report_analysis/make_report.sh
 mv output/report_session-20231114050140 "${work_dir}"/.

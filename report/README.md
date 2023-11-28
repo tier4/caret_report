@@ -16,7 +16,7 @@
   - Open `index.html` to see a report
 
 ```sh
-script_path=../CARET_report/report/report_analysis   # Path to CARET_report
+script_path=<path-to-caret_report>/report/report_analysis   # Path to CARET_report
 export component_list_json=./component_list.json     # Path to setting file
 export target_path_json=./target_path.json           # Path to setting file
 export max_node_depth=20                             # The number of depth to search path. Increase it in case path is not found
@@ -48,7 +48,7 @@ sh ${script_path}/make_report.sh
   - Open `index.html` to see a report
 
 ```sh
-script_path=../CARET_report/report/report_validation # Path to CARET_report
+script_path=<path-to-caret_report>/report/report_validation   # Path to CARET_report
 export component_list_json=./component_list.json     # Path to setting file
 export target_path_json=./target_path.json           # Path to setting file
 export max_node_depth=20                             # The number of depth to search path. Increase it in case path is not found
