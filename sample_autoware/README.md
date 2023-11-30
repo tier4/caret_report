@@ -19,7 +19,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 
 ## 2. Install CARET
 
-- Follow [the instruction](https://tier4.github.io/CARET_doc/latest/installation/installation/)
+- Follow [the instruction](https://tier4.github.io/caret_doc/latest/installation/installation/)
 - Note:
   - This explanation assumes you install CARET to `${caret_dir}` (e.g. `export caret_dir=~/ros2_caret_ws/` )
 
@@ -30,7 +30,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
     - Autoware uses lots of nodes and topics. If all nodes and communications are traced, it causes trace data lost
     - So, it's better to ignore nodes and topics which are not necessary for your analysis
   - [caret_autoware_launch](https://github.com/tier4/caret_autoware_launch) package
-    - Basically, you need to manually start trace session by yourself as described [here](https://tier4.github.io/CARET_doc/latest/recording/recording/)
+    - Basically, you need to manually start trace session by yourself as described [here](https://tier4.github.io/caret_doc/latest/recording/recording/)
     - It's handy to wrap Autoware launcher to automatically start CARET trace session
 
 ```sh
@@ -52,7 +52,7 @@ cd ${autoware_dir}
 rm -rf build/ install/ log/
 
 source ${caret_dir}/install/local_setup.bash
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off -DCMAKE_CXX_FLAGS="-w"
 ```
 
 ### Check compilation (optional)
@@ -61,7 +61,7 @@ The following command checks if Autoware is built with CARET. It outputs warning
 
 ```sh
 cd ${autoware_dir}
-ros2 caret check_caret_rclcpp -w ./
+ros2 caret check_caret_rclcpp ./
 
 # Expected result
 INFO    : 2023-01-17 14:12:28 | All packages are built using caret-rclcpp.
@@ -136,11 +136,11 @@ ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
 
 - The following command checks if trace data is valid
 - Please refer to the following explanation for warning messages
-  - <https://tier4.github.io/CARET_doc/latest/recording/validating/>
+  - <https://tier4.github.io/caret_doc/latest/recording/validating/>
 - Also, the size of the trace data is usually 1 MByte per second. It's recommended to check trace data size, as well
 
 ```sh
-ros2 caret check_ctf -d ~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss
+ros2 caret check_ctf ~/.ros/tracing/session_yyyymmddhhmmss
 ```
 
 ## 6. Create analysis report
@@ -165,7 +165,7 @@ sh ./run.sh
 
 ### General
 
-<https://tier4.github.io/CARET_doc/latest/faq/faq>
+<https://tier4.github.io/caret_doc/latest/faq/faq>
 
 ### Build
 
