@@ -76,19 +76,19 @@ def read_trace_data(trace_data: str, start_strip: float, end_strip: float,
     ])
 
 
-# def read_trace_data(trace_data: str, start_point: float, duration: float,
-#                     force_conversion=False) -> Lttng:
-#     """Read LTTng trace data"""
-#     if start_point > 0 and duration == 0:
-#         return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-#             LttngEventFilter.strip_filter(start_point, None)
-#         ])
-#     elif start_point >= 0 and duration > 0:
-#         return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
-#             LttngEventFilter.duration_filter(duration, start_point)
-#         ])
-#     else:
-#         return Lttng(trace_data, force_conversion=force_conversion)
+def read_trace_data_duration(trace_data: str, start_point: float, duration: float,
+                    force_conversion=False) -> Lttng:
+    """Read LTTng trace data"""
+    if start_point > 0 and duration == 0:
+        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+            LttngEventFilter.strip_filter(start_point, None)
+        ])
+    elif start_point >= 0 and duration > 0:
+        return Lttng(trace_data, force_conversion=force_conversion, event_filters=[
+            LttngEventFilter.duration_filter(duration, start_point)
+        ])
+    else:
+        return Lttng(trace_data, force_conversion=force_conversion)
 
 
 def get_callback_legend(node: Node, callback_name: str, with_trigger: bool=True) -> str:

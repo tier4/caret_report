@@ -213,3 +213,20 @@ sh ${script_path}/make_report.sh
 /sensing/lidar/top/velodyne_convert_node,subscription_callback,/sensing/lidar/top/velodyne_packets,10
 /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner,timer_callback,100000000,10
 ```
+
+## Others
+
+### Find the valid start/end of the trace data
+
+- [./find_valid_duration](./find_valid_duration)
+- This script finds the duration from all the path begin to min(specified_duration, data end)
+- The result is written to `start_strip.txt` and `end_strip.txt`
+
+```sh
+script_path=<path-to-caret_report>/report/find_valid_duration   # Path to CARET_report
+export component_list_json=./component_list.json                # Path to setting file
+export target_path_json=./target_path.json                      # Path to setting file
+export duration=60                                              # duration to load trace data
+export trace_data=~/.ros/tracing/session-yyyymmddhhmmss         # Path to CARET trace data (CTF file)
+sh ${script_path}/find_valid_duration.sh
+```
