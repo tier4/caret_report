@@ -37,7 +37,7 @@ warnings.simplefilter("ignore")
 _logger: logging.Logger = None
 
 
-def analyze_path(app: Application, target_path_name: str):
+def analyze_path(app: Application, target_path_name: str, skip_first_num: int):
     """Analyze a path"""
     _logger.info(f'Processing: {target_path_name}')
     target_path = app.get_path(target_path_name)
@@ -48,8 +48,9 @@ def analyze_path(app: Application, target_path_name: str):
 
     # Find the start time of the path (but choose the second one because the first one could be very long)
     df = plot_timeseries.to_dataframe()
-    if len(df) > 1:
-        start_time = df.iloc[1,0]
+    skip_first_num = min(skip_first_num, len(df) - 1)
+    if skip_first_num >= 0:
+        start_time = df.iloc[skip_first_num, 0]
         start_date_time = datetime.datetime.fromtimestamp(start_time * 1.0e-9)
     else:
         start_date_time = None
@@ -77,7 +78,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application):
     start_date_time_list = []
     for target_path in arch.paths:
         target_path_name = target_path.path_name
-        start_date_time = analyze_path(app, target_path_name)
+        start_date_time = analyze_path(app, target_path_name, args.skip_first_num)
         if start_date_time:
             start_date_time_list.append(start_date_time)
 
@@ -105,8 +106,10 @@ def parse_arg():
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('--duration', type=float, default=60.0,
                         help='Duration [sec] to load trace data')
-    parser.add_argument('--min_duration', type=float, default=120.0,
-                        help='Minimu Duration [sec] to load trace data')
+    parser.add_argument('--load_duration', type=float, default=120.0,
+                        help='Duration [sec] to load trace data to find valid duration')
+    parser.add_argument('--skip_first_num', type=int, default=1,
+                        help='The number to skip the first n-th trace data')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
     args = parser.parse_args()
     return args
@@ -122,7 +125,7 @@ def main():
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'duration: {args.duration}')
 
-    lttng = read_trace_data_duration(args.trace_data[0], 0, max(args.duration, args.min_duration), False)
+    lttng = read_trace_data_duration(args.trace_data[0], 0, args.load_duration, False)
 
     arch = Architecture('yaml', args.architecture_file_path)
     app = Application(arch, lttng)
