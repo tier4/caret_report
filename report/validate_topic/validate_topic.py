@@ -20,6 +20,7 @@ import os
 from enum import Enum
 from pathlib import Path
 import argparse
+from distutils.util import strtobool
 import logging
 import re
 import copy
@@ -233,14 +234,14 @@ class Result():
                 self.result_status = ResultStatus.FAILED.name
 
 
-def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str) -> Tuple[Stats, pd.DataFrame]:
+def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metrics: Metrics, dest_dir: str, xaxis_type: str) -> Tuple[Stats, pd.DataFrame]:
     try:
         timeseries_plot = get_comm_plot(comm, metrics)
-        figure = timeseries_plot.figure()
+        figure = timeseries_plot.figure(xaxis_type=xaxis_type)
         figure.y_range.start = 0
         graph_filename = metrics.name + comm.topic_name.replace('/', '_') + comm.publish_node_name.replace('/', '_') + comm.subscribe_node_name.replace('/', '_')
         graph_filename = graph_filename[:250]
-        df_comm = timeseries_plot.to_dataframe()
+        df_comm = timeseries_plot.to_dataframe(xaxis_type=xaxis_type)
         stats, df = Stats.from_df(component_pair, comm.topic_name, comm.publish_node_name, comm.subscribe_node_name, metrics, graph_filename, df_comm)
         if stats:
             export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
@@ -252,7 +253,7 @@ def create_stats_for_comm(component_pair: tuple[str], comm: Communication, metri
 
     return stats, df
 
-def create_stats_for_callback_as_topic(app: Application, component_pair: tuple[str], expectation: Expectation, metrics: Metrics, dest_dir: str) -> Tuple[Stats, pd.DataFrame]:
+def create_stats_for_callback_as_topic(app: Application, component_pair: tuple[str], expectation: Expectation, metrics: Metrics, dest_dir: str, xaxis_type: str) -> Tuple[Stats, pd.DataFrame]:
     try:
         callback = None
         for subscription in app.subscriptions:
@@ -261,13 +262,13 @@ def create_stats_for_callback_as_topic(app: Application, component_pair: tuple[s
                 break
         if callback:
             timeseries_plot = get_callback_plot(callback, metrics)
-            figure = timeseries_plot.figure()
+            figure = timeseries_plot.figure(xaxis_type=xaxis_type)
             figure.y_range.start = 0
             figure.width = 1000
             figure.height = 350
             graph_filename = metrics.name + callback.subscribe_topic_name.replace('/', '_') + '_unknown' + callback.node_name.replace('/', '_')
             graph_filename = graph_filename[:250]
-            df_comm = timeseries_plot.to_dataframe()
+            df_comm = timeseries_plot.to_dataframe(xaxis_type=xaxis_type)
 
             stats, df = Stats.from_df(component_pair, callback.subscribe_topic_name, expectation.publish_node_name, callback.node_name, metrics, graph_filename, df_comm)
             if stats:
@@ -283,13 +284,13 @@ def create_stats_for_callback_as_topic(app: Application, component_pair: tuple[s
     return stats, df
 
 
-def validate_topic(app: Application, component_pair: tuple[str], target_comm_list: list[Communication], metrics: Metrics, dest_dir: str, expectation_list: List[Expectation] = []) -> list[Result]:
+def validate_topic(app: Application, component_pair: tuple[str], target_comm_list: list[Communication], metrics: Metrics, dest_dir: str, xaxis_type: str, expectation_list: List[Expectation] = []) -> list[Result]:
     expectation_validated_list = expectation_list.copy()   # keep original because there may be multiple callbacks with the same parameters in a node
     result_info_list: list[Result] = []
 
     for comm in target_comm_list:
         _logger.debug(f'Processing ({metrics.name}): {component_pair}, {comm.topic_name}: {comm.publish_node_name} -> {comm.subscribe_node_name}')
-        stats, df = create_stats_for_comm(component_pair, comm, metrics, dest_dir)
+        stats, df = create_stats_for_comm(component_pair, comm, metrics, dest_dir, xaxis_type)
         if stats is None:
             continue
 
@@ -308,7 +309,7 @@ def validate_topic(app: Application, component_pair: tuple[str], target_comm_lis
         if metrics != Metrics.FREQUENCY:
             continue
         _logger.debug(f'Processing as callback({metrics.name}): {component_pair}, {expectation.topic_name}: {expectation.publish_node_name} -> {expectation.subscribe_node_name}')
-        stats, df = create_stats_for_callback_as_topic(app, component_pair, expectation, metrics, dest_dir)
+        stats, df = create_stats_for_callback_as_topic(app, component_pair, expectation, metrics, dest_dir, xaxis_type)
         if stats is None:
             continue
 
@@ -343,7 +344,7 @@ def save_stats(result_list: list[Result], metrics_str: str, dest_dir: str, is_ap
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
-def validate_component_pair(app: Application, component_pair: tuple[str], dest_dir: str, force: bool, expectation_csv_filename: str):
+def validate_component_pair(app: Application, component_pair: tuple[str], dest_dir: str, force: bool, expectation_csv_filename: str, xaxis_type: str):
     """Validate callback for component pair"""
     dest_dir = f'{dest_dir}/validate_topic/{component_pair[0]}-{component_pair[1]}'
 
@@ -364,18 +365,18 @@ def validate_component_pair(app: Application, component_pair: tuple[str], dest_d
 
     make_destination_dir(dest_dir, force, _logger)
 
-    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir, Expectation.from_csv(expectation_csv_filename, component_pair[0], component_pair[1]))
+    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.FREQUENCY, dest_dir, xaxis_type, Expectation.from_csv(expectation_csv_filename, component_pair[0], component_pair[1]))
     save_stats(result_list, Metrics.FREQUENCY.name, dest_dir)
 
-    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.PERIOD, dest_dir)
+    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.PERIOD, dest_dir, xaxis_type)
     save_stats(result_list, Metrics.PERIOD.name, dest_dir)
 
-    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.LATENCY, dest_dir)
+    result_list = validate_topic(app, component_pair, target_comm_list, Metrics.LATENCY, dest_dir, xaxis_type)
     save_stats(result_list, Metrics.LATENCY.name, dest_dir)
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
-             component_list_json: str, expectation_csv_filename: str):
+             component_list_json: str, expectation_csv_filename: str, xaxis_type: str):
     """Validate topic"""
     global _logger
     _logger = logger
@@ -387,7 +388,7 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
     make_destination_dir(dest_dir + '/validate_topic', force, _logger)
 
     for component_pair in ComponentManager().get_component_pair_list(with_external=True):
-        validate_component_pair(app, component_pair, dest_dir, force, expectation_csv_filename)
+        validate_component_pair(app, component_pair, dest_dir, force, expectation_csv_filename, xaxis_type)
 
     _logger.info(f'<<< Validate topic finish >>>')
 
@@ -404,6 +405,7 @@ def parse_arg():
                         help='Start strip [sec] to load trace data')
     parser.add_argument('--end_strip', type=float, default=0.0,
                         help='End strip [sec] to load trace data')
+    parser.add_argument('--sim_time', type=strtobool, default=False)
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -420,14 +422,16 @@ def main():
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
     logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
+    logger.debug(f'sim_time: {args.sim_time}')
     dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
+    xaxis_type = 'sim_time' if args.sim_time else 'system_time'
 
     lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
-    validate(logger, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename)
+    validate(logger, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename, xaxis_type)
 
 
 if __name__ == '__main__':

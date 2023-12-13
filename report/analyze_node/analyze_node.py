@@ -19,6 +19,7 @@ import sys
 import os
 from pathlib import Path
 import argparse
+from distutils.util import strtobool
 import logging
 import math
 import yaml
@@ -94,13 +95,13 @@ class StatsNode():
 
 
 def analyze_callback(df_callback: pd.DataFrame, node: Node, callback_name: str,
-                     metrics: str, dest_dir_path: str, method_hist):
+                     metrics: str, dest_dir_path: str, method_hist, xaxis_type: str):
     """Analyze a callback"""
     callback_stats = StatsCallback()
     callback_stats.calculate(df_callback)
     if len(df_callback) > 0:
         callback = node.get_callback(callback_name)
-        fig_hist = method_hist(callback).figure()
+        fig_hist = method_hist(callback).figure(xaxis_type=xaxis_type)
         fig_hist.height = 350
         fig_hist.width = 600
         fig_hist.legend.visible = False
@@ -112,7 +113,7 @@ def analyze_callback(df_callback: pd.DataFrame, node: Node, callback_name: str,
     return callback_stats
 
 
-def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200) -> dict:
+def analyze_node(node: Node, dest_dir: str, xaxis_type: str, threshold_freq_not_display: int=200) -> dict:
     """Analyze a node"""
     _logger.info(f'Processing {node.node_name}')
     all_metrics_dict = {'Frequency':(Plot.create_frequency_timeseries_plot, Plot.create_frequency_histogram_plot),
@@ -124,7 +125,7 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
     for metrics, method in all_metrics_dict.items():
         try:
             p_timeseries = method[0](node.callbacks)
-            measurement = p_timeseries.to_dataframe()
+            measurement = p_timeseries.to_dataframe(xaxis_type=xaxis_type)
         except:
             _logger.info(f'This node is not called: {node.node_name}')
             return None
@@ -140,7 +141,7 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
             df_callback = trail_df(df_callback, end_strip_num=2, start_strip_num=1)
             if len(df_callback) > 0:
                 has_valid_data = True
-            callback_stats = analyze_callback(df_callback, node, callback_name, metrics, dest_dir, method[1])
+            callback_stats = analyze_callback(df_callback, node, callback_name, metrics, dest_dir, method[1], xaxis_type)
             node_stats.set_callback(node.get_callback(callback_name), get_callback_legend(node, callback_name, False),
                                     metrics, callback_stats)
             if metrics == 'Frequency':
@@ -154,7 +155,7 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
             try:
                 if metrics != 'Frequency':
                     p_timeseries = method[0](callbacks_for_graph)
-                fig_timeseries = p_timeseries.figure()  # note: this API is heavy when callback runs with high frequency
+                fig_timeseries = p_timeseries.figure(xaxis_type=xaxis_type)  # note: this API is heavy when callback runs with high frequency
                 fig_timeseries.y_range.start = 0
                 filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
                 export_graph(fig_timeseries, dest_dir, filename_timeseries, with_png=False, logger=_logger)
@@ -165,13 +166,13 @@ def analyze_node(node: Node, dest_dir: str, threshold_freq_not_display: int=200)
     return node_stats
 
 
-def analyze_component(node_list: list[Node], dest_dir: str):
+def analyze_component(node_list: list[Node], dest_dir: str, xaxis_type: str):
     """Analyze a component"""
     make_destination_dir(dest_dir, False, _logger)
 
     stats = {}
     for node in node_list:
-        node_stats = analyze_node(node, dest_dir)
+        node_stats = analyze_node(node, dest_dir, xaxis_type)
         if node_stats:
             stats[node.node_name] = vars(node_stats)
 
@@ -209,7 +210,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
 
     for component_name, _ in ComponentManager().component_dict.items():
         node_list = get_node_list(lttng, app, component_name)
-        analyze_component(node_list, f'{dest_dir}/{component_name}')
+        analyze_component(node_list, f'{dest_dir}/{component_name}', 'sim_time' if args.sim_time else 'system_time')
 
     _logger.info('<<< Analyze Nodes: Finish >>>')
 
@@ -225,6 +226,7 @@ def parse_arg():
                         help='Start strip [sec] to load trace data')
     parser.add_argument('--end_strip', type=float, default=0.0,
                         help='End strip [sec] to load trace data')
+    parser.add_argument('--sim_time', type=strtobool, default=False)
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -242,6 +244,7 @@ def main():
     _logger.debug(f'dest_dir: {args.dest_dir[0]}')
     _logger.debug(f'component_list_json: {args.component_list_json}')
     _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
+    _logger.debug(f'sim_time: {args.sim_time}')
 
     lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))

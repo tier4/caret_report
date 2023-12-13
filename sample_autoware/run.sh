@@ -12,6 +12,7 @@ export note_text_bottom=./note_text_bottom.txt
 export callback_list_csv=./callback_list.csv
 export start_strip=0
 export end_strip=0
+export sim_time=false
 
 export trace_data=~/work/caret_tracedata/universe/session-20231114050140/session-20231114050140
 

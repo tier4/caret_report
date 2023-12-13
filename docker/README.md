@@ -42,6 +42,7 @@ report_store_dir="${work_dir}"
 export trace_data_name=`basename ${trace_data}`
 export start_strip=0
 export end_strip=0
+export sim_time=false
 export component_list_json=component_list.json
 export target_path_json=target_path.json
 export max_node_depth=20
@@ -60,6 +61,7 @@ docker run -it --rm \
     -e trace_data_name \
     -e start_strip \
     -e end_strip \
+    -e sim_time \
     -e component_list_json \
     -e target_path_json \
     -e max_node_depth \
