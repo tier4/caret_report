@@ -41,6 +41,7 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     git checkout $CARET_VERSION && \
     mkdir src && \
     vcs import src < caret.repos && \
+    rm -rf src/ros2/ src/ros-tracing/ && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \
     ./setup_caret.sh -c && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
