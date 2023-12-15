@@ -116,7 +116,7 @@ def trace_failure_node(parent: Node, arch: Architecture, node_name: str, callbac
                 _logger.warning(f'{callback_name} is not measured but treated as FAILED')
             if node.depth > 100:
                 _logger.error(f'Too depth: {parent.name} -> {callback_name}')
-                continue
+                raise Exception('Too depth')
             if period_ns != -1:
                 # end
                 pass
@@ -141,7 +141,11 @@ def trace_failure(callback_stats_list: list[dict], arch: Architecture):
                 if period_ns == -1:
                     publisher_list = search_publishers(arch, subscribe_topic_name, node_name)
                     for publisher in publisher_list:
-                        trace_failure_node(tree_new_node, arch, publisher, callback_stats_list)
+                        try:
+                            trace_failure_node(tree_new_node, arch, publisher, callback_stats_list)
+                        except Exception:
+                            _logger.error(f'Stop tracing because too many failures')
+                            return Node('root')
                 for descendant in tree_new_node.descendants:
                     # check if the temp tree contains the callback already added as child. If so, delete the child
                     if tree_check_if_contained_as_children(descendant.name, tree_root):

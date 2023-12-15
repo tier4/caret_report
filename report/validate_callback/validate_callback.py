@@ -19,6 +19,7 @@ import sys
 import os
 from pathlib import Path
 import argparse
+from distutils.util import strtobool
 import logging
 import re
 from itertools import groupby
@@ -240,11 +241,11 @@ class Result():
                 self.result_status = ResultStatus.FAILED.name
 
 
-def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str, not_display_callback_list=[]) -> dict[str, Tuple[Stats, pd.DataFrame]]:
+def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str, xaxis_type: str, not_display_callback_list=[]) -> dict[str, Tuple[Stats, pd.DataFrame]]:
     stats_list = {}
     try:
         timeseries_plot = get_node_plot(node.callbacks, metrics)
-        df_node = timeseries_plot.to_dataframe()
+        df_node = timeseries_plot.to_dataframe(xaxis_type=xaxis_type)
     except:
         _logger.info(f'This node is not called: {node.node_name}')
         return stats_list
@@ -268,7 +269,7 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
                     _logger.info(f'{not_display_callback} is not displayed in graph')
                     callbacks.remove(node.get_callback(not_display_callback))
             timeseries_plot = get_node_plot(callbacks, metrics)
-            figure = timeseries_plot.figure()  # note: this API is heavy when callback runs with high frequency
+            figure = timeseries_plot.figure(xaxis_type=xaxis_type)  # note: this API is heavy when callback runs with high frequency
             figure.y_range.start = 0
             export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
         except:
@@ -277,12 +278,12 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
     return stats_list
 
 
-def validate_callback(component_name: str, target_node_list: list[Node], metrics: Metrics, dest_dir: str,  expectation_list: List[Expectation] = [], not_display_callback_list=[]) -> list[Result]:
+def validate_callback(component_name: str, target_node_list: list[Node], metrics: Metrics, dest_dir: str, xaxis_type: str,  expectation_list: List[Expectation] = [], not_display_callback_list=[]) -> list[Result]:
     expectation_validated_list = expectation_list.copy()   # keep original because there may be multiple callbacks with the same parameters in a node
     result_info_list: list[Result] = []
     for node in target_node_list:
         _logger.debug(f'Processing ({metrics.name}): {node.node_name}')
-        stats_list = create_stats_for_node(node, metrics, dest_dir, component_name, not_display_callback_list)
+        stats_list = create_stats_for_node(node, metrics, dest_dir, component_name, xaxis_type, not_display_callback_list)
 
         for callback in node.callbacks:
             if callback.callback_name not in stats_list:
@@ -326,7 +327,7 @@ def save_stats(app: Application, result_list: list[Result], component_name: str,
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
-def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str, threshold_freq_not_display: int=200):
+def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str, xaxis_type: str, threshold_freq_not_display: int=200):
     """Validate callback for each component"""
     dest_dir = f'{dest_dir}/validate_callback/{component_name}'
     make_destination_dir(dest_dir, force, _logger)
@@ -337,7 +338,7 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
         if ComponentManager().check_if_target(component_name, node.node_name):
             target_node_list.append(node)
 
-    result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir
+    result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, xaxis_type
                                     , expectation_list=Expectation.from_csv(expectation_csv_filename, component_name))
     save_stats(app, result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
 
@@ -345,17 +346,17 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
     not_display_callback_list = [result.stats['callback_name'] for result in result_list
         if (isinstance(result.stats['avg'], int) or isinstance(result.stats['avg'], float)) and result.stats['avg'] >= threshold_freq_not_display]
 
-    result_list = validate_callback(component_name, target_node_list, Metrics.PERIOD, dest_dir
+    result_list = validate_callback(component_name, target_node_list, Metrics.PERIOD, dest_dir, xaxis_type
                                     , not_display_callback_list=not_display_callback_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.PERIOD.name)
 
-    result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir
+    result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir, xaxis_type
                                     , not_display_callback_list=not_display_callback_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.LATENCY.name)
 
 
 def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
-             component_list_json: str, expectation_csv_filename: str):
+             component_list_json: str, expectation_csv_filename: str, xaxis_type: str):
     """Validate callback"""
     global _logger
     _logger = logger
@@ -367,7 +368,7 @@ def validate(logger, arch: Architecture, app: Application, dest_dir: str, force:
     ComponentManager().initialize(component_list_json, _logger)
 
     for component_name, _ in ComponentManager().component_dict.items():
-        validate_component(app, component_name, dest_dir, force, expectation_csv_filename)
+        validate_component(app, component_name, dest_dir, force, expectation_csv_filename, xaxis_type)
 
     _logger.info(f'<<< Validate callback finish >>>')
 
@@ -384,6 +385,7 @@ def parse_arg():
                         help='Start strip [sec] to load trace data')
     parser.add_argument('--end_strip', type=float, default=0.0,
                         help='End strip [sec] to load trace data')
+    parser.add_argument('--sim_time', type=strtobool, default=False)
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -400,14 +402,16 @@ def main():
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
     logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
+    logger.debug(f'sim_time: {args.sim_time}')
     dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
     logger.debug(f'dest_dir: {dest_dir}')
+    xaxis_type = 'sim_time' if args.sim_time else 'system_time'
 
     lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
-    validate(logger, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename)
+    validate(logger, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename, xaxis_type)
 
 
 if __name__ == '__main__':

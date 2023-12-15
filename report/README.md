@@ -28,6 +28,7 @@ export note_text_top=./note_text_top.txt             # Path to setting file
 export note_text_bottom=./note_text_bottom.txt       # Path to setting file
 export start_strip=120                               # strip time at the start [sec] for analysis
 export end_strip=30                                  # strip time at the end [sec] for analysis
+export sim_time=false                                # use simulation time (ROS time) or system time
 export trace_data=~/.ros/tracing/session-yyyymmddhhmmss  # Path to CARET trace data (CTF file)
 sh ${script_path}/make_report.sh
 ```
@@ -61,6 +62,7 @@ export note_text_top=./note_text_top.txt             # Path to setting file
 export note_text_bottom=./note_text_bottom.txt       # Path to setting file
 export start_strip=120                               # strip time at the start [sec] for analysis
 export end_strip=30                                  # strip time at the end [sec] for analysis
+export sim_time=false                                # use simulation time (ROS time) or system time
 export trace_data=~/.ros/tracing/session-yyyymmddhhmmss  # Path to CARET trace data (CTF file)
 sh ${script_path}/make_report.sh
 ```

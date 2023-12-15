@@ -31,6 +31,7 @@ trace_data="$(pwd)"/session-20231114050140
 sample_autoware_dir="${script_path}"/sample_autoware
 start_strip=0
 end_strip=0
+sim_time=false
 component_list_json=component_list.json
 target_path_json=target_path.json
 max_node_depth=20
@@ -38,7 +39,7 @@ timeout=120
 draw_all_message_flow=false
 report_store_dir=./output
 relpath_from_report_store_dir=false
-export trace_data start_strip end_strip component_list_json target_path_json max_node_depth timeout draw_all_message_flow report_store_dir relpath_from_report_store_dir
+export trace_data start_strip end_strip sim_time component_list_json target_path_json max_node_depth timeout draw_all_message_flow report_store_dir relpath_from_report_store_dir
 cd "${sample_autoware_dir}" || exit
 sh "${script_path}"/report/report_analysis/make_report.sh
 mv output/report_session-20231114050140 "${work_dir}"/.

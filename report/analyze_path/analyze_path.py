@@ -139,7 +139,7 @@ def check_the_first_last_callback_is_valid(records: RecordsInterface):
     return is_first_valid, is_last_valid
 
 
-def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, target_path_name: str, include_first_last_callback: dict):
+def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, target_path_name: str, include_first_last_callback: dict, xaxis_type: str):
     """Analyze a path"""
     _logger.info(f'Processing: {target_path_name}')
     target_path = app.get_path(target_path_name)
@@ -181,9 +181,9 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
         df_response_time = {}
         for case_str in ['best', 'worst', 'all']:
             plot_timeseries = Plot.create_response_time_timeseries_plot(target_path, case=case_str)
-            fig_timeseries = plot_timeseries.figure(full_legends=False)
-            df_response_time[case_str] = plot_timeseries.to_dataframe()
-            fig_hist = Plot.create_response_time_histogram_plot(target_path, case=case_str).figure(full_legends=False)
+            fig_timeseries = plot_timeseries.figure(full_legends=False, xaxis_type=xaxis_type)
+            df_response_time[case_str] = plot_timeseries.to_dataframe(xaxis_type=xaxis_type)
+            fig_hist = Plot.create_response_time_histogram_plot(target_path, case=case_str).figure(full_legends=False, xaxis_type=xaxis_type)
             fig_timeseries.y_range.start = 0
             fig_timeseries.legend.visible = False
             fig_hist.legend.visible = False
@@ -194,7 +194,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
             export_graph(fig_timeseries, dest_dir, target_path_name + f'_timeseries_{case_str}', target_path_name, with_png=False)
             export_graph(fig_hist, dest_dir, target_path_name + f'_hist_{case_str}', target_path_name, with_png=False)
             try:
-                Plot.create_response_time_stacked_bar_plot(target_path, case=case_str).save(export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
+                Plot.create_response_time_stacked_bar_plot(target_path, case=case_str).save(xaxis_type=xaxis_type, export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
             except Exception as e:
                 _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}, {case_str}')
                 _logger.warning(str(e))
@@ -235,6 +235,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     if _logger is None:
         _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Paths: Start >>>')
+    xaxis_type =  'sim_time' if args.sim_time else 'system_time'
     make_destination_dir(dest_dir, args.force, _logger)
     shutil.copy(args.architecture_file_path, dest_dir)
 
@@ -254,7 +255,7 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     # Analyze each path
     for target_path in arch.paths:
         target_path_name = target_path.path_name
-        stats = analyze_path(args, dest_dir, arch, app, target_path_name, include_first_last_callback)
+        stats = analyze_path(args, dest_dir, arch, app, target_path_name, include_first_last_callback, xaxis_type)
         stats_list.append(vars(stats))
 
     # Save stats file
@@ -280,6 +281,7 @@ def parse_arg():
                         help='Start strip [sec] to load trace data')
     parser.add_argument('--end_strip', type=float, default=0.0,
                         help='End strip [sec] to load trace data')
+    parser.add_argument('--sim_time', type=strtobool, default=False)
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -298,6 +300,7 @@ def main():
     _logger.debug(f'target_path_json: {args.target_path_json}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
+    _logger.debug(f'sim_time: {args.sim_time}')
     args.message_flow = True if args.message_flow == 1 else False
     _logger.debug(f'message_flow: {args.message_flow}')
 
