@@ -43,7 +43,11 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     vcs import src < caret.repos && \
     . /opt/ros/"$ROS_DISTRO"/setup.sh && \
     ./setup_caret.sh -c && \
+    rm -rf src/ros2/ src/ros-tracing/ && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+RUN cd ros2_caret_ws/src/CARET/caret_analyze && \
+    git show --format='%H' --no-patch
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
