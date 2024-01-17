@@ -24,14 +24,15 @@ import flask
 app = flask.Flask(__name__)
 
 
-def render_index_page(stats, report_name, component_name, destination_path, template_path):
+def render_index_page(stats, title, sub_title, destination_path, template_path):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
-                title=f'{component_name}: {report_name}',
+                title=title,
+                sub_title=sub_title,
                 stats=stats,
             )
 
@@ -39,16 +40,16 @@ def render_index_page(stats, report_name, component_name, destination_path, temp
             f_html.write(rendered)
 
 
-def render_detail_page(node_info, report_name, node_name, destination_path, template_path):
+def render_detail_page(node_info, title, sub_title, destination_path, template_path):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
-                title=f'Node detail: {report_name}',
+                title=title,
+                sub_title=sub_title,
                 node_info=node_info,
-                node_name=node_name,
                 metrics_list=['Frequency', 'Period', 'Latency'],
                 metrics_unit=['[Hz]', '[ms]', '[ms]']
             )
@@ -64,11 +65,11 @@ def make_report(stats_path: str):
         stats = yaml.safe_load(f_yaml)
 
     stats_dir = Path(stats_path).resolve().parent
-    report_name = stats_path.split('/')[-4]
-    component_name = stats_path.split('/')[-2]
     destination_path = f'{stats_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_node_index.html'
-    render_index_page(stats, report_name, component_name, destination_path, template_path)
+    title = f"Component: {stats_path.split('/')[-2]}"
+    sub_title = stats_path.split('/')[-4]
+    render_index_page(stats, title, sub_title, destination_path, template_path)
 
     for node_name, node_info in stats.items():
         if node_info is None:
@@ -76,7 +77,9 @@ def make_report(stats_path: str):
         filename = node_name.replace('/', '_')[1:]
         destination_path = f'{stats_dir}/index_{filename}.html'
         template_path = f'{Path(__file__).resolve().parent}/template_node_detail.html'
-        render_detail_page(node_info, report_name, node_name, destination_path, template_path)
+        title = f'Node: {node_name}'
+        sub_title = stats_path.split('/')[-4]
+        render_detail_page(node_info, title, sub_title, destination_path, template_path)
 
 
 
