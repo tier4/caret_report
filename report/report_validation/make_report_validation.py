@@ -62,16 +62,17 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
         summary_topic_dict['cnt_pass'] += summary[Metrics.FREQUENCY.name]['cnt_pass']
         summary_topic_dict['cnt_failed'] += summary[Metrics.FREQUENCY.name]['cnt_failed']
 
-    title = f'Validation report'
     destination_path = f'{report_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_validation.html'
-
+    title = 'Validation report'
+    sub_title = report_dir.split('/')[-1]
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
                 title=title,
+                sub_title=sub_title,
                 summary_callback_dict_component_metrics=summary_callback_dict_component_metrics,
                 summary_topic_dict_component_pair_metrics=summary_topic_dict_component_pair_metrics,
                 summary_callback_dict=summary_callback_dict,

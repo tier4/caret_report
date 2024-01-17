@@ -283,7 +283,6 @@ def read_note_text(trace_data_dir, dest_dir, note_text_top_path, note_text_botto
             trace_datetime = datetime.datetime.strptime(trace_datetime.group(), '%Y%m%d-%H%M%S')
         else:
             trace_datetime = 'unknown'
-    note_text_top += f'<li>trace_data: {trace_data_name}</li>\n'
     note_text_top += f'<li>trace_start_datetime: {trace_datetime}</li>\n'
 
     # version info
@@ -294,35 +293,39 @@ def read_note_text(trace_data_dir, dest_dir, note_text_top_path, note_text_botto
     note_text_top += f'<li>caret_analysis_version: {caret_analysis_version}</li>\n'
 
     try:
-        repo_url_lines = subprocess.run(['git', 'remote', '-v'], text=True, stdout=subprocess.PIPE).stdout
-        repo_url_line = repo_url_lines.split('\n')[0]
-        repo_name = 'unknown'
-        for repo_url in repo_url_line.split():
-            if ('https://' in repo_url or 'git@' in repo_url) and '.git' in repo_url:
-                repo_url = repo_url.split('/')[-1]
-                repo_name = repo_url.split('.git')[0]
+        repo_url_lines = subprocess.run(['git', 'config', '--get', 'remote.origin.url'], text=True, stdout=subprocess.PIPE).stdout
+        repo_url = repo_url_lines.split('\n')[0]
         report_setting_version = subprocess.run(['git', 'log', '-n 1', '--format=%H'], text=True, stdout=subprocess.PIPE).stdout
     except:
         repo_name = 'unknown'
         report_setting_version = 'unknown'
-    note_text_top += f'<li>report_setting_repo: {repo_name}</li>\n'
+    note_text_top += f'<li>report_setting_repo: {repo_url}</li>\n'
     note_text_top += f'<li>report_setting_version: {report_setting_version}</li>\n'
     note_text_top += '</ul>\n'
 
     # overwrite note_text_top if caret_record_info.yaml exists
+    # for info from evaluator, display only limited info
     caret_record_info_path = f'{dest_dir}/caret_record_info.yaml'
     if os.path.exists(caret_record_info_path):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
-            note_text_top = '<ul>\n'
-            note_text_top += f'<li>trace_data: {trace_data_name}</li>\n'
-            note_text_top += f'<li>trace_start_datetime: {trace_datetime}</li>\n'
             caret_record_info = yaml.safe_load(f_yaml)
+            note_text_top = '<ul>\n'
+            note_text_top += f'<li>trace_start_datetime: {trace_datetime}</li>\n'
+            new_caret_record_info = {}
             if 'caret_version' in caret_record_info:
-                caret_record_info['caret_version'] = caret_record_info.pop('caret_version')
+                caret_record_info['caret_version'] = caret_record_info.pop('caret_version')  # move to the last
             for key, value in caret_record_info.items():
-                note_text_top += f'<li>{key}: {value}</li>\n'
+                if 'evaluator_' in key:
+                    display_key_list = ['evaluator_job_description', 'evaluator_git_commit_url', 'evaluator_report_url', 'evaluator_scenario_display_name']
+                    if not any(display_key in key for display_key in display_key_list):
+                        continue
+                    key = key.replace('evaluator_', '')
+                if 'http' in value:
+                    note_text_top += f'<li>{key}: <a href={value}>{value}</a></li>\n'
+                else:
+                    note_text_top += f'<li>{key}: {value}</li>\n'
             note_text_top += f'<li>caret_analysis_version: {caret_analysis_version}</li>\n'
-            note_text_top += f'<li>report_setting_repo: {repo_name}</li>\n'
+            note_text_top += f'<li>report_setting_repo: {repo_url}</li>\n'
             note_text_top += f'<li>report_setting_version: {report_setting_version}</li>\n'
             note_text_top += '</ul>\n'
 
