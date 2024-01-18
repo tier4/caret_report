@@ -104,7 +104,7 @@ def parse_arg():
                 description='Script to analyze path')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
-    parser.add_argument('--duration', type=float, default=60.0,
+    parser.add_argument('--duration', type=float, default=1800.0,
                         help='Duration [sec] to load trace data')
     parser.add_argument('--load_duration', type=float, default=120.0,
                         help='Duration [sec] to load trace data to find valid duration')

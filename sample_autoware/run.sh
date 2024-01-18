@@ -17,7 +17,6 @@ export sim_time=false
 export trace_data=~/work/caret_tracedata/universe/session-20231114050140/session-20231114050140
 
 ## Use this to find the valid start/end of the trace data automatically
-# export duration=1200
 # sh ../report/find_valid_duration/find_valid_duration.sh
 # export start_strip=$(cat start_strip.txt)
 # export end_strip=$(cat end_strip.txt)
