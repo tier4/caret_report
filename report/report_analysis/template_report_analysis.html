@@ -10,13 +10,14 @@
       integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
       crossorigin="anonymous"
     />
-    <title>{{ title }}</title>
+    <title>{{ title }}, {{ sub_title }}</title>
   </head>
 
   <body>
     <div class="container">
       <!-- <div> -->
       <h1>{{ title }}</h1>
+      <h2>{{ sub_title }}</h2>
       {% if link_back != "" %}
       <p><a href={{ link_back }}>Back</a></p>
       {% endif %}

@@ -29,16 +29,16 @@ from common.utils import read_note_text
 app = flask.Flask(__name__)
 
 
-def render_page(destination_path, template_path, component_list, stats_node_dict,
+def render_page(title, sub_title, destination_path, template_path, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom, num_back):
     """Render html page"""
-    title = f'Analysis report'
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
                 title=title,
+                sub_title=sub_title,
                 component_list=component_list,
                 stats_node_dict=stats_node_dict,
                 stats_path=stats_path,
@@ -120,7 +120,9 @@ def make_report(args, index_filename: str='index'):
 
     destination_path = f'{dest_dir}/{index_filename}.html'
     template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
-    render_page(destination_path, template_path, component_list, stats_node_dict,
+    title = 'Analysis report'
+    sub_title = dest_dir.split('/')[-1]
+    render_page(title, sub_title, destination_path, template_path, component_list, stats_node_dict,
                 stats_path, note_text_top, note_text_bottom, args.num_back)
 
 

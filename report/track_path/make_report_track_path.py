@@ -91,21 +91,35 @@ def get_datetime_from_report_name(report_dir: str):
     return str(trace_datetime)
 
 
-def get_trace_data_info_from_yaml(yaml_dir: str):
-    caret_record_info_path = Path(yaml_dir).joinpath('caret_record_info.yaml')
-    autoware_version, env, route = '', '', ''
+def get_version_str_from_yaml(report_dir: str):
+    caret_record_info = {}
+    caret_record_info_path = Path(report_dir).joinpath('caret_record_info.yaml')
     if os.path.exists(caret_record_info_path):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
             caret_record_info = yaml.safe_load(f_yaml)
-            if 'autoware_version' in caret_record_info:
-                autoware_version = str(caret_record_info['autoware_version']).split('/')[-1]
-            if 'env' in caret_record_info:
-                env = caret_record_info['env']
-            elif 'map' in caret_record_info:
-                env = caret_record_info['map']
-            if 'route' in caret_record_info:
-                route = caret_record_info['route']
-    return autoware_version, env, route
+    autoware_version = caret_record_info.get('autoware_version', '')
+    pilot_auto_version = caret_record_info.get('pilot_auto_version', '')
+    env = caret_record_info.get('env', '')
+    env = caret_record_info.get('map', '') if env == '' else env
+    route = caret_record_info.get('route', '')
+    job_description = caret_record_info.get('evaluator_job_description', '')  # info from evaluator
+
+    datetime = get_datetime_from_report_name(report_dir)
+    version = datetime
+    if autoware_version and pilot_auto_version:
+        version = version + ', ' + f'{pilot_auto_version}({autoware_version})'
+    elif autoware_version and pilot_auto_version == '':
+        version = version + ', ' + autoware_version
+    elif autoware_version == '' and pilot_auto_version:
+        version = version + ', ' + pilot_auto_version
+    if job_description:
+        version = version + ', ' + job_description
+    if env:
+        version = version + ', ' + env
+    if route:
+        version = version + ', ' + route
+
+    return version
 
 
 def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str,str]]:
@@ -126,12 +140,7 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
 
     for report_dir in report_list:
         report_dir = report_dir.rstrip('/')
-        datetime = get_datetime_from_report_name(report_dir)
-        autoware_version, env, route = get_trace_data_info_from_yaml(report_dir)
-        if autoware_version != '':
-            version = datetime + ', ' + autoware_version + ', ' + env + ',' + route
-        else:
-            version = datetime
+        version = get_version_str_from_yaml(report_dir)
         stats_path = f'{report_dir}/analyze_path/stats_path.yaml'
         if os.path.isfile(stats_path):
             if version in stats_file_dict:

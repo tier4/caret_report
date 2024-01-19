@@ -24,14 +24,15 @@ import flask
 app = flask.Flask(__name__)
 
 
-def render_page(stats, report_name, destination_path, template_path):
+def render_page(stats, title, sub_title, destination_path, template_path):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
             template_string = f_html.read()
             rendered = flask.render_template_string(
                 template_string,
-                title=f'Path Analysis: {report_name}',
+                title=title,
+                sub_title=sub_title,
                 stats=stats,
             )
 
@@ -46,17 +47,19 @@ def make_report(stats_path: str):
         stats = yaml.safe_load(f_yaml)
 
     stats_dir = Path(stats_path).resolve().parent
-    report_name = stats_path.split('/')[-3]
-
     destination_path = f'{stats_dir}/index.html'
     template_path = f'{Path(__file__).resolve().parent}/template_path_index.html'
-    render_page(stats, report_name, destination_path, template_path)
+    title = 'Path List'
+    sub_title = stats_path.split('/')[-3]
+    render_page(stats, title, sub_title, destination_path, template_path)
 
     for path_info in stats:
         target_path_name = path_info['target_path_name']
         destination_path = f'{stats_dir}/{target_path_name}.html'
         template_path = f'{Path(__file__).resolve().parent}/template_path_detail.html'
-        render_page(path_info, target_path_name, destination_path, template_path)
+        title = f'Path: {target_path_name}'
+        sub_title = stats_path.split('/')[-3]
+        render_page(path_info, title, sub_title, destination_path, template_path)
 
 
 def parse_arg():
