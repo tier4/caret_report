@@ -316,7 +316,7 @@ def read_note_text(trace_data_dir, dest_dir, note_text_top_path, note_text_botto
                 caret_record_info['caret_version'] = caret_record_info.pop('caret_version')  # move to the last
             for key, value in caret_record_info.items():
                 if 'evaluator_' in key:
-                    display_key_list = ['evaluator_job_description', 'evaluator_git_commit_url', 'evaluator_report_url', 'evaluator_scenario_display_name']
+                    display_key_list = ['evaluator_job_description', 'evaluator_git_commit_url', 'evaluator_report_url', 'evaluator_scenario_display_name', 'evaluator_catalog_display_name']
                     if not any(display_key in key for display_key in display_key_list):
                         continue
                     key = key.replace('evaluator_', '')
