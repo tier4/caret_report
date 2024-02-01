@@ -72,8 +72,8 @@ def search_publishers(arch: Architecture, topic_name: str, subscribe_node_name: 
         for comm in arch.communications:
             if comm.topic_name not in search_publishers.comm_dict:
                 search_publishers.comm_dict[comm.topic_name] = []
-            if comm not in search_publishers.comm_dict[comm.topic_name]:
-                search_publishers.comm_dict[comm.topic_name].append(comm)
+            # if comm not in search_publishers.comm_dict[comm.topic_name]:  # Assume duplicated comm doesn't exist. this line make the performance slow
+            search_publishers.comm_dict[comm.topic_name].append(comm)
     if topic_name not in search_publishers.comm_dict:
         return []
     publisher_list = [comm.publish_node_name for comm in search_publishers.comm_dict[topic_name] if comm.subscribe_node_name == subscribe_node_name]
