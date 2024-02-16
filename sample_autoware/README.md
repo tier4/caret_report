@@ -4,10 +4,9 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 
 1. Get Autoware project
 2. Install CARET
-3. Download useful scripts for CARET
-4. Build Autoware with CARET
-5. Run Autoware to record trace data
-6. Create analysis report
+3. Build Autoware with CARET
+4. Run Autoware to record trace data
+5. Create analysis report
 
 ## 1. Get Autoware project
 
@@ -23,23 +22,7 @@ This page shows how to analyze [Autoware](https://github.com/autowarefoundation/
 - Note:
   - This explanation assumes you install CARET to `${caret_dir}` (e.g. `export caret_dir=~/ros2_caret_ws/` )
 
-## 3. Download useful scripts for CARET
-
-- We will be downloading two components:
-  - filter setting script ( `caret_topic_filter.bash` )
-    - Autoware uses lots of nodes and topics. If all nodes and communications are traced, it causes trace data lost
-    - So, it's better to ignore nodes and topics which are not necessary for your analysis
-  - [caret_autoware_launch](https://github.com/tier4/caret_autoware_launch) package
-    - Basically, you need to manually start trace session by yourself as described [here](https://tier4.github.io/caret_doc/latest/recording/recording/)
-    - It's handy to wrap Autoware launcher to automatically start CARET trace session
-
-```sh
-cd ${autoware_dir}
-git clone https://github.com/tier4/caret_autoware_launch.git
-cp caret_autoware_launch/scripts/caret_topic_filter.bash .
-```
-
-## 4. Build Autoware with CARET
+## 3. Build Autoware with CARET
 
 ### Build Autoware
 
@@ -76,15 +59,21 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
  localization_error_monitor
 ```
 
-## 5. Run Autoware to record trace data
+## 4. Run Autoware to record trace data
 
-- There are two ways to record trace data:
-  - Run Autoware and start recording via CLI
-  - Run Autoware and start recording via launch
 - Note:
   - Before running Autoware, some environmental settings need to be done like the following commands
   - Please modify map_path and rosbag file for your environment
   - Make sure that object detection works and path is created when you set a 2D Goal Pose, so that you can analyze end-to-end path later
+
+### Copy topic filter
+
+- Autoware has lots of nodes and topics. Tracing all events causes huge trace data size and load. So, it's recommended to apply a filter to ignore less important nodes and topics
+
+```sh
+cd ${autoware_dir}
+cp ${path-to-this-repo}/sample_autoware/caret_topic_filter.bash .
+```
 
 ### Run Autoware and start recording via CLI
 
@@ -111,27 +100,6 @@ ros2 caret record -f 10000 --light
 ## press enter to start recording, then press enter to stop recording
 ```
 
-### Run Autoware and start recording via launch
-
-- Recording can be started automatically via launch file using `caret_autoware_launch` instead of `autoware_launch`
-- It's handy but record will start at the beginning of Autoware, so the first few seconds in trace data will be meaningless
-- The trace data will be created in `~/.ros/tracing/autoware_launch_trace_yyyymmdd-hhmmss`
-
-```sh
-cd ${autoware_dir}
-ulimit -n 16384
-source ${caret_dir}/setenv_caret.bash
-source ./install/local_setup.bash
-source ./caret_topic_filter.bash
-
-ros2 launch caret_autoware_launch logging_simulator.launch.xml map_path:=$HOME/work/rosbag_map/universe/sample-map-rosbag vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit
-
-# on another terminal
-cd ${autoware_dir}
-source ./install/local_setup.bash
-ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
-```
-
 ### Validate trace data (optional)
 
 - The following command checks if trace data is valid
@@ -143,7 +111,7 @@ ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
 ros2 caret check_ctf ~/.ros/tracing/session_yyyymmddhhmmss
 ```
 
-## 6. Create analysis report
+## 5. Create analysis report
 
 ```sh
 source ${caret_dir}/install/local_setup.bash
