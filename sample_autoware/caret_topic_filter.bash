@@ -1,7 +1,6 @@
 #!/bin/bash
 
-export CARET_IGNORE_NODES=\
-"\
+export CARET_IGNORE_NODES="\
 /aggregator_node:\
 /autoware_api/*:\
 /awapi/*:\
@@ -24,8 +23,7 @@ export CARET_IGNORE_NODES=\
 /caret_trace_*:\
 "
 
-export CARET_IGNORE_TOPICS=\
-"\
+export CARET_IGNORE_TOPICS="\
 /api/*:\
 /autoware/*:\
 /awapi/*:\
