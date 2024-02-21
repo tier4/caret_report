@@ -5,7 +5,7 @@
 set -e
 
 # Variable settings
-use_python=true     # to avoid reading trace data every step
+use_python=true # to avoid reading trace data every step
 script_path=$(dirname "$0")/..
 trace_data_name=$(basename "${trace_data}")
 report_dir_name=output/val_"${trace_data_name}"
