@@ -183,10 +183,10 @@ def add_path_to_architecture(args, arch: Architecture):
     _logger.info('<<< Add Path: Start >>>')
     # Read target path information from JSON
     try:
-        with open(args.target_path_json[0], encoding='UTF-8') as f_json:
+        with open(args.target_path_json, encoding='UTF-8') as f_json:
             target_path_json = json.load(f_json)
     except:
-        _logger.error(f'Unable to read {args.target_path_json[0]}')
+        _logger.error(f'Unable to read {args.target_path_json}')
         sys.exit(-1)
     comm_filter, node_filter = create_search_paths_filter(
         target_path_json['ignore_topic_list'] if 'ignore_topic_list' in target_path_json else None,
@@ -260,7 +260,7 @@ def parse_arg():
     parser = argparse.ArgumentParser(
                 description='Script to add path information to architecture file')
     parser.add_argument('trace_data', nargs=1, type=str)
-    parser.add_argument('target_path_json', nargs=1, type=str)
+    parser.add_argument('--target_path_json', type=str, default='target_path.json')
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('--use_latest_message', action='store_true', default=True)
     parser.add_argument('--max_node_depth', type=int, default=15)
@@ -277,7 +277,7 @@ def main():
     _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
     _logger.debug(f'trace_data: {args.trace_data[0]}')
-    _logger.debug(f'target_path_json: {args.target_path_json[0]}')
+    _logger.debug(f'target_path_json: {args.target_path_json}')
     _logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     _logger.debug(f'use_latest_message: {args.use_latest_message}')
     _logger.debug(f'max_node_depth: {args.max_node_depth}')

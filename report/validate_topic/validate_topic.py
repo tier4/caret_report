@@ -375,11 +375,12 @@ def validate_component_pair(app: Application, component_pair: tuple[str], dest_d
     save_stats(result_list, Metrics.LATENCY.name, dest_dir)
 
 
-def validate(logger, arch: Architecture, app: Application, dest_dir: str, force: bool,
+def validate(verbose, arch: Architecture, app: Application, dest_dir: str, force: bool,
              component_list_json: str, expectation_csv_filename: str, xaxis_type: str):
     """Validate topic"""
     global _logger
-    _logger = logger
+    if _logger is None:
+        _logger = create_logger(__name__, logging.DEBUG if verbose else logging.INFO)
 
     _logger.info(f'<<< Validate topic start >>>')
 
@@ -415,23 +416,24 @@ def parse_arg():
 
 def main():
     """Main function"""
+    global _logger
     args = parse_arg()
-    logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
-    logger.debug(f'trace_data: {args.trace_data[0]}')
-    logger.debug(f'component_list_json: {args.component_list_json}')
-    logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
-    logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
-    logger.debug(f'sim_time: {args.sim_time}')
+    _logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'component_list_json: {args.component_list_json}')
+    _logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
+    _logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
+    _logger.debug(f'sim_time: {args.sim_time}')
     dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
-    logger.debug(f'dest_dir: {dest_dir}')
+    _logger.debug(f'dest_dir: {dest_dir}')
     xaxis_type = 'sim_time' if args.sim_time else 'system_time'
 
     lttng = read_trace_data(args.trace_data[0], args.start_strip, args.end_strip, False)
     arch = Architecture('lttng', str(args.trace_data[0]))
     app = Application(arch, lttng)
 
-    validate(logger, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename, xaxis_type)
+    validate(args.verbose, arch, app, dest_dir, args.force, args.component_list_json, args.expectation_csv_filename, xaxis_type)
 
 
 if __name__ == '__main__':
