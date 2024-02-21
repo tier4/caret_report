@@ -122,7 +122,7 @@ def make_report(args, index_filename: str='index'):
     note_text_top, note_text_bottom = read_note_text(trace_data_dir, dest_dir, args.note_text_top, args.note_text_bottom)
 
     destination_path = f'{dest_dir}/{index_filename}.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_html_analysis.html'
     title = 'Analysis report'
     sub_title = dest_dir.split('/')[-1]
     render_page(title, sub_title, destination_path, template_path, component_list, stats_node_dict,
