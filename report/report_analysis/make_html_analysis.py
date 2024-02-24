@@ -53,12 +53,14 @@ def render_page(title, sub_title, destination_path, template_path, component_lis
 
 def get_component_list(report_dir: str) -> list[str]:
     """Create component name list in node analysis"""
-    node_report_dir= report_dir + '/analyze_node'
-
     component_list = []
     for component_name, _ in ComponentManager().component_dict.items():
-        if os.path.isdir(os.path.join(node_report_dir, component_name)):
-            component_list.append(component_name)
+        yaml_file_path = os.path.join(report_dir, 'analyze_node', component_name, 'stats_node.yaml')
+        if os.path.isfile(yaml_file_path):
+            with open(yaml_file_path, 'r', encoding='utf-8') as f_yaml:
+                stats = yaml.safe_load(f_yaml)
+                if stats:
+                    component_list.append(component_name)
     return component_list
 
 
@@ -67,7 +69,8 @@ def get_stats_node(report_dir: str) -> dict:
     stats_dict = {}
     component_list = get_component_list(report_dir)
     for component_name in component_list:
-        with open(report_dir + '/analyze_node/' + component_name + '/stats_node.yaml', 'r', encoding='utf-8') as f_yaml:
+        yaml_file_path = os.path.join(report_dir, 'analyze_node', component_name, 'stats_node.yaml')
+        with open(yaml_file_path, 'r', encoding='utf-8') as f_yaml:
             stats = yaml.safe_load(f_yaml)
             stats_dict[component_name] = stats
     return stats_dict
@@ -119,7 +122,7 @@ def make_report(args, index_filename: str='index'):
     note_text_top, note_text_bottom = read_note_text(trace_data_dir, dest_dir, args.note_text_top, args.note_text_bottom)
 
     destination_path = f'{dest_dir}/{index_filename}.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_report_analysis.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_html_analysis.html'
     title = 'Analysis report'
     sub_title = dest_dir.split('/')[-1]
     render_page(title, sub_title, destination_path, template_path, component_list, stats_node_dict,

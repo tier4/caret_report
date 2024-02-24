@@ -33,10 +33,11 @@ logger.setLevel(FATAL)
 _logger: logging.Logger = None
 
 
-def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json: str, topic_list_filename: str, expectation_csv_filename: str):
+def generate_list(verbose, arch: Architecture, dest_dir: str, component_list_json: str, topic_list_filename: str, expectation_csv_filename: str):
     """Generate topic list"""
     global _logger
-    _logger = logger
+    if _logger is None:
+        _logger = create_logger(__name__, logging.DEBUG if verbose else logging.INFO)
     _logger.info(f'<<< Generate topic list start >>>')
 
     ComponentManager().initialize(component_list_json, _logger)
@@ -116,6 +117,7 @@ def generate_list(logger, arch: Architecture, dest_dir: str, component_list_json
 
 
 def create_topic_from_callback(callback_list_filename: str, dest_dir: str, topic_list_filename):
+    make_destination_dir(dest_dir, False, _logger)
     topic_list = {}
     with open(callback_list_filename, 'r', encoding='utf-8') as csvfile:
         for row in csv.DictReader(csvfile, ['node_name', 'callback_type', 'trigger', 'value']):
@@ -160,25 +162,25 @@ def parse_arg():
 
 def main():
     """Main function"""
+    global _logger
     args = parse_arg()
-    logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
+    _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
 
-    logger.debug(f'trace_data: {args.trace_data[0]}')
+    _logger.debug(f'trace_data: {args.trace_data[0]}')
     dest_dir = args.report_directory if args.report_directory != '' else f'val_{Path(args.trace_data[0]).stem}'
-    logger.debug(f'dest_dir: {dest_dir}')
-    logger.debug(f'component_list_json: {args.component_list_json}')
-    logger.debug(f'callback_list_filename: {args.callback_list_filename}')
-    logger.debug(f'topic_list_filename: {args.topic_list_filename}')
-    logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
+    _logger.debug(f'dest_dir: {dest_dir}')
+    _logger.debug(f'component_list_json: {args.component_list_json}')
+    _logger.debug(f'callback_list_filename: {args.callback_list_filename}')
+    _logger.debug(f'topic_list_filename: {args.topic_list_filename}')
+    _logger.debug(f'expectation_csv_filename: {args.expectation_csv_filename}')
 
-    make_destination_dir(dest_dir, False, _logger)
     create_topic_from_callback(args.callback_list_filename, dest_dir, args.topic_list_filename)
 
     arch = Architecture('lttng', str(args.trace_data[0]))
     # lttng = read_trace_data(args.trace_data[0], 0, 0)
     # app = Application(arch, lttng)
 
-    generate_list(logger, arch, dest_dir, args.component_list_json, args.topic_list_filename, args.expectation_csv_filename)
+    generate_list(args.verbose, arch, dest_dir, args.component_list_json, args.topic_list_filename, args.expectation_csv_filename)
 
 
 if __name__ == '__main__':

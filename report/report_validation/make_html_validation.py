@@ -63,7 +63,7 @@ def make_report(report_dir: str, component_list_json: str, note_text_top, note_t
         summary_topic_dict['cnt_failed'] += summary[Metrics.FREQUENCY.name]['cnt_failed']
 
     destination_path = f'{report_dir}/index.html'
-    template_path = f'{Path(__file__).resolve().parent}/template_report_validation.html'
+    template_path = f'{Path(__file__).resolve().parent}/template_html_validation.html'
     title = 'Validation report'
     sub_title = report_dir.split('/')[-1]
     with app.app_context():
