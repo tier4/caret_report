@@ -18,12 +18,6 @@ export duration=0
 
 export trace_data=~/work/caret_tracedata/universe/session-20231114050140/session-20231114050140
 
-## Use this to find the valid start/end of the trace data automatically
-# sh ../report/find_valid_duration/find_valid_duration.sh
-# export start_strip=$(cat start_strip.txt)
-# export end_strip=$(cat end_strip.txt)
-# rm start_strip.txt end_strip.txt
-
 # Create analysis report
 sh ../report/report_analysis/make_report.sh
 

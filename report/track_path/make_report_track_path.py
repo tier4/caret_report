@@ -30,7 +30,7 @@ import yaml
 import numpy as np
 import pandas as pd
 from bokeh.plotting import figure, save
-from bokeh.models import FixedTicker
+from bokeh.models import FixedTicker, DataRange1d
 from bokeh.resources import CDN
 import flask
 
@@ -205,7 +205,7 @@ def make_stats(dest_dir: str, report_store_dir: str, relpath_from_report_store_d
         for target_path_name in target_path_name_list:
             for target_path_info in stats:
                 if target_path_info['target_path_name'] == target_path_name:
-                    df_per_path.loc[version][target_path_name] = [
+                    df_per_path.loc[version, target_path_name] = [
                         target_path_info[val] if type(target_path_info[val]) is float else np.nan for val in value_name_list]
                     break
 
@@ -223,6 +223,10 @@ def make_stats(dest_dir: str, report_store_dir: str, relpath_from_report_store_d
         fig.xaxis.major_label_orientation = -math.pi/2
         fig.xaxis.ticker = FixedTicker(ticks=list(range(len(df.index))))
         fig.add_layout(fig.legend[0], "right")
+        NUM_DISPLAYED_DATA = 17
+        if len(df) > NUM_DISPLAYED_DATA:
+            fig.x_range = DataRange1d(start=max(0, len(df)-NUM_DISPLAYED_DATA), end=len(df))
+
         save(fig, filename=make_file_name(target_path_name, dest_dir) , title=target_path_name, resources=CDN)
         filename_path_dict[target_path_name] = make_file_name(target_path_name, dest_dir, False)
 
