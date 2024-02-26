@@ -113,7 +113,7 @@ def get_version_str_from_yaml(report_dir: str):
     elif autoware_version == '' and pilot_auto_version:
         version = version + ', ' + pilot_auto_version
     if job_description:
-        version = version + ', ' + job_description
+        version = version + ', ' + job_description[:20]
     if env:
         version = version + ', ' + env
     if route:
