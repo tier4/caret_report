@@ -68,7 +68,7 @@
     <script type="text/javascript">
       window.onload = function() {
         var height = document.getElementsByTagName("html")[0].scrollHeight;
-        window.parent.postMessage(["setHeightTrackPath", height], "*");
+        window.parent.postMessage(["setHeightTrackPath", height, location.href], "*");
       }
     </script>
 
