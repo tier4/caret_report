@@ -309,6 +309,8 @@ def read_note_text(trace_data_dir, dest_dir, note_text_top_path, note_text_botto
     if os.path.exists(caret_record_info_path):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
             caret_record_info = yaml.safe_load(f_yaml)
+            if not caret_record_info:
+                caret_record_info = {}
             note_text_top = '<ul>\n'
             note_text_top += f'<li>trace_start_datetime: {trace_datetime}</li>\n'
             new_caret_record_info = {}
