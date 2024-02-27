@@ -97,6 +97,8 @@ def get_version_str_from_yaml(report_dir: str):
     if os.path.exists(caret_record_info_path):
         with open(caret_record_info_path, encoding='UTF-8') as f_yaml:
             caret_record_info = yaml.safe_load(f_yaml)
+    if not caret_record_info:
+        caret_record_info = {}
     autoware_version = caret_record_info.get('autoware_version', '')
     pilot_auto_version = caret_record_info.get('pilot_auto_version', '')
     env = caret_record_info.get('env', '')
