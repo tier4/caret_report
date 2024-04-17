@@ -108,8 +108,7 @@ def main():
     arch = Architecture('lttng', args.trace_data)
 
     # Create architecture for path analysis
-    add_path_to_architecture.add_path_to_architecture(args, arch)
-    arch_path = Architecture('yaml', args.architecture_file_path)
+    arch_path = add_path_to_architecture.add_path_to_architecture(args, arch)
     app = Application(arch_path, lttng)
 
     # Find duration to be analyzed
