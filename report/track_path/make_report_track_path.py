@@ -219,7 +219,7 @@ def make_stats(dest_dir: str, report_store_dir: str, relpath_from_report_store_d
                      x_axis_label='Version', y_axis_label='Response Time [ms]')
         for index, value_name in enumerate(value_name_list):
             fig.line(x=list(range(len(df.index))), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], line_width=2)
-            fig.circle(x=list(range(len(df.index))), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], size=5)
+            fig.scatter(x=list(range(len(df.index))), y=df[value_name], legend_label=value_name_display_list[index], color=color_list[index], size=5)
         fig.y_range.start = 0
         fig.xaxis.major_label_overrides = {i: df.index[i].replace(', ', '\n', 2) for i in range(len(df.index))}
         fig.xaxis.major_label_orientation = -math.pi/2

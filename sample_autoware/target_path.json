@@ -71,6 +71,7 @@
       "name": "e2e_sensing-to-localization",
       "path": [
         "/sensing/lidar/top/velodyne_driver_ros_wrapper_node",
+        "/localization/pose_estimator/ndt_scan_matcher",
         "/localization/pose_twist_fusion_filter/stop_filter"
       ],
       "include_first_callback": false

@@ -26,6 +26,10 @@ import json
 import yaml
 from caret_analyze import Architecture
 from caret_analyze.value_objects import PathStructValue, NodePathStructValue
+from caret_analyze.value_objects.communication import CommunicationStructValue
+from caret_analyze.value_objects.message_context import MessageContextType
+from caret_analyze.value_objects.node_path import NodePathStructValue
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger
 
@@ -126,20 +130,41 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
         return []
 
 
-def convert_context_type_to_use_latest_message(filename_src, filename_dst):
+# def convert_context_type_to_use_latest_message(filename_src, filename_dst):
+#     """Convert context_type from UNDEFINED to use_latest_message"""
+#     yml = {}
+#     with open(filename_src, encoding='UTF-8') as f_yaml:
+#         yml = yaml.safe_load(f_yaml)
+#         nodes = yml['nodes']
+#         for node in nodes:
+#             if 'message_contexts' in node:
+#                 message_contexts = node['message_contexts']
+#                 for message_context in message_contexts:
+#                     if message_context['context_type'] == 'UNDEFINED':
+#                         message_context['context_type'] = 'use_latest_message'
+#     with open(filename_dst, 'w', encoding='UTF-8') as f_yaml:
+#         yaml.dump(yml, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
+
+
+def convert_context_type_to_use_latest_message(arch: Architecture):
     """Convert context_type from UNDEFINED to use_latest_message"""
-    yml = {}
-    with open(filename_src, encoding='UTF-8') as f_yaml:
-        yml = yaml.safe_load(f_yaml)
-        nodes = yml['nodes']
-        for node in nodes:
-            if 'message_contexts' in node:
-                message_contexts = node['message_contexts']
-                for message_context in message_contexts:
-                    if message_context['context_type'] == 'UNDEFINED':
-                        message_context['context_type'] = 'use_latest_message'
-    with open(filename_dst, 'w', encoding='UTF-8') as f_yaml:
-        yaml.dump(yml, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
+    for target_path_name in arch.path_names:
+        target_path = arch.get_path(target_path_name)
+        child_list = target_path.child
+        for i, child in enumerate(child_list):
+            if type(child) is NodePathStructValue and i > 0 and i < len(child_list) - 1:
+                node_name = child.node_name
+                sub_topic = child_list[i - 1]
+                pub_topic = child_list[i + 1]
+                if type(sub_topic) is CommunicationStructValue and type(pub_topic) is CommunicationStructValue:
+                    sub_topic = sub_topic.topic_name
+                    pub_topic = pub_topic.topic_name
+                    arch.update_message_context(node_name, MessageContextType.USE_LATEST_MESSAGE.type_name, sub_topic, pub_topic)
+
+    # For some reasons, the path needs to be removed/added again to pass verify test
+    for path in arch.paths:
+        arch.remove_path(path.path_name)
+        arch.add_path(path.path_name, path)
 
 
 def create_search_paths_filter(ignore_topic_list: list[str], ignore_node_list: list[str]) -> tuple[Callable[[str], bool], Callable[[str], bool]]:
@@ -250,10 +275,13 @@ def add_path_to_architecture(args, arch: Architecture):
     arch.export(args.architecture_file_path, force=True)
 
     if args.use_latest_message:
-        convert_context_type_to_use_latest_message(args.architecture_file_path,
-                                                   args.architecture_file_path)
+        # convert_context_type_to_use_latest_message(args.architecture_file_path,
+        #                                            args.architecture_file_path)
+        convert_context_type_to_use_latest_message(arch)
 
     _logger.info('<<< Add Path: Finish >>>')
+    return arch
+
 
 def parse_arg():
     """Parse arguments"""
