@@ -13,6 +13,8 @@ export callback_list_csv=./callback_list.csv
 export start_strip=0
 export end_strip=0
 export sim_time=false
+export is_path_analysis_only=false
+export is_html_only=false
 export find_valid_duration=false
 export duration=0
 

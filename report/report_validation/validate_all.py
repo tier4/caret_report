@@ -43,6 +43,7 @@ def parse_arg():
     parser.add_argument('--end_strip', type=float, default=0.0,
                         help='End strip [sec] to load trace data')
     parser.add_argument('--sim_time', type=strtobool, default=False)
+    parser.add_argument('--is_path_analysis_only', type=strtobool, default=False)
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Overwrite report directory')
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
@@ -87,6 +88,7 @@ def main():
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     logger.debug(f'sim_time: {args.sim_time}')
+    logger.debug(f'is_path_analysis_only: {args.is_path_analysis_only}')
     logger.debug(f'target_path_json: {args.target_path_json}')
     logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     logger.debug(f'use_latest_message: {args.use_latest_message}')
@@ -125,11 +127,12 @@ def main():
     # Analyze and validate
     analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
 
-    xaxis_type = 'sim_time' if args.sim_time else 'system_time'
-    generate_expectation_list.create_topic_from_callback(args.callback_list_filename, args.report_directory, args.topic_list_filename)
-    generate_expectation_list.generate_list(args.verbose, arch, args.report_directory, args.component_list_json, args.topic_list_filename, args.expectation_topic_csv_filename)
-    validate_topic.validate(args.verbose, arch, app, args.report_directory, args.force, args.component_list_json, os.path.join(args.report_directory, args.expectation_topic_csv_filename), xaxis_type)
-    validate_callback.validate(args.verbose, arch, app, args.report_directory, args.force, args.component_list_json, args.expectation_callback_csv_filename, xaxis_type)
+    if not args.is_path_analysis_only:
+        xaxis_type = 'sim_time' if args.sim_time else 'system_time'
+        generate_expectation_list.create_topic_from_callback(args.callback_list_filename, args.report_directory, args.topic_list_filename)
+        generate_expectation_list.generate_list(args.verbose, arch, args.report_directory, args.component_list_json, args.topic_list_filename, args.expectation_topic_csv_filename)
+        validate_topic.validate(args.verbose, arch, app, args.report_directory, args.force, args.component_list_json, os.path.join(args.report_directory, args.expectation_topic_csv_filename), xaxis_type)
+        validate_callback.validate(args.verbose, arch, app, args.report_directory, args.force, args.component_list_json, args.expectation_callback_csv_filename, xaxis_type)
 
 
 if __name__ == '__main__':

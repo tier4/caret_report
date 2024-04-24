@@ -113,9 +113,10 @@ def make_report_topic(report_dir: str, component_pair: tuple[str]):
     if len(stats_dict_topic_pubsub_metrics)== 0:
         return
     summary_dict_metrics = summarize_topic_result(stats_dict_topic_pubsub_metrics)
-
-    dest_dir = f'{report_dir}/validate_topic/{component_pair[0]}-{component_pair[1]}'
     trace_name = report_dir.split('/')[-1]
+    dest_dir = f'{report_dir}/validate_topic/{component_pair[0]}-{component_pair[1]}'
+    if not os.path.exists(dest_dir):
+        return
 
     make_report_topic_validation(dest_dir, trace_name, component_pair, stats_dict_topic_pubsub_metrics, summary_dict_metrics)
     make_report_topic_metrics(dest_dir, trace_name, component_pair, stats_dict_topic_pubsub_metrics, summary_dict_metrics)
