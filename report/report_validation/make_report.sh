@@ -12,7 +12,6 @@ report_dir_name=output/val_"${trace_data_name}"
 is_path_analysis_only=${is_path_analysis_only:-false}
 is_html_only=${is_html_only:-false}
 
-
 mkdir -p "${report_dir_name}"
 
 # Save misc files
