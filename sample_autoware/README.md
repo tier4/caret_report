@@ -120,9 +120,8 @@ sh ./run.sh
 ```
 
 - Before running the script, please modify the settings in `sample_autoware/run.sh`
-  - `trace_data`: path to trace data
-  - `start_strip`: Start strip [sec] to load trace data
-  - `end_strip`: End strip [sec] to load trace data
+  - `trace_data`: Set path to trace data
+  - `target_path_json`: Use `./target_path_latest.json` if you runs the latest Autoware or modify the json file
   - Setting files in this directory are just a sample, and may not work with your trace data.
     - Please modify them for your case. ([Explanation](../report/README.md))
 - Reports are created in `sample_autoware/output/`
