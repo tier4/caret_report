@@ -2,6 +2,7 @@
 
 export component_list_json=./component_list.json
 export target_path_json=./target_path.json
+# export target_path_json=./target_path_latest.json
 export max_node_depth=20
 export timeout=120
 export draw_all_message_flow=false
