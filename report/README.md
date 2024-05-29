@@ -34,6 +34,7 @@ export is_html_only=false                            # (optional) Set true if yo
 export find_valid_duration=false                     # (optional) Set true so that start_strip is automatically detected
 export duration=0                                    # (optional) Set a value (second) for duration to calculate end_strip
 export trace_data=~/.ros/tracing/session-yyyymmddhhmmss  # Path to CARET trace data (CTF file)
+export sub_trace_data=~/.ros/tracing/session-yyyymmddhhmmss_sub  # (optional) Path to CARET trace data recorded in Sub ECU (CTF file)
 sh ${script_path}/make_report.sh
 ```
 
@@ -72,6 +73,7 @@ export is_html_only=false                            # (optional) Set true if yo
 export find_valid_duration=false                     # (optional) Set true so that start_strip is automatically detected
 export duration=0                                    # (optional) Set a value (second) for duration to calculate end_strip
 export trace_data=~/.ros/tracing/session-yyyymmddhhmmss  # Path to CARET trace data (CTF file)
+export sub_trace_data=~/.ros/tracing/session-yyyymmddhhmmss_sub  # (optional) Path to CARET trace data recorded in Sub ECU (CTF file)
 sh ${script_path}/make_report.sh
 ```
 

@@ -29,6 +29,7 @@ if ${use_python}; then
     if ! ${is_html_only}; then
         # Analyze and validate
         python3 "${script_path}"/report_validation/validate_all.py "${trace_data}" "${report_dir_name}" \
+            --sub_trace_data="${sub_trace_data}" \
             --component_list_json="${component_list_json}" \
             --start_strip "${start_strip}" \
             --end_strip "${end_strip}" \

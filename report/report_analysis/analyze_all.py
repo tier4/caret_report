@@ -36,6 +36,7 @@ def parse_arg():
                 description='Script to make analysis reports')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('dest_dir', nargs=1, type=str)
+    parser.add_argument('--sub_trace_data', type=str, default='')
     parser.add_argument('--component_list_json', type=str, default='')
     parser.add_argument('--start_strip', type=float, default=0.0,
                         help='Start strip [sec] to load trace data')
@@ -77,6 +78,7 @@ def main():
     logger.debug(f'trace_data: {args.trace_data}')
     args.dest_dir = args.dest_dir[0]
     logger.debug(f'dest_dir: {args.dest_dir}')
+    logger.debug(f'sub_trace_data: {args.sub_trace_data}')
     logger.debug(f'component_list_json: {args.component_list_json}')
     logger.debug(f'start_strip: {args.start_strip}, end_strip: {args.end_strip}')
     logger.debug(f'sim_time: {args.sim_time}')
@@ -93,8 +95,9 @@ def main():
     logger.debug(f'skip_first_num: {args.skip_first_num}')
 
     # Read trace data
-    lttng = read_trace_data(args.trace_data, args.start_strip, args.end_strip, False)
-    arch = Architecture('lttng', args.trace_data)
+    trace_data = args.trace_data if args.sub_trace_data == '' else [args.trace_data, args.sub_trace_data]
+    lttng = read_trace_data(trace_data, args.start_strip, args.end_strip, False)
+    arch = Architecture('lttng', trace_data)
 
     # Create architecture for path analysis
     arch_path = add_path_to_architecture.add_path_to_architecture(args, arch)
@@ -108,7 +111,7 @@ def main():
         args.end_strip = end_strip
         logger.info(f'Find valid duration. start_strip: {args.start_strip}, end_strip: {args.end_strip}')
         logger.info(f'Reload trace data')
-        lttng = read_trace_data(args.trace_data, args.start_strip, args.end_strip, False)
+        lttng = read_trace_data(trace_data, args.start_strip, args.end_strip, False)
         app = Application(arch_path, lttng)
 
     # Analyze
