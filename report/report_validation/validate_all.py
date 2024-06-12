@@ -128,7 +128,10 @@ def main():
         app = Application(arch_path, lttng)
 
     # Analyze and validate
-    analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
+    if os.path.exists(args.dest_dir + '/analyze_path/index.html'):
+        logger.info(f'Skip creating path report to save time')
+    else:
+        analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
 
     if not args.is_path_analysis_only:
         xaxis_type = 'sim_time' if args.sim_time else 'system_time'

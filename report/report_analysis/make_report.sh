@@ -9,6 +9,7 @@ use_python=true # to avoid reading trace data every step
 script_path=$(dirname "$0")/..
 trace_data_name=$(basename "${trace_data}")
 report_dir_name=output/report_"${trace_data_name}"
+another_report_dir_name=output/val_"${trace_data_name}"
 is_path_analysis_only=${is_path_analysis_only:-false}
 is_html_only=${is_html_only:-false}
 
@@ -20,6 +21,12 @@ if [ -f "${trace_data}"/caret_record_info.yaml ]; then
 fi
 cp "${component_list_json}" "${report_dir_name}"/.
 cp "${target_path_json}" "${report_dir_name}"/.
+
+# Reuse path report to save time
+if [ ! -f "${report_dir_name}/analyze_path/index.html" ] && [ -f "${another_report_dir_name}/analyze_path/index.html" ]; then
+    echo "Copy analyze_path from ${another_report_dir_name} to ${report_dir_name}"
+    cp -r "${another_report_dir_name}/analyze_path" "${report_dir_name}"/.
+fi
 
 if ${use_python}; then
     find_valid_duration=${find_valid_duration:-false}

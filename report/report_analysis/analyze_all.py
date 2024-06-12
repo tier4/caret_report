@@ -115,7 +115,11 @@ def main():
         app = Application(arch_path, lttng)
 
     # Analyze
-    analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
+    if os.path.exists(args.dest_dir + '/analyze_path/index.html'):
+        logger.info(f'Skip creating path report to save time')
+    else:
+        analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
+
     if not args.is_path_analysis_only:
         analyze_node.analyze(args, lttng, arch, app, args.dest_dir + '/analyze_node')
 
