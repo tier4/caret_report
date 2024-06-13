@@ -42,7 +42,7 @@
           </tr>
           {% for callback_name, callback_stats in node_info['callbacks'].items() %}
             {% if callback_stats[metrics] %}
-              <tr>
+              <tr title="{{ callback_stats['callback_symbol'] }}">
                 <td>{{ callback_stats['callback_legend'] }}</td>
                 {% if callback_stats['period_ns'] != -1 %}
                     <td>{{ callback_stats['period_ns'] / 1e6 }} [ms]</td>

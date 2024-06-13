@@ -88,6 +88,7 @@ class StatsNode():
                      callback_stats: StatsCallback):
         self.callbacks.setdefault(callback.callback_name, {})
         self.callbacks[callback.callback_name]['callback_legend'] = callback_legend
+        self.callbacks[callback.callback_name]['callback_symbol'] = callback.symbol
         self.callbacks[callback.callback_name]['callback_type'] = callback.callback_type.type_name
         self.callbacks[callback.callback_name]['period_ns'] = callback.timer.period_ns if callback.callback_type == CallbackType.TIMER else -1
         self.callbacks[callback.callback_name]['subscribe_topic_name'] = callback.subscribe_topic_name if callback.callback_type == CallbackType.SUBSCRIPTION else ''

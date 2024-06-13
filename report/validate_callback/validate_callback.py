@@ -126,6 +126,7 @@ class Stats():
         self.component_name = ''
         self.node_name = ''
         self.callback_name = ''
+        self.callback_symbol = ''
         self.callback_type = ''
         self.period_ns = ''
         self.subscribe_topic_name = ''
@@ -146,6 +147,7 @@ class Stats():
         stats.component_name = component_name
         stats.node_name = node_name
         stats.callback_name = callback.callback_name
+        stats.callback_symbol = callback.symbol
         stats.callback_type = callback.callback_type.type_name
         stats.period_ns = callback.timer.period_ns if callback.callback_type == CallbackType.TIMER else -1
         stats.subscribe_topic_name = callback.subscribe_topic_name if callback.callback_type == CallbackType.SUBSCRIPTION else ''
