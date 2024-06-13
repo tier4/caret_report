@@ -26,6 +26,7 @@ import logging
 import json
 import yaml
 import numpy as np
+import pandas as pd
 from caret_analyze.record import RecordsInterface
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.plot import Plot
@@ -71,6 +72,8 @@ class Stats():
         self.filename_hist_worst = ''
         self.filename_timeseries_worst = ''
         self.filename_stacked_bar_worst = ''
+        self.stacked_bar_best: dict[str, dict] = {}
+        self.stacked_bar_worst: dict[str, dict] = {}
 
     def calc_stats(self, df_best: np.ndarray, df_worst: np.ndarray):
         self.best_avg = round(float(np.average(df_best)), 3)
@@ -101,6 +104,33 @@ class Stats():
         self.filename_hist_worst = f'{target_path_name}_hist_worst'
         self.filename_timeseries_worst = f'{target_path_name}_timeseries_worst'
         self.filename_stacked_bar_worst = f'{target_path_name}_stacked_bar_worst'
+
+
+    def calc_stats_stacked_bar(self, df_best: pd.DataFrame, df_worst: pd.DataFrame):
+        class StatsValue():
+            def __init__(self, df: pd.DataFrame):
+                self.avg = '---'
+                self.std = '---'
+                self.min = '---'
+                self.max = '---'
+                self.p50 = '---'
+                self.p95 = '---'
+                self.p99 = '---'
+                if len(df) > 1:
+                    self.avg = round(float(df.mean()), 3)
+                    self.std = round(float(df.std()), 3)
+                    self.p50 = round(float(df.quantile(0.50)), 3)
+                    self.p95 = round(float(df.quantile(0.95)), 3)
+                    self.p99 = round(float(df.quantile(0.99)), 3)
+                if len(df) > 0:
+                    self.min = round(float(df.min()), 3)
+                    self.max = round(float(df.max()), 3)
+
+        for name in df_best.columns:
+            if name == 'start time':
+                continue
+            self.stacked_bar_best[name] = vars(StatsValue(df_best[name]))
+            self.stacked_bar_worst[name] = vars(StatsValue(df_worst[name]))
 
 
 def get_messageflow_durationtime(records: RecordsInterface, check_by_input: bool = True):
@@ -179,6 +209,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
         _logger.warning(f'    No-traffic in the path: {target_path_name}')
     else:
         df_response_time = {}
+        df_stacked_bar = {}
         for case_str in ['best', 'worst', 'all']:
             plot_timeseries = Plot.create_response_time_timeseries_plot(target_path, case=case_str)
             fig_timeseries = plot_timeseries.figure(full_legends=False, xaxis_type=xaxis_type)
@@ -194,11 +225,14 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
             export_graph(fig_timeseries, dest_dir, target_path_name + f'_timeseries_{case_str}', target_path_name, with_png=False)
             export_graph(fig_hist, dest_dir, target_path_name + f'_hist_{case_str}', target_path_name, with_png=False)
             try:
-                Plot.create_response_time_stacked_bar_plot(target_path, case=case_str).save(xaxis_type=xaxis_type, export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
+                plot_stacked_bar = Plot.create_response_time_stacked_bar_plot(target_path, case=case_str)
+                plot_stacked_bar.save(xaxis_type=xaxis_type, export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
+                df_stacked_bar[case_str] = plot_stacked_bar.to_dataframe(xaxis_type=xaxis_type)
             except Exception as e:
                 _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}, {case_str}')
                 _logger.warning(str(e))
         stats.calc_stats(df_response_time['best'].iloc[:, 1], df_response_time['worst'].iloc[:, 1])
+        stats.calc_stats_stacked_bar(df_stacked_bar['best'], df_stacked_bar['worst'])
 
     stats.store_filename(target_path_name, args.message_flow)
     _logger.info(f'---{target_path_name}---')
