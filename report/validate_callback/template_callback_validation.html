@@ -54,7 +54,7 @@
         {% set ns = namespace(index = 0) %}
         {% for node_name, stats_callback_metrics in stats_node_callback_metrics.items() %}
           {% for callback_name, stats_metrics in stats_callback_metrics.items() %}
-          <tr>
+          <tr title="{{ stats_metrics[stats_metrics | first]['stats']['callback_symbol'] }}">
             <td>{{ ns.index }}</td>
             {% set ns.index = ns.index + 1 %}
             <td><a href="{{ node_filename_dict[node_name] }}">{{ node_name | safe }}</a></td>

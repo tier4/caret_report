@@ -47,7 +47,7 @@
             {% else %}
               {% continue %}
             {% endif %}
-            <tr>
+            <tr title="{{ stats['stats']['callback_symbol'] }}">
               <td>{{ stats['stats']['callback_legend'] }}</td>
               <td>
                 {% if stats['stats']['period_ns'] != -1 %}

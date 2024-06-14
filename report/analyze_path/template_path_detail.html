@@ -112,6 +112,39 @@
         </div>
       </div>
 
+
+      <h4>Response Time Details</h4>
+      <div>
+        <table class="table table-hover table-bordered" style="word-break: break-word">
+          <thead>
+            <tr class="table-primary text-center">
+              <th>Latency in Node / Topic </th>
+              <th>Avg [ms]</th>
+              <th>Median [ms]</th>
+              <th>Min [ms]</th>
+              <th>95%ile [ms]</th>
+              <th>99%ile [ms]</th>
+              <th>Max [ms]</th>
+              <th>Std [ms]</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for name, stats_value in path_info.stacked_bar_best.items() %}
+            <tr>
+              <td>{{ name}} </td>
+              <td class="text-end">{{ '%0.3f' % stats_value.avg|float }}</td>
+              <td class="text-end">{{ '%0.3f' % stats_value.p50|float }}</td>
+              <td class="text-end">{{ '%0.3f' % stats_value.min|float }}</td>
+              <td class="text-end">{{ '%0.3f' % stats_value.p95|float }}</td>
+              <td class="text-end">{{ '%0.3f' % stats_value.p99|float }}</td>
+              <td class="text-end">{{ '%0.3f' % stats_value.max|float }}</td>
+              <td class="text-end">{{ '%0.3f' % stats_value.std|float }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
       <div>
         {% set height_stacked_bar_graph = path_info.node_names|length * 2 * 30 + 400 %}
         {% if display_worst == true %}
