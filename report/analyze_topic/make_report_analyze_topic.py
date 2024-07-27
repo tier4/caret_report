@@ -64,9 +64,8 @@ def render_detail_page(dest_path: Path, data_path: str, title: str, sub_title: s
 
 def make_pages_for_component(path_component: Path, report_name: str, node_html_dict: dict[str, Path]):
     topic_path_list = sorted([d for d in path_component.iterdir() if d.is_dir()])
-    topic_name_list = ['/' + topic_path.name.replace('_', '/') for topic_path in topic_path_list]
     topic_html_list = [topic_path.name + '.html' for topic_path in topic_path_list]
-    render_index_page(path_component.joinpath('index.html'), f'Topic: {path_component.name}', report_name, topic_name_list, topic_html_list)
+    topic_name_list = []
     for i, topic_path in enumerate(topic_path_list):
         with open(topic_path.joinpath('stats_FREQUENCY.yaml'), 'r', encoding='utf-8') as f_yaml_freq, \
                 open(topic_path.joinpath('stats_PERIOD.yaml'), 'r', encoding='utf-8') as f_yaml_period, \
@@ -74,7 +73,13 @@ def make_pages_for_component(path_component: Path, report_name: str, node_html_d
             stats_freq = yaml.safe_load(f_yaml_freq)
             stats_period = yaml.safe_load(f_yaml_period)
             stats_latency = yaml.safe_load(f_yaml_latency)
-            render_detail_page(path_component.joinpath(topic_html_list[i]), topic_path.name, f'Topic: {topic_name_list[i]}', report_name, stats_freq, stats_period, stats_latency, node_html_dict)
+            if len(stats_freq) == 0:
+                continue
+            topic_name = stats_freq[0]['topic_name']
+            topic_name_list.append(topic_name)
+            render_detail_page(path_component.joinpath(topic_html_list[i]), topic_path.name, f'Topic: {topic_name}', report_name, stats_freq, stats_period, stats_latency, node_html_dict)
+
+    render_index_page(path_component.joinpath('index.html'), f'Topic: {path_component.name}', report_name, topic_name_list, topic_html_list)
 
 
 def create_node_html_dict(dest_dir: Path) -> dict[str, str]:

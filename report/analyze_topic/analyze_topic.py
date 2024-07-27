@@ -92,15 +92,16 @@ class StatsComm():
             self.max = round(float(data.max()), 3)
 
 
-def create_stats_for_comm(comm: Communication, metrics: Metrics, dest_dir: str, xaxis_type: str, with_graph: bool) -> StatsComm:
+def create_stats_for_comm(comm: Communication, index: int, metrics: Metrics, dest_dir: str, xaxis_type: str, with_graph: bool) -> StatsComm:
     stats_comm = StatsComm(comm.topic_name, comm.publish_node_name, comm.subscribe_node_name)
     try:
         timeseries_plot = get_comm_plot(comm, metrics)
         if with_graph:
             figure = timeseries_plot.figure(xaxis_type=xaxis_type)
             figure.y_range.start = 0
-            graph_filename = metrics.name + comm.topic_name.replace('/', '_') + comm.publish_node_name.replace('/', '_') + comm.subscribe_node_name.replace('/', '_')
-            graph_filename = graph_filename[:250]
+            graph_filename = metrics.name + comm.topic_name.replace('/', '_') + '_' + str(index)
+            graph_filefilename_suffix = comm.subscribe_node_name.replace('/', '_')
+            graph_filename = graph_filename + graph_filefilename_suffix[:120-len(graph_filename)]  # avoid too long file name
             stats_comm.filename = graph_filename
             export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
         df_comm = timeseries_plot.to_dataframe(xaxis_type=xaxis_type)
@@ -121,11 +122,11 @@ def analyze_comms(topic_name: str, comm_list: list[Communication], dest_dir: str
     skip_list = []
 
     for metrics in Metrics:
-        for comm in comm_list:
+        for index, comm in enumerate(comm_list):
             with_graph = True
             if comm in skip_list and metrics != Metrics.FREQUENCY:
                 with_graph = False
-            stats_comm = create_stats_for_comm(comm, metrics, dest_dir, xaxis_type, with_graph)
+            stats_comm = create_stats_for_comm(comm, index, metrics, dest_dir, xaxis_type, with_graph)
             if stats_comm is None:
                 continue
             if metrics == Metrics.FREQUENCY:
