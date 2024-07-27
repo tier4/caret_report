@@ -49,6 +49,16 @@
         {% endfor %}
       </ul>
 
+      <h2>Topic Analysis Report</h2>
+      <p>
+        This report shows detailed information (Frequency, Period and Latency) for communications
+      </p>
+      <ul>
+        {% for component_name in component_list_for_topic %}
+        <li><a href="analyze_topic/{{ component_name }}/index.html">{{ component_name }}</a></li>
+        {% endfor %}
+      </ul>
+
       <hr />
 
       <h2>Track of Response Time</h2>

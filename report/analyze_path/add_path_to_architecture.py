@@ -272,12 +272,12 @@ def add_path_to_architecture(args, arch: Architecture):
                     child.append(terminal_node)
             arch.add_path(target_path_name, PathStructValue(target_path_name, child))
 
-    arch.export(args.architecture_file_path, force=True)
-
     if args.use_latest_message:
         # convert_context_type_to_use_latest_message(args.architecture_file_path,
         #                                            args.architecture_file_path)
         convert_context_type_to_use_latest_message(arch)
+
+    arch.export(args.architecture_file_path, force=True)
 
     _logger.info('<<< Add Path: Finish >>>')
     return arch

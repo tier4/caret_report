@@ -54,6 +54,7 @@ if ${use_python}; then
     python3 "${script_path}"/analyze_node/make_report_analyze_node.py "${report_dir_name}"
     python3 "${script_path}"/analyze_path/make_report_analyze_path.py "${report_dir_name}"
     python3 "${script_path}"/track_path/make_report_track_path.py "${report_dir_name}" "${report_store_dir}" --relpath_from_report_store_dir="${relpath_from_report_store_dir}"
+    python3 "${script_path}"/analyze_topic/make_report_analyze_topic.py "${report_dir_name}"
     python3 "${script_path}"/report_analysis/make_html_analysis.py "${trace_data}" "${report_dir_name}" --note_text_top "${note_text_top}" --note_text_bottom "${note_text_bottom}" --num_back 3
 else
     # Path analysis
@@ -67,6 +68,10 @@ else
     # Node analysis
     python3 "${script_path}"/analyze_node/analyze_node.py "${trace_data}" "${report_dir_name}" --component_list_json="${component_list_json}" --start_strip "${start_strip}" --end_strip "${end_strip}" --sim_time "${sim_time}" -f -v
     python3 "${script_path}"/analyze_node/make_report_analyze_node.py "${report_dir_name}"
+
+    # Topic analysis
+    python3 "${script_path}"/analyze_topic/analyze_topic.py "${trace_data}" "${report_dir_name}" --component_list_json="${component_list_json}" --start_strip "${start_strip}" --end_strip "${end_strip}" --sim_time "${sim_time}" -f -v
+    python3 "${script_path}"/analyze_topic/make_report_analyze_topic.py "${report_dir_name}"
 
     # Make top page
     python3 "${script_path}"/report_analysis/make_html_analysis.py "${trace_data}" "${report_dir_name}" --note_text_top "${note_text_top}" --note_text_bottom "${note_text_bottom}" --num_back 3
