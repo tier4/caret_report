@@ -26,6 +26,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, read_trace_data
 from analyze_node import analyze_node
 from analyze_path import add_path_to_architecture, analyze_path
+from analyze_topic import analyze_topic
 from find_valid_duration import find_valid_duration
 
 
@@ -122,6 +123,7 @@ def main():
 
     if not args.is_path_analysis_only:
         analyze_node.analyze(args, lttng, arch, app, args.dest_dir + '/analyze_node')
+        analyze_topic.analyze(args, lttng, arch, app, args.dest_dir + '/analyze_topic')
 
 
 if __name__ == '__main__':

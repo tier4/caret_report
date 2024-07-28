@@ -30,7 +30,7 @@ app = flask.Flask(__name__)
 
 
 def render_page(title, sub_title, destination_path, template_path, component_list, stats_node_dict,
-                stats_path, note_text_top, note_text_bottom, num_back):
+                stats_path, component_list_for_topic, note_text_top, note_text_bottom, num_back):
     """Render html page"""
     with app.app_context():
         with open(template_path, 'r', encoding='utf-8') as f_html:
@@ -42,6 +42,7 @@ def render_page(title, sub_title, destination_path, template_path, component_lis
                 component_list=component_list,
                 stats_node_dict=stats_node_dict,
                 stats_path=stats_path,
+                component_list_for_topic=component_list_for_topic,
                 note_text_top=note_text_top,
                 note_text_bottom=note_text_bottom,
                 link_back='../' * num_back + 'index.html' if num_back > 0 else ''
@@ -106,6 +107,19 @@ def find_latency_topk(component_name, stats_node, numk=20) -> None:
     stats_node['latency_topk'] = callback_latency_list
 
 
+def get_component_list_for_topic(report_dir: str) -> list[str]:
+    """Create component name list in topic analysis"""
+    component_list = list(ComponentManager().component_dict.keys())
+    component_list.append('other')
+    remove_list = []
+    for component_name in component_list:
+        if not os.path.isfile(Path(report_dir).joinpath('analyze_topic').joinpath(component_name).joinpath('index.html')):
+            remove_list.append(component_name)
+    for remove_item in remove_list:
+        component_list.remove(remove_item)
+    return component_list
+
+
 def make_report(args, index_filename: str='index'):
     """Make report page"""
     trace_data_dir = args.trace_data[0].rstrip('/')
@@ -119,6 +133,8 @@ def make_report(args, index_filename: str='index'):
 
     stats_path = get_stats_path(dest_dir)
 
+    component_list_for_topic = get_component_list_for_topic(dest_dir)
+
     note_text_top, note_text_bottom = read_note_text(trace_data_dir, dest_dir, args.note_text_top, args.note_text_bottom)
 
     destination_path = f'{dest_dir}/{index_filename}.html'
@@ -126,7 +142,7 @@ def make_report(args, index_filename: str='index'):
     title = 'Analysis report'
     sub_title = dest_dir.split('/')[-1]
     render_page(title, sub_title, destination_path, template_path, component_list, stats_node_dict,
-                stats_path, note_text_top, note_text_bottom, args.num_back)
+                stats_path, component_list_for_topic, note_text_top, note_text_bottom, args.num_back)
 
 
 def parse_arg():

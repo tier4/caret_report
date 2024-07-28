@@ -1,0 +1,89 @@
+<!-- prettier-ignore -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <title>{{ title }}, {{ sub_title }}</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <h2>{{ sub_title }}</h2>
+
+      <p><a href="../../index.html">Back to Top</a>, <a href="./index.html">Back to Topic List</a></p>
+      <hr />
+
+      {% for metrics in metrics_list %}
+        <h3>{{ metrics }}</h3>
+        {% set stats = stats_list[loop.index0] %}
+        {% set metrics_unit = metrics_unit_list[loop.index0] %}
+
+        <table class="table table-hover table-bordered" style="word-break: break-word">
+          <tr class="table-primary text-center">
+            <th>#</th>
+            <th>Topic</th>
+            <th>Publisher</th>
+            <th>Subscriber</th>
+            <th>Avg {{ metrics_unit }}</th>
+            <th>Min {{ metrics_unit }}</th>
+            <th>Max {{ metrics_unit }}</th>
+            <th>99%ile {{ metrics_unit }}</th>
+          </tr>
+          {% for item in stats %}
+          {%set publish_node_name = item['publish_node_name'] %}
+          {%set subscribe_node_name = item['subscribe_node_name'] %}
+          {%set publish_node_name_for_dict = item['publish_node_name'] | replace('/', '_') %}
+          {%set subscribe_node_name_for_dict = item['subscribe_node_name'] | replace('/', '_') %}
+          <tr >
+            <td><a href="#{{ metrics }}_{{ loop.index0 }}">{{ loop.index0 }}</a></td>
+            <td>{{ item['topic_name'] }}</td>
+            {% if publish_node_name_for_dict in node_html_dict %}
+            <td><a href={{node_html_dict[publish_node_name_for_dict]}}>{{ publish_node_name }}</a></td>
+            {% else %}
+            <td>{{ publish_node_name }}</td>
+            {% endif %}
+            {% if subscribe_node_name_for_dict in node_html_dict %}
+            <td><a href={{node_html_dict[subscribe_node_name_for_dict]}}>{{ subscribe_node_name }}</a></td>
+            {% else %}
+            <td>{{ subscribe_node_name }}</td>
+            {% endif %}
+            <td class="text-end">{{ '%.3f' % item['avg']|float }}</td>
+            <td class="text-end">{{ '%.3f' % item['min']|float }}</td>
+            <td class="text-end">{{ '%.3f' % item['max']|float }}</td>
+            <td class="text-end">{{ '%.3f' % item['p99']|float }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        {% for item in stats %}
+        {% if item['filename'] != '' %}
+          <h4 id="{{ metrics }}_{{ loop.index0 }}">{{ loop.index0 }}. {{ item['topic_name'] }}: {{ item['publish_node_name'] }} -> {{ item['subscribe_node_name'] }}</h4>
+          <iframe src="{{ data_path }}/{{ item['filename'] }}.html" frameborder="0" width="100%" height="400" scrolling="yes"></iframe>
+        {% endif %}
+        {% endfor %}
+
+        <hr />
+
+      {% endfor %}
+    </div>  <!-- container -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
