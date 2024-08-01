@@ -96,6 +96,10 @@ def create_node_html_dict(dest_dir: Path) -> dict[str, str]:
 def make_report(dest_dir: str):
     """Make report page"""
     dest_dir = Path(dest_dir)
+    if not dest_dir.exists():
+        print('Warning. No stats file exists.', file=sys.stderr)
+        return
+
     report_name = dest_dir.parent.name
     node_html_dict = create_node_html_dict(dest_dir)
 
