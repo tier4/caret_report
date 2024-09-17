@@ -67,17 +67,20 @@ def make_pages_for_component(path_component: Path, report_name: str, node_html_d
     topic_html_list = [topic_path.name + '.html' for topic_path in topic_path_list]
     topic_name_list = []
     for i, topic_path in enumerate(topic_path_list):
-        with open(topic_path.joinpath('stats_FREQUENCY.yaml'), 'r', encoding='utf-8') as f_yaml_freq, \
-                open(topic_path.joinpath('stats_PERIOD.yaml'), 'r', encoding='utf-8') as f_yaml_period, \
-                open(topic_path.joinpath('stats_LATENCY.yaml'), 'r', encoding='utf-8') as f_yaml_latency:
-            stats_freq = yaml.safe_load(f_yaml_freq)
-            stats_period = yaml.safe_load(f_yaml_period)
-            stats_latency = yaml.safe_load(f_yaml_latency)
-            if len(stats_freq) == 0:
-                continue
-            topic_name = stats_freq[0]['topic_name']
-            topic_name_list.append(topic_name)
-            render_detail_page(path_component.joinpath(topic_html_list[i]), topic_path.name, f'Topic: {topic_name}', report_name, stats_freq, stats_period, stats_latency, node_html_dict)
+        try:
+            with open(topic_path.joinpath('stats_FREQUENCY.yaml'), 'r', encoding='utf-8') as f_yaml_freq, \
+                    open(topic_path.joinpath('stats_PERIOD.yaml'), 'r', encoding='utf-8') as f_yaml_period, \
+                    open(topic_path.joinpath('stats_LATENCY.yaml'), 'r', encoding='utf-8') as f_yaml_latency:
+                stats_freq = yaml.safe_load(f_yaml_freq)
+                stats_period = yaml.safe_load(f_yaml_period)
+                stats_latency = yaml.safe_load(f_yaml_latency)
+                if len(stats_freq) == 0:
+                    continue
+                topic_name = stats_freq[0]['topic_name']
+                topic_name_list.append(topic_name)
+                render_detail_page(path_component.joinpath(topic_html_list[i]), topic_path.name, f'Topic: {topic_name}', report_name, stats_freq, stats_period, stats_latency, node_html_dict)
+        except:
+            continue
 
     render_index_page(path_component.joinpath('index.html'), f'Topic: {path_component.name}', report_name, topic_name_list, topic_html_list)
 
