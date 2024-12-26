@@ -27,6 +27,7 @@ import datetime
 import re
 import subprocess
 import yaml
+import sys
 import numpy as np
 import pandas as pd
 from bokeh.plotting import figure, save
@@ -34,7 +35,11 @@ from bokeh.models import FixedTicker, DataRange1d
 from bokeh.resources import CDN
 import flask
 
-_logger = logging.Logger(__name__)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+from common.utils import create_logger
+
+
+_logger = create_logger(__name__)
 app = flask.Flask(__name__)
 
 
@@ -137,6 +142,7 @@ def make_stats_file_dict(dest_dir: str, report_store_dir: str) -> list[tuple[str
         past_report_list = [e for e in past_report_list if 'validate_' not in e and e != '']
     else:
         past_report_list = []
+    _logger.info(f'past_report_list = {past_report_list}')
     if report_store_dir in past_report_list:
         past_report_list.remove(report_store_dir)
 

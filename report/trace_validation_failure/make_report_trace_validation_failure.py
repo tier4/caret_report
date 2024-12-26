@@ -23,13 +23,17 @@ import math
 import logging
 import csv
 import yaml
+import sys
 import numpy as np
 import pandas as pd
 from caret_analyze import Architecture
 from anytree import Node, RenderTree
 import flask
 
-_logger = logging.Logger(__name__)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+from common.utils import create_logger
+
+_logger = create_logger(__name__)
 app = flask.Flask(__name__)
 
 
