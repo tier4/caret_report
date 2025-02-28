@@ -63,14 +63,14 @@ jobs:
         if: ${{ matrix.do_test }}
 
         run: |
-          wget -nv https://github.com/tier4/CARET_report/releases/download/20231114/session-20231114050140.tgz
-          tar xzvf session-20231114050140.tgz
+          wget -nv https://github.com/tier4/CARET_report/releases/download/20250228/session-20250228193804.tgz
+          tar xzvf session-20250228193804.tgz
 
       - name: Create CARET report
         if: ${{ matrix.do_test }}
         run: |
           script_path=`pwd`
-          trace_data=`pwd`/session-20231114050140
+          trace_data=`pwd`/session-20250228193804
           work_dir=`pwd`/sample_autoware
           report_store_dir="${work_dir}"
           export trace_data_name=`basename ${trace_data}`
@@ -107,16 +107,16 @@ jobs:
         if: ${{ matrix.do_test }}
         uses: actions/upload-artifact@v3
         with:
-          name: report_session-20231114050140
-          path: ./sample_autoware/output/report_session-20231114050140
+          name: report_session-20250228193804
+          path: ./sample_autoware/output/report_session-20250228193804
 
       - name: Compare report contents
         if: ${{ matrix.do_test }}
         run: |
           sudo apt-get install -y imagemagick
-          wget -v https://github.com/tier4/CARET_report/releases/download/20231114/report_session-20231114050140.zip
-          unzip report_session-20231114050140.zip
-          mv report_session-20231114050140 reference_result
+          wget -v https://github.com/tier4/CARET_report/releases/download/20250228/report_session-20250228193804.zip
+          unzip report_session-20250228193804.zip
+          mv report_session-20250228193804 reference_result
           export report_dir_1=`pwd`/reference_result
-          export report_dir_2=`pwd`/sample_autoware/output/report_session-20231114050140
+          export report_dir_2=`pwd`/sample_autoware/output/report_session-20250228193804
           sh `pwd`/compare/compare.sh
