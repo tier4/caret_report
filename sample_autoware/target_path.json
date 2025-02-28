@@ -9,10 +9,7 @@
   "target_path_list": [
     {
       "name": "component_sensing",
-      "path": [
-        "/sensing/lidar/top/velodyne_ros_wrapper_node",
-        "/sensing/lidar/concatenate_data"
-      ],
+      "path": ["/sensing/lidar/top/velodyne_ros_wrapper_node", "/sensing/lidar/concatenate_data"],
       "include_first_callback": false
     },
     {
@@ -51,7 +48,10 @@
     {
       "name": "component_planning",
       "path": [
-        ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+        [
+          "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+          "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+        ],
         "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
         "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner",
         "/planning/planning_validator"
@@ -86,7 +86,10 @@
           ]
         ],
         [
-          ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+          [
+            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+            "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+          ],
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
           "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner",
           "/planning/planning_validator"
@@ -121,7 +124,10 @@
       "name": "e2e_planning-to-control",
       "path_blocks": [
         [
-          ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
+          [
+            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
+            "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
+          ],
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
           "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner",
           "/planning/planning_validator"
