@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload package list
         if: ${{ matrix.do_test }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: package_list
           path: |
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload report
         if: ${{ matrix.do_test }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: report_session-20250228193804
           path: ./sample_autoware/output/report_session-20250228193804
