@@ -10,7 +10,7 @@
     {
       "name": "component_sensing",
       "path": [
-        "/sensing/lidar/top/velodyne_driver_ros_wrapper_node",
+        "/sensing/lidar/top/velodyne_ros_wrapper_node",
         "/sensing/lidar/concatenate_data"
       ],
       "include_first_callback": false
@@ -18,7 +18,7 @@
     {
       "name": "component_localization",
       "path": [
-        "/sensing/lidar/top/ring_outlier_filter",
+        "/sensing/lidar/concatenate_data",
         "/localization/pose_twist_fusion_filter/stop_filter"
       ],
       "include_first_callback": false
@@ -51,12 +51,9 @@
     {
       "name": "component_planning",
       "path": [
-        [
-          "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
-          "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
-        ],
+        ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
         "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
-        "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
+        "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner",
         "/planning/planning_validator"
       ]
     },
@@ -70,7 +67,7 @@
     {
       "name": "e2e_sensing-to-localization",
       "path": [
-        "/sensing/lidar/top/velodyne_driver_ros_wrapper_node",
+        "/sensing/lidar/top/velodyne_ros_wrapper_node",
         "/localization/pose_estimator/ndt_scan_matcher",
         "/localization/pose_twist_fusion_filter/stop_filter"
       ],
@@ -80,7 +77,7 @@
       "name": "e2e_sensing-to-control",
       "path_blocks": [
         [
-          "/sensing/lidar/top/velodyne_driver_ros_wrapper_node",
+          "/sensing/lidar/top/velodyne_ros_wrapper_node",
           "/perception/object_recognition/detection/centerpoint/lidar_centerpoint",
           "/perception/object_recognition/prediction/map_based_prediction",
           [
@@ -89,12 +86,9 @@
           ]
         ],
         [
-          [
-            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
-            "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
-          ],
+          ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
-          "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
+          "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner",
           "/planning/planning_validator"
         ],
         [
@@ -108,7 +102,7 @@
     {
       "name": "e2e_sensing-to-perception",
       "path": [
-        "/sensing/lidar/top/velodyne_driver_ros_wrapper_node",
+        "/sensing/lidar/top/velodyne_ros_wrapper_node",
         "/perception/object_recognition/detection/centerpoint/lidar_centerpoint",
         "/perception/object_recognition/prediction/map_based_prediction"
       ],
@@ -117,7 +111,7 @@
     {
       "name": "e2e_sensing-to-perception(detection)",
       "path": [
-        "/sensing/lidar/top/velodyne_driver_ros_wrapper_node",
+        "/sensing/lidar/top/velodyne_ros_wrapper_node",
         "/perception/object_recognition/detection/centerpoint/lidar_centerpoint",
         "/perception/object_recognition/tracking/multi_object_tracker"
       ],
@@ -127,12 +121,9 @@
       "name": "e2e_planning-to-control",
       "path_blocks": [
         [
-          [
-            "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner",
-            "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"
-          ],
+          ["/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner", "/planning/scenario_planning/lane_driving/behavior_planning/path_with_lane_id"],
           "/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner",
-          "/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner",
+          "/planning/scenario_planning/lane_driving/motion_planning/obstacle_cruise_planner",
           "/planning/planning_validator"
         ],
         [

@@ -65,6 +65,9 @@ WARNING : 2022-08-25 18:14:31 | The following packages have not been built using
   - Before running Autoware, some environmental settings need to be done like the following commands
   - Please modify map_path and rosbag file for your environment
   - Make sure that object detection works and path is created when you set a 2D Goal Pose, so that you can analyze end-to-end path later
+- Note (Added on 2025/02/28):
+  - To enable planning, control_mode needs to be set with the latest version. It required because the sample rosbag doesn't include that topic
+  - `ros2 topic pub /vehicle/status/control_mode autoware_vehicle_msgs/msg/ControlModeReport "mode: 0" --once`
 
 ### Copy topic filter
 
@@ -92,7 +95,11 @@ ros2 launch autoware_launch logging_simulator.launch.xml map_path:=$HOME/work/ro
 # on another terminal
 cd ${autoware_dir}
 source ./install/local_setup.bash
+ros2 topic pub /vehicle/status/control_mode autoware_vehicle_msgs/msg/ControlModeReport "mode: 0" --once
 ros2 bag play ~/work/rosbag_map/universe/sample-rosbag
+
+# on rviz
+# Set a 2D Goal Pose, and make sure trajectory is displayed
 
 # on another terminal
 source ${caret_dir}/install/local_setup.bash
