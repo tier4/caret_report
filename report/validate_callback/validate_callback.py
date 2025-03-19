@@ -99,8 +99,8 @@ class Expectation():
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
-        with open(expectation_csv_filename, 'r', encoding='utf-8') as csvfile:
-            for row in csv.DictReader(csvfile, ['node_name', 'callback_type', 'trigger', 'value']):
+        with open(expectation_csv_filename, 'r', encoding='utf-8') as csv_file:
+            for row in csv.DictReader(csv_file, ['node_name', 'callback_type', 'trigger', 'value']):
                 try:
                     read_node_name = row['node_name']
                     read_component_name = ComponentManager().get_component_name(read_node_name)
