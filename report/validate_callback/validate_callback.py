@@ -14,7 +14,7 @@
 """
 Script to validate callback functions
 """
-from typing import Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Union, Type
+from typing import List, Optional, Tuple
 import sys
 import os
 from pathlib import Path
@@ -25,9 +25,8 @@ import re
 from itertools import groupby
 import csv
 import yaml
-import numpy as np
 import pandas as pd
-from caret_analyze import Architecture, Application, Lttng
+from caret_analyze import Architecture, Application
 from caret_analyze.runtime.node import Node
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.plot import Plot
@@ -59,9 +58,10 @@ def get_node_plot(callbacks: list[CallbackBase], metrics: Metrics):
 
 class Expectation():
     id = 0
-    def __init__(self,
-        component_name: str, node_name: str, callback_name: str, callback_type: CallbackType, period_ns: Optional[int], topic_name: Optional[str],
-        value: float, lower_limit: Optional[float] = None, upper_limit: Optional[float] = None, ratio: Optional[float] = None, burst_num: Optional[int] = None):
+
+    def __init__(self, component_name: str, node_name: str, callback_name: str, callback_type: CallbackType,
+                 period_ns: Optional[int], topic_name: Optional[str], value: float, lower_limit: Optional[float] = None,
+                 upper_limit: Optional[float] = None, ratio: Optional[float] = None, burst_num: Optional[int] = None):
         if callback_type == CallbackType.TIMER and period_ns is not None:
             pass
         elif callback_type == CallbackType.SUBSCRIPTION and topic_name is not None:
@@ -87,13 +87,14 @@ class Expectation():
     def find_expectation(expectation_list: list, callback: CallbackBase):
         for expectation in expectation_list:
             if re.search(expectation.node_name, callback.node_name) and expectation.callback_type == callback.callback_type:
-                if (callback.callback_type == CallbackType.TIMER and expectation.period_ns == callback.timer.period_ns) \
-                    or (callback.callback_type == CallbackType.SUBSCRIPTION and expectation.topic_name == callback.subscription.topic_name):
-                        return expectation
+                if (callback.callback_type == CallbackType.TIMER and expectation.period_ns == callback.timer.period_ns) or \
+                   (callback.callback_type == CallbackType.SUBSCRIPTION and expectation.topic_name == callback.subscription.topic_name):
+                    return expectation
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str, component_name: Optional[str], lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=5) -> List:
+    def from_csv(expectation_csv_filename: str, component_name: Optional[str],
+                 lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=5) -> List:
         expectation_list: list[Expectation] = []
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
@@ -110,18 +111,19 @@ class Expectation():
                     except ValueError:
                         value = 0
                     expectation = Expectation(read_component_name, read_node_name, '',
-                        CallbackType.TIMER if row['callback_type'] == 'timer_callback' else CallbackType.SUBSCRIPTION,
-                        int(row['trigger']) if row['callback_type'] == 'timer_callback' else None,
-                        row['trigger'] if row['callback_type'] == 'subscription_callback' else None,
-                        value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
-                except:
-                    _logger.error(f"Error at reading: {row}")
+                                              CallbackType.TIMER if row['callback_type'] == 'timer_callback' else CallbackType.SUBSCRIPTION,
+                                              int(row['trigger']) if row['callback_type'] == 'timer_callback' else None,
+                                              row['trigger'] if row['callback_type'] == 'subscription_callback' else None,
+                                              value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
+                except Exception as e:
+                    _logger.error(f"Error at reading: {row} {e}")
                     return None
                 expectation_list.append(expectation)
         return expectation_list
 
 
 class Stats():
+
     def __init__(self):
         self.component_name = ''
         self.node_name = ''
@@ -178,14 +180,15 @@ class Stats():
         stats.node_name = expectation.node_name
         stats.callback_name = expectation.callback_name
         stats.callback_type = expectation.callback_type.type_name
-        stats.period_ns =  expectation.period_ns if expectation.callback_type == CallbackType.TIMER else -1
+        stats.period_ns = expectation.period_ns if expectation.callback_type == CallbackType.TIMER else -1
         stats.subscribe_topic_name = expectation.topic_name if expectation.callback_type == CallbackType.SUBSCRIPTION else ''
         stats.metrics = metrics.name
         return stats
 
 
 class Result():
-    def __init__(self, stats: Stats, expectation: Optional[Expectation]=None):
+
+    def __init__(self, stats: Stats, expectation: Optional[Expectation] = None):
         self.stats = stats
         self.result_status = ResultStatus.OUT_OF_SCOPE.name
         self.expectation_value = -1
@@ -236,14 +239,15 @@ class Result():
             # if self.burst_num_upper_limit > expectation.burst_num:
             #     self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
-        if self.result_ratio_lower_limit == ResultStatus.FAILED.name \
-            or self.result_ratio_upper_limit == ResultStatus.FAILED.name \
-            or self.result_burst_num_lower_limit == ResultStatus.FAILED.name \
-            or self.result_burst_num_upper_limit == ResultStatus.FAILED.name:
-                self.result_status = ResultStatus.FAILED.name
+        if self.result_ratio_lower_limit == ResultStatus.FAILED.name or \
+           self.result_ratio_upper_limit == ResultStatus.FAILED.name or \
+           self.result_burst_num_lower_limit == ResultStatus.FAILED.name or\
+           self.result_burst_num_upper_limit == ResultStatus.FAILED.name:
+            self.result_status = ResultStatus.FAILED.name
 
 
-def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str, xaxis_type: str, not_display_callback_list=[]) -> dict[str, Tuple[Stats, pd.DataFrame]]:
+def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component_name: str, xaxis_type: str,
+                          not_display_callback_list=[]) -> dict[str, Tuple[Stats, pd.DataFrame]]:
     stats_list = {}
     try:
         timeseries_plot = get_node_plot(node.callbacks, metrics)
@@ -275,12 +279,13 @@ def create_stats_for_node(node: Node, metrics: Metrics, dest_dir: str, component
             figure.y_range.start = 0
             export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
         except:
-            _logger.info(f'Failed to export graph')
+            _logger.info('Failed to export graph')
 
     return stats_list
 
 
-def validate_callback(component_name: str, target_node_list: list[Node], metrics: Metrics, dest_dir: str, xaxis_type: str,  expectation_list: List[Expectation] = [], not_display_callback_list=[]) -> list[Result]:
+def validate_callback(component_name: str, target_node_list: list[Node], metrics: Metrics, dest_dir: str,
+                      xaxis_type: str, expectation_list: List[Expectation] = [], not_display_callback_list=[]) -> list[Result]:
     expectation_validated_list = expectation_list.copy()   # keep original because there may be multiple callbacks with the same parameters in a node
     result_info_list: list[Result] = []
     for node in target_node_list:
@@ -372,7 +377,7 @@ def validate(verbose, arch: Architecture, app: Application, dest_dir: str, force
     if _logger is None:
         _logger = create_logger(__name__, logging.DEBUG if verbose else logging.INFO)
 
-    _logger.info(f'<<< Validate callback start >>>')
+    _logger.info('<<< Validate callback start >>>')
 
     make_destination_dir(dest_dir + '/validate_callback', force, _logger)
     arch.export(dest_dir + '/architecture.yaml', force=True)
@@ -381,13 +386,12 @@ def validate(verbose, arch: Architecture, app: Application, dest_dir: str, force
     for component_name, _ in ComponentManager().component_dict.items():
         validate_component(app, component_name, dest_dir, force, expectation_csv_filename, xaxis_type)
 
-    _logger.info(f'<<< Validate callback finish >>>')
+    _logger.info('<<< Validate callback finish >>>')
 
 
 def parse_arg():
     """Parse arguments"""
-    parser = argparse.ArgumentParser(
-                description='Script to analyze node callback functions')
+    parser = argparse.ArgumentParser(description='Script to analyze node callback functions')
     parser.add_argument('trace_data', nargs=1, type=str)
     parser.add_argument('--report_directory', type=str, default='')
     parser.add_argument('--component_list_json', type=str, default='component_list.json')
