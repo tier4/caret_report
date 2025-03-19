@@ -329,31 +329,39 @@ def save_stats(app: Application, result_list: list[Result], component_name: str,
         yaml.safe_dump(result_var_list, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
-def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str, xaxis_type: str, threshold_freq_not_display: int=200):
+def validate_component(app: Application, component_name: str, dest_dir: str, force: bool, expectation_csv_filename: str, xaxis_type: str):
     """Validate callback for each component"""
     dest_dir = f'{dest_dir}/validate_callback/{component_name}'
     make_destination_dir(dest_dir, force, _logger)
 
     target_node_list: list[Node] = []
     for node in app.nodes:
-        # _logger.debug(f'Processing: {node.node_name}')
         if ComponentManager().check_if_target(component_name, node.node_name):
             target_node_list.append(node)
 
-    result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, xaxis_type
-                                    , expectation_list=Expectation.from_csv(expectation_csv_filename, component_name))
+    # validate callback frequency
+    exception_list = Expectation.from_csv(expectation_csv_filename, component_name)
+    result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, xaxis_type,
+                                    expectation_list=exception_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
 
     # callbacks with high frequency is not displayed
-    not_display_callback_list = [result.stats['callback_name'] for result in result_list
-        if (isinstance(result.stats['avg'], int) or isinstance(result.stats['avg'], float)) and result.stats['avg'] >= threshold_freq_not_display]
+    THRESHOLD_FREQ_NOT_DISPLAY = 200
+    not_display_callback_list = []
+    for result in result_list:
+        average_freq = result.stats['avg']
+        is_numeric = isinstance(average_freq, int) or isinstance(average_freq, float)
+        if is_numeric and average_freq >= THRESHOLD_FREQ_NOT_DISPLAY:
+            not_display_callback_list.append(result.stats['callback_name'])
 
-    result_list = validate_callback(component_name, target_node_list, Metrics.PERIOD, dest_dir, xaxis_type
-                                    , not_display_callback_list=not_display_callback_list)
+    # validate callback period
+    result_list = validate_callback(component_name, target_node_list, Metrics.PERIOD, dest_dir, xaxis_type,
+                                    not_display_callback_list=not_display_callback_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.PERIOD.name)
 
-    result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir, xaxis_type
-                                    , not_display_callback_list=not_display_callback_list)
+    # validate callback latency
+    result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir, xaxis_type,
+                                    not_display_callback_list=not_display_callback_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.LATENCY.name)
 
 
