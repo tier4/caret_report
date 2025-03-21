@@ -141,6 +141,34 @@ class Expectation():
             expectation_list.append(expectation)
         return expectation_list
 
+    @staticmethod
+    def read_latency_expectations(expectation_csv_filename: str, component_name: Optional[str]) -> List:
+        expectation_csv_rows = Expectation._read_expectation_csv(expectation_csv_filename, component_name)
+        expectation_list: list[Expectation] = []
+        for row in expectation_csv_rows:
+            try:
+                read_node_name = row['node_name']
+                read_component_name = ComponentManager().get_component_name(read_node_name)
+                if component_name is not None and read_component_name != component_name:
+                    continue
+                if row['callback_type'] != 'timer_callback':
+                    continue
+
+                timer_callback_interval_ns = int(row['trigger'])
+                execution_time_limit_ms = timer_callback_interval_ns * (10**-6)
+                RATIO = 0.2  # it's configurable
+                BURST_NUM = 5  # it's configurable
+
+                expectation = Expectation(
+                    read_component_name, read_node_name, '', CallbackType.TIMER, timer_callback_interval_ns,
+                    None, execution_time_limit_ms, 0, execution_time_limit_ms, RATIO, BURST_NUM
+                )
+            except Exception as e:
+                _logger.error(f"Error at reading: {row} {e}")
+                return None
+            expectation_list.append(expectation)
+        return expectation_list
+
 
 class Stats():
 
@@ -245,8 +273,8 @@ class Result():
             self.ratio_upper_limit = float((df_callback > expectation.upper_limit).sum() / len(df_callback))
             if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            # if self.ratio_upper_limit > expectation.ratio:
-            #     self.result_ratio_upper_limit = ResultStatus.FAILED.name
+            if self.ratio_upper_limit > expectation.ratio:
+                self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x < expectation.lower_limit)]
             group = [x[1] for x in flag_group if x[0]]
@@ -256,8 +284,8 @@ class Result():
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
             if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            # if self.burst_num_upper_limit > expectation.burst_num:
-            #     self.result_burst_num_upper_limit = ResultStatus.FAILED.name
+            if self.burst_num_upper_limit > expectation.burst_num:
+                self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name or \
            self.result_ratio_upper_limit == ResultStatus.FAILED.name or \
@@ -365,9 +393,9 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
             target_node_list.append(node)
 
     # validate callback frequency
-    expectation_list = Expectation.read_frequency_expectations(expectation_csv_filename, component_name)
+    frequency_expectation_list = Expectation.read_frequency_expectations(expectation_csv_filename, component_name)
     result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, xaxis_type,
-                                    expectation_list=expectation_list)
+                                    expectation_list=frequency_expectation_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
 
     # callbacks with high frequency is not displayed
@@ -385,7 +413,10 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
     save_stats(app, result_list, component_name, dest_dir, Metrics.PERIOD.name)
 
     # validate callback latency
+    latency_expectation_list = Expectation.read_latency_expectations(expectation_csv_filename, component_name)
+    print(latency_expectation_list)
     result_list = validate_callback(component_name, target_node_list, Metrics.LATENCY, dest_dir, xaxis_type,
+                                    expectation_list=latency_expectation_list,
                                     not_display_callback_list=not_display_callback_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.LATENCY.name)
 
