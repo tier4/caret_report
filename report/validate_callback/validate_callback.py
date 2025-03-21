@@ -60,8 +60,8 @@ class Expectation():
     id = 0
 
     def __init__(self, component_name: str, node_name: str, callback_name: str, callback_type: CallbackType,
-                 period_ns: Optional[int], topic_name: Optional[str], value: float, lower_limit: Optional[float] = None,
-                 upper_limit: Optional[float] = None, ratio: Optional[float] = None, burst_num: Optional[int] = None):
+                 period_ns: Optional[int], topic_name: Optional[str], value: float, lower_limit: float, upper_limit: float,
+                 ratio: Optional[float] = None, burst_num: Optional[int] = None):
         if callback_type == CallbackType.TIMER and period_ns is not None:
             pass
         elif callback_type == CallbackType.SUBSCRIPTION and topic_name is not None:
@@ -78,8 +78,8 @@ class Expectation():
         self.period_ns = period_ns
         self.topic_name = topic_name
         self.value = value
-        self.lower_limit = lower_limit or self.value * 0.8
-        self.upper_limit = upper_limit or self.value * 1.2
+        self.lower_limit = lower_limit
+        self.upper_limit = upper_limit
         self.ratio = ratio or 0.2
         self.burst_num = burst_num or 5
 
