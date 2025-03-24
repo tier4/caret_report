@@ -112,7 +112,7 @@ class Expectation():
 
     @staticmethod
     def read_frequency_expectations(expectation_csv_filename: str, component_name: Optional[str],
-                                    lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=5) -> List:
+                                    lower_limit_scale=0.8, ratio=0.2, burst_num=5) -> List:
         expectation_csv_rows = Expectation._read_expectation_csv(expectation_csv_filename)
         expectation_list: list[Expectation] = []
         for row in expectation_csv_rows:
@@ -123,7 +123,7 @@ class Expectation():
                     continue
                 value = row['value']
                 lower_limit_value = value * lower_limit_scale
-                upper_limit_value = value * upper_limit_scale
+                upper_limit_value = float('inf')
 
                 if row['callback_type'] == 'timer_callback':
                     expectation = Expectation(
@@ -245,8 +245,8 @@ class Result():
             self.ratio_upper_limit = float((df_callback > expectation.upper_limit).sum() / len(df_callback))
             if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            # if self.ratio_upper_limit > expectation.ratio:
-            #     self.result_ratio_upper_limit = ResultStatus.FAILED.name
+            if self.ratio_upper_limit > expectation.ratio:
+                self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x < expectation.lower_limit)]
             group = [x[1] for x in flag_group if x[0]]
@@ -256,8 +256,8 @@ class Result():
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
             if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            # if self.burst_num_upper_limit > expectation.burst_num:
-            #     self.result_burst_num_upper_limit = ResultStatus.FAILED.name
+            if self.burst_num_upper_limit > expectation.burst_num:
+                self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name or \
            self.result_ratio_upper_limit == ResultStatus.FAILED.name or \
