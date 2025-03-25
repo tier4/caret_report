@@ -60,8 +60,8 @@ class Expectation():
     id = 0
 
     def __init__(self, component_name: str, node_name: str, callback_name: str, callback_type: CallbackType,
-                 period_ns: Optional[int], topic_name: Optional[str], value: float, lower_limit: Optional[float] = None,
-                 upper_limit: Optional[float] = None, ratio: Optional[float] = None, burst_num: Optional[int] = None):
+                 period_ns: Optional[int], topic_name: Optional[str], value: float, lower_limit: float, upper_limit: float,
+                 ratio: Optional[float] = None, burst_num: Optional[int] = None):
         if callback_type == CallbackType.TIMER and period_ns is not None:
             pass
         elif callback_type == CallbackType.SUBSCRIPTION and topic_name is not None:
@@ -78,8 +78,8 @@ class Expectation():
         self.period_ns = period_ns
         self.topic_name = topic_name
         self.value = value
-        self.lower_limit = lower_limit or self.value * 0.8
-        self.upper_limit = upper_limit or self.value * 1.2
+        self.lower_limit = lower_limit
+        self.upper_limit = upper_limit
         self.ratio = ratio or 0.2
         self.burst_num = burst_num or 5
 
@@ -93,32 +93,52 @@ class Expectation():
         return None
 
     @staticmethod
-    def from_csv(expectation_csv_filename: str, component_name: Optional[str],
-                 lower_limit_scale=0.8, upper_limit_scale=1.2, ratio=0.2, burst_num=5) -> List:
-        expectation_list: list[Expectation] = []
+    def _read_expectation_csv(expectation_csv_filename: str) -> List[dict]:
         if not os.path.isfile(expectation_csv_filename):
             _logger.error(f"Unable to read expectation csv: {expectation_csv_filename}")
             return []
         with open(expectation_csv_filename, 'r', encoding='utf-8') as csv_file:
-            for row in csv.DictReader(csv_file, ['node_name', 'callback_type', 'trigger', 'value']):
-                try:
-                    read_node_name = row['node_name']
-                    read_component_name = ComponentManager().get_component_name(read_node_name)
-                    if component_name is not None and read_component_name != component_name:
-                        continue
-                    try:
-                        value = float(row['value'])
-                    except ValueError:
-                        value = 0
-                    expectation = Expectation(read_component_name, read_node_name, '',
-                                              CallbackType.TIMER if row['callback_type'] == 'timer_callback' else CallbackType.SUBSCRIPTION,
-                                              int(row['trigger']) if row['callback_type'] == 'timer_callback' else None,
-                                              row['trigger'] if row['callback_type'] == 'subscription_callback' else None,
-                                              value, value * lower_limit_scale, value * upper_limit_scale, ratio if value > 1 else 0.5, burst_num)
-                except Exception as e:
-                    _logger.error(f"Error at reading: {row} {e}")
-                    return None
-                expectation_list.append(expectation)
+            HEADERS = ['node_name', 'callback_type', 'trigger', 'value']
+            expectation_csv_rows = list(csv.DictReader(csv_file, HEADERS))
+
+        # Convert string value to float
+        for idx in range(len(expectation_csv_rows)):
+            try:
+                expectation_csv_rows[idx]['value'] = float(expectation_csv_rows[idx]['value'])
+            except ValueError:
+                expectation_csv_rows[idx]['value'] = 0
+
+        return expectation_csv_rows
+
+    @staticmethod
+    def read_frequency_expectations(expectation_csv_filename: str, component_name: Optional[str],
+                                    lower_limit_scale=0.8, ratio=0.2, burst_num=5) -> List:
+        expectation_csv_rows = Expectation._read_expectation_csv(expectation_csv_filename)
+        expectation_list: list[Expectation] = []
+        for row in expectation_csv_rows:
+            try:
+                read_node_name = row['node_name']
+                read_component_name = ComponentManager().get_component_name(read_node_name)
+                if component_name is not None and read_component_name != component_name:
+                    continue
+                value = row['value']
+                lower_limit_value = value * lower_limit_scale
+                upper_limit_value = float('inf')
+
+                if row['callback_type'] == 'timer_callback':
+                    expectation = Expectation(
+                        read_component_name, read_node_name, '', CallbackType.TIMER, int(row['trigger']),
+                        None, value, lower_limit_value, upper_limit_value, ratio, burst_num
+                    )
+                else:
+                    expectation = Expectation(
+                        read_component_name, read_node_name, '', CallbackType.SUBSCRIPTION, None,
+                        row['trigger'], value, lower_limit_value, upper_limit_value, ratio, burst_num
+                    )
+            except Exception as e:
+                _logger.error(f"Error at reading: {row} {e}")
+                return None
+            expectation_list.append(expectation)
         return expectation_list
 
 
@@ -225,8 +245,8 @@ class Result():
             self.ratio_upper_limit = float((df_callback > expectation.upper_limit).sum() / len(df_callback))
             if self.ratio_lower_limit > expectation.ratio:
                 self.result_ratio_lower_limit = ResultStatus.FAILED.name
-            # if self.ratio_upper_limit > expectation.ratio:
-            #     self.result_ratio_upper_limit = ResultStatus.FAILED.name
+            if self.ratio_upper_limit > expectation.ratio:
+                self.result_ratio_upper_limit = ResultStatus.FAILED.name
 
             flag_group = [(flag, len(list(group))) for flag, group in groupby(df_callback, key=lambda x: x < expectation.lower_limit)]
             group = [x[1] for x in flag_group if x[0]]
@@ -236,8 +256,8 @@ class Result():
             self.burst_num_upper_limit = max(group) if len(group) > 0 else 0
             if self.burst_num_lower_limit > expectation.burst_num:
                 self.result_burst_num_lower_limit = ResultStatus.FAILED.name
-            # if self.burst_num_upper_limit > expectation.burst_num:
-            #     self.result_burst_num_upper_limit = ResultStatus.FAILED.name
+            if self.burst_num_upper_limit > expectation.burst_num:
+                self.result_burst_num_upper_limit = ResultStatus.FAILED.name
 
         if self.result_ratio_lower_limit == ResultStatus.FAILED.name or \
            self.result_ratio_upper_limit == ResultStatus.FAILED.name or \
@@ -345,9 +365,9 @@ def validate_component(app: Application, component_name: str, dest_dir: str, for
             target_node_list.append(node)
 
     # validate callback frequency
-    exception_list = Expectation.from_csv(expectation_csv_filename, component_name)
+    expectation_list = Expectation.read_frequency_expectations(expectation_csv_filename, component_name)
     result_list = validate_callback(component_name, target_node_list, Metrics.FREQUENCY, dest_dir, xaxis_type,
-                                    expectation_list=exception_list)
+                                    expectation_list=expectation_list)
     save_stats(app, result_list, component_name, dest_dir, Metrics.FREQUENCY.name)
 
     # callbacks with high frequency is not displayed
