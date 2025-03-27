@@ -22,8 +22,8 @@ sudo chmod u-s /usr/sbin/groupadd
 . /opt/ros/"$ROS_DISTRO"/setup.sh
 . /ros2_caret_ws/install/local_setup.sh
 
-cd /work
-export trace_data=/${trace_data_name}
+cd /work || exit 1
+export trace_data=/${trace_data_name:?}
 export report_store_dir=/report_store_dir
 
 sh /CARET_report/report/report_analysis/make_report.sh
