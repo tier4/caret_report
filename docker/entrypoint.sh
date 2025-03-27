@@ -22,7 +22,12 @@ sudo chmod u-s /usr/sbin/groupadd
 . /opt/ros/"$ROS_DISTRO"/setup.sh
 . /ros2_caret_ws/install/local_setup.sh
 
-cd /work || exit 1
+
+# /work directory in not always mounted
+if [ -d /work ]; then
+    cd /work || exit 1
+fi
+
 export trace_data=/${trace_data_name:?}
 export report_store_dir=/report_store_dir
 
