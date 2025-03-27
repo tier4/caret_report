@@ -22,7 +22,6 @@ sudo chmod u-s /usr/sbin/groupadd
 . /opt/ros/"$ROS_DISTRO"/setup.sh
 . /ros2_caret_ws/install/local_setup.sh
 
-
 # /work directory in not always mounted
 if [ -d /work ]; then
     cd /work || exit 1
