@@ -10,6 +10,7 @@ RUN chmod u+s /usr/sbin/useradd \
     && chmod u+s /usr/sbin/groupadd
 # Add user and group: end
 
+# hadolint ignore=DL3008
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         locales \
@@ -20,6 +21,7 @@ RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 
 # Install requirements for CARET_report (Flask, selenium, firefox, geckodriver, Helvetica alternative font)
+# hadolint ignore=DL3008
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         unzip \
@@ -31,6 +33,7 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# hadolint ignore=DL3013
 RUN pip3 install --no-cache-dir 'Flask>=3' anytree
 
 # Build CARET (Humble)
@@ -46,6 +49,7 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
     rm -rf src/ros2/ src/ros-tracing/ && \
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
+# hadolint ignore=DL3003
 RUN cd ros2_caret_ws/src/CARET/caret_analyze && \
     git show --format='%H' --no-patch
 

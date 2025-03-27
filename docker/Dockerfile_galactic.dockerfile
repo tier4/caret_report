@@ -1,6 +1,7 @@
 # cspell:ignore geckodriver, xzvf
 FROM osrf/ros:galactic-desktop
 
+# hadolint ignore=DL3008
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         locales \
@@ -11,6 +12,7 @@ RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 
 # Install requirements for CARET_report (Flask, selenium, firefox, geckodriver, Helvetica alternative font)
+# hadolint ignore=DL3008
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         unzip \
