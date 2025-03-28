@@ -22,7 +22,16 @@ sudo chmod u-s /usr/sbin/groupadd
 . /opt/ros/"$ROS_DISTRO"/setup.sh
 . /ros2_caret_ws/install/local_setup.sh
 
-cd /work
+# /work directory is not always mounted
+if [ -d /work ]; then
+    cd /work || exit 1
+fi
+
+# $trace_data_name is not always set
+if [ -z "$trace_data_name" ]; then
+    trace_data_name=""
+fi
+
 export trace_data=/${trace_data_name}
 export report_store_dir=/report_store_dir
 
