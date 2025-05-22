@@ -19,7 +19,16 @@ export is_html_only=false
 export find_valid_duration=false
 export duration=0
 
-export trace_data=~/work/caret_tracedata/universe/session-20231114050140/session-20231114050140
+if [ $# -lt 1 ]; then
+  echo "Error: Please specify the path to trace_data (cf: ~/.ros/tracing/session-ooo) as an argument."
+  echo "Usage: $0 <trace_data_path> [sub_trace_data_path:optional]"
+  exit 1
+fi
+
+export trace_data=$1
+if [ $# -ge 2 ]; then
+  export sub_trace_data=$2
+fi
 
 # Create analysis report
 sh ../report/report_analysis/make_report.sh
