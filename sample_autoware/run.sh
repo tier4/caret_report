@@ -20,14 +20,14 @@ export find_valid_duration=false
 export duration=0
 
 if [ $# -lt 1 ]; then
-  echo "Error: Please specify the path to trace_data (cf: ~/.ros/tracing/session-ooo) as an argument."
-  echo "Usage: $0 <trace_data_path> [sub_trace_data_path:optional]"
-  exit 1
+    echo "Error: Please specify the path to trace_data (cf: ~/.ros/tracing/session-ooo) as an argument."
+    echo "Usage: $0 <trace_data_path> [sub_trace_data_path:optional]"
+    exit 1
 fi
 
 export trace_data=$1
 if [ $# -ge 2 ]; then
-  export sub_trace_data=$2
+    export sub_trace_data=$2
 fi
 
 # Create analysis report
