@@ -123,11 +123,10 @@ ros2 caret check_ctf ~/.ros/tracing/session_yyyymmddhhmmss
 ```sh
 source ${caret_dir}/install/local_setup.bash
 cd ${path-to-this-repo}/sample_autoware
-sh ./run.sh
+sh ./run.sh ~/.ros/tracing/session_yyyymmddhhmmss
 ```
 
 - Before running the script, please modify the settings in `sample_autoware/run.sh`
-  - `trace_data`: Set path to trace data
   - `target_path_json`: Use `./target_path_latest.json` if you runs the latest Autoware or modify the json file
   - Setting files in this directory are just a sample, and may not work with your trace data.
     - Please modify them for your case. ([Explanation](../report/README.md))
