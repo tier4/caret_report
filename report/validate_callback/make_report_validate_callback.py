@@ -133,6 +133,13 @@ def make_report(report_dir: str, component_list_json: str):
         make_report_callback(report_dir, component_name)
 
 
+def safe_int(value):
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        return value
+
+
 def make_unused_list(report_dir: str, component_list_json: str):
     ComponentManager().initialize(component_list_json)
 
@@ -147,7 +154,7 @@ def make_unused_list(report_dir: str, component_list_json: str):
                 info = [stats['stats']['node_name'],
                         stats['stats']['callback_type'] + '_callback',
                         stats['stats']['period_ns'] if stats['stats']['period_ns'] != -1 else stats['stats']['subscribe_topic_name'],
-                        stats['stats']['avg']]
+                        safe_int(stats['stats']['avg'])]
                 if stats['result_status'] == ResultStatus.OUT_OF_SCOPE.name:
                     callback_list_new.append(info)
                 elif stats['result_status'] == ResultStatus.NOT_MEASURED.name:
