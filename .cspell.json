@@ -1,4 +1,4 @@
 {
   "import": ["@tier4/cspell-dicts/caret/cspell-ext.json"],
-  "words": ["anytree"]
+  "words": ["anytree", "loopcontrols"]
 }
