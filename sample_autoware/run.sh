@@ -25,9 +25,9 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-export trace_data=$1
+export trace_data="$1"
 if [ $# -ge 2 ]; then
-    export sub_trace_data=$2
+    export sub_trace_data="$2"
 fi
 
 # Create analysis report
