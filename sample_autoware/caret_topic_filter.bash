@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export CARET_IGNORE_NODES="\
+/adapi/.*:\
 /aggregator_node:\
 /autoware_api/.*:\
 /awapi/.*:\
@@ -15,6 +16,7 @@ export CARET_IGNORE_NODES="\
 /rosbag2_recorder:\
 /rosbridge_websocket:\
 /rviz.*:\
+/scenario_simulator_v2_adapter:\
 /static_map_to_odom_tf_publisher:\
 /system/system_monitor/system_monitor/system_monitor_container:\
 /transform_listener_impl.*:\
