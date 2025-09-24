@@ -228,11 +228,11 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
                 plot_stacked_bar = Plot.create_response_time_stacked_bar_plot(target_path, case=case_str)
                 plot_stacked_bar.save(xaxis_type=xaxis_type, export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
                 df_stacked_bar[case_str] = plot_stacked_bar.to_dataframe(xaxis_type=xaxis_type)
-                stats.calc_stats(df_response_time['best'].iloc[:, 1], df_response_time['worst'].iloc[:, 1])
-                stats.calc_stats_stacked_bar(df_stacked_bar['best'], df_stacked_bar['worst'])
             except Exception as e:
                 _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}, {case_str}')
                 _logger.warning(str(e))
+        stats.calc_stats(df_response_time['best'].iloc[:, 1], df_response_time['worst'].iloc[:, 1])
+        stats.calc_stats_stacked_bar(df_stacked_bar['best'], df_stacked_bar['worst'])
 
     stats.store_filename(target_path_name, args.message_flow)
     _logger.info(f'---{target_path_name}---')
