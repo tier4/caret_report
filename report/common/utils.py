@@ -31,7 +31,7 @@ from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.runtime.node import Node
 from bokeh.plotting import figure, save
 from bokeh.resources import CDN
-from bokeh.io import export_png
+from bokeh.io import export_png, curdoc
 
 
 def create_logger(name, level: int=logging.DEBUG, log_filename: str=None) -> logging.Logger:
@@ -128,6 +128,8 @@ def export_graph(figure: figure, dest_dir: str, filename: str, title='graph',
     except:
         if logger:
             logger.warning('Unable to export png')
+    finally:
+        curdoc().clear()
 
 
 def trail_df(df: pd.DataFrame, trail_val=0, start_strip_num=0, end_strip_num=0) -> pd.DataFrame:
