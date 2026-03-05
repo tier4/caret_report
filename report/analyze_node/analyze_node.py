@@ -21,7 +21,6 @@ from pathlib import Path
 import argparse
 from distutils.util import strtobool
 import logging
-import gc
 import math
 import yaml
 import numpy as np
@@ -131,7 +130,6 @@ def analyze_node(node: Node, dest_dir: str, xaxis_type: str, threshold_freq_not_
         except:
             _logger.info(f'This node is not called: {node.node_name}')
             return None
-        del p_timeseries
 
         has_valid_data = False
         for key, value in measurement.items():
@@ -153,24 +151,18 @@ def analyze_node(node: Node, dest_dir: str, xaxis_type: str, threshold_freq_not_
                     if freq >= threshold_freq_not_display:
                         _logger.info(f'{callback_name} is not displayed in graph')
                         callbacks_for_graph.remove(node.get_callback(callback_name))
-        del measurement
 
         if has_valid_data:
             try:
                 if metrics != 'Frequency':
                     p_timeseries = method[0](callbacks_for_graph)
-                else:
-                    p_timeseries = method[0](node.callbacks)
                 fig_timeseries = p_timeseries.figure(xaxis_type=xaxis_type)  # note: this API is heavy when callback runs with high frequency
                 fig_timeseries.y_range.start = 0
                 filename_timeseries = metrics + node.node_name.replace('/', '_')[:250]
                 export_graph(fig_timeseries, dest_dir, filename_timeseries, with_png=False, logger=_logger)
                 node_stats.set_filename_timeseries(metrics, filename_timeseries)
-                del p_timeseries, fig_timeseries
             except:
                 _logger.info(f'Failed to export graph')
-
-        gc.collect()
 
     return node_stats
 
@@ -184,7 +176,6 @@ def analyze_component(node_list: list[Node], dest_dir: str, xaxis_type: str):
         node_stats = analyze_node(node, dest_dir, xaxis_type)
         if node_stats:
             stats[node.node_name] = vars(node_stats)
-        gc.collect()
 
     stat_file_path = f"{dest_dir}/stats_node.yaml"
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:

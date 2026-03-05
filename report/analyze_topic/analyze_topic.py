@@ -22,7 +22,6 @@ from pathlib import Path
 import argparse
 from distutils.util import strtobool
 import logging
-import gc
 import math
 import yaml
 import numpy as np
@@ -105,9 +104,7 @@ def create_stats_for_comm(comm: Communication, index: int, metrics: Metrics, des
             graph_filename = graph_filename + graph_filefilename_suffix[:120-len(graph_filename)]  # avoid too long file name
             stats_comm.filename = graph_filename
             export_graph(figure, dest_dir, graph_filename, with_png=False, logger=_logger)
-            del figure
         df_comm = timeseries_plot.to_dataframe(xaxis_type=xaxis_type)
-        del timeseries_plot
         df_comm = df_comm.iloc[:, 1]                  # get metrics value only (use value of publish. df=|time|pub|time|sub|)
         df_comm = trail_df(df_comm, end_strip_num=2)  # remove the last data because freq becomes small
         stats_comm.calculate(df_comm)
@@ -155,7 +152,6 @@ def analyze_topic(app: Application, topic_name: str, dest_dir: str, xaxis_type: 
 
     make_destination_dir(dest_dir, False, _logger)
     stats_dict = analyze_comms(topic_name, comm_list, dest_dir, xaxis_type)
-    gc.collect()
     if not stats_dict:
         return
     for metrics_name, stats_list in stats_dict.items():
@@ -174,7 +170,6 @@ def analyze_component(app: Application, topic_name_list: list[str], dest_dir: st
     for topic_name in topic_name_list:
         topic_dest_dir = f"{dest_dir}/{topic_name.replace('/', '_').lstrip('_')}"
         analyze_topic(app, topic_name, topic_dest_dir, xaxis_type)
-        gc.collect()
 
 
 def create_component_topic_dict(arch: Architecture) -> dict[str, list[str]]:

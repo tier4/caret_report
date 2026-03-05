@@ -19,7 +19,6 @@ import sys
 import os
 import datetime
 import argparse
-import gc
 import logging
 from caret_analyze import Architecture, Application, Lttng
 from caret_analyze.plot import Plot
@@ -49,15 +48,12 @@ def analyze_path(app: Application, target_path_name: str, skip_first_num: int):
 
     # Find the start time of the path (but choose the second one because the first one could be very long)
     df = plot_timeseries.to_dataframe()
-    del plot_timeseries
     skip_first_num = min(skip_first_num, len(df) - 1)
     if skip_first_num >= 0:
         start_time = df.iloc[skip_first_num, 0]
         start_date_time = datetime.datetime.fromtimestamp(start_time * 1.0e-9)
     else:
         start_date_time = None
-    del df
-    gc.collect()
     _logger.info(f'  start_date_time = {start_date_time}')
     return start_date_time
 
