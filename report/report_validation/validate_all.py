@@ -21,6 +21,7 @@ from pathlib import Path
 import argparse
 from distutils.util import strtobool
 import logging
+import subprocess
 from caret_analyze import Architecture, Application, Lttng
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, read_trace_data
@@ -110,11 +111,26 @@ def main():
     # Read trace data
     trace_data = args.trace_data if args.sub_trace_data == '' else [args.trace_data, args.sub_trace_data]
     start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
-    lttng = read_trace_data(trace_data, start_strip, end_strip, False)
-    arch = Architecture('lttng', trace_data)
 
-    # Create architecture for path analysis
-    arch_path = add_path_to_architecture.add_path_to_architecture(args, arch)
+    # Run add_path_to_architecture in a subprocess to avoid memory leak from search_paths
+    if not os.path.exists(args.architecture_file_path):
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'analyze_path', 'add_path_to_architecture.py')
+        cmd = ['python3', script_path, args.trace_data,
+               f'--target_path_json={args.target_path_json}',
+               f'--architecture_file_path={args.architecture_file_path}',
+               f'--max_node_depth={args.max_node_depth}',
+               f'--timeout={args.timeout}', '-v']
+        result = subprocess.run(cmd)
+        if result.returncode != 0:
+            logger.error('add_path_to_architecture failed')
+            sys.exit(-1)
+
+    lttng = read_trace_data(trace_data, start_strip, end_strip, False)
+
+    # Load architecture from yaml (no search_paths memory overhead)
+    arch_path = Architecture('yaml', args.architecture_file_path)
+    arch = Architecture('yaml', args.architecture_file_path)
+
     app = Application(arch_path, lttng)
 
     # Find duration to be analyzed
