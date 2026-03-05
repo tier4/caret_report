@@ -23,6 +23,7 @@ import shutil
 import argparse
 from distutils.util import strtobool
 import logging
+import gc
 import json
 import yaml
 import numpy as np
@@ -198,11 +199,13 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
     message_flow_height = 18 * len(target_path.child_names) + 50
     graph_short.frame_height = message_flow_height  # height doesn't work for some reasons...
     export_graph(graph_short, dest_dir, f'{target_path_name}_messageflow_short', target_path_name, with_png=False)
+    del graph_short
 
     if args.message_flow:
         graph = Plot.create_message_flow_plot(target_path).figure(full_legends=True)
         graph.frame_height = message_flow_height
         export_graph(graph, dest_dir, f'{target_path_name}_messageflow', target_path_name, with_png=False)
+        del graph
 
     _logger.info('  response time')
     if get_messageflow_durationtime(records, check_by_input=False) is None:
@@ -214,6 +217,7 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
             plot_timeseries = Plot.create_response_time_timeseries_plot(target_path, case=case_str)
             fig_timeseries = plot_timeseries.figure(full_legends=False, xaxis_type=xaxis_type)
             df_response_time[case_str] = plot_timeseries.to_dataframe(xaxis_type=xaxis_type)
+            del plot_timeseries
             fig_hist = Plot.create_response_time_histogram_plot(target_path, case=case_str).figure(full_legends=False, xaxis_type=xaxis_type)
             fig_timeseries.y_range.start = 0
             fig_timeseries.legend.visible = False
@@ -224,20 +228,24 @@ def analyze_path(args, dest_dir: str, arch: Architecture, app: Application, targ
             fig_hist.height = 400
             export_graph(fig_timeseries, dest_dir, target_path_name + f'_timeseries_{case_str}', target_path_name, with_png=False)
             export_graph(fig_hist, dest_dir, target_path_name + f'_hist_{case_str}', target_path_name, with_png=False)
+            del fig_timeseries, fig_hist
             try:
                 plot_stacked_bar = Plot.create_response_time_stacked_bar_plot(target_path, case=case_str)
                 plot_stacked_bar.save(xaxis_type=xaxis_type, export_path=f'{dest_dir}/{target_path_name}_stacked_bar_{case_str}.html', full_legends=True)
                 df_stacked_bar[case_str] = plot_stacked_bar.to_dataframe(xaxis_type=xaxis_type)
+                del plot_stacked_bar
             except Exception as e:
                 _logger.warning(f'    Failed to create stacked bar graph: {target_path_name}, {case_str}')
                 _logger.warning(str(e))
         stats.calc_stats(df_response_time['best'].iloc[:, 1], df_response_time['worst'].iloc[:, 1])
         stats.calc_stats_stacked_bar(df_stacked_bar['best'], df_stacked_bar['worst'])
+        del df_response_time, df_stacked_bar
 
     stats.store_filename(target_path_name, args.message_flow)
     _logger.info(f'---{target_path_name}---')
     _logger.debug(vars(stats))
 
+    gc.collect()
     return stats
 
 
