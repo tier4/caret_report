@@ -174,6 +174,7 @@ def analyze_component(app: Application, topic_name_list: list[str], dest_dir: st
     for topic_name in topic_name_list:
         topic_dest_dir = f"{dest_dir}/{topic_name.replace('/', '_').lstrip('_')}"
         analyze_topic(app, topic_name, topic_dest_dir, xaxis_type)
+        gc.collect()
 
 
 def create_component_topic_dict(arch: Architecture) -> dict[str, list[str]]:

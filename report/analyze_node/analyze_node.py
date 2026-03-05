@@ -184,6 +184,7 @@ def analyze_component(node_list: list[Node], dest_dir: str, xaxis_type: str):
         node_stats = analyze_node(node, dest_dir, xaxis_type)
         if node_stats:
             stats[node.node_name] = vars(node_stats)
+        gc.collect()
 
     stat_file_path = f"{dest_dir}/stats_node.yaml"
     with open(stat_file_path, 'w', encoding='utf-8') as f_yaml:
