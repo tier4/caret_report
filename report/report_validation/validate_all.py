@@ -23,12 +23,11 @@ from distutils.util import strtobool
 import logging
 from caret_analyze import Architecture, Application, Lttng
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, read_trace_data
+from common.utils import create_architecture_from_lttng, create_logger, read_trace_data
 from validate_topic import generate_expectation_list, validate_topic
 from validate_callback import validate_callback
 from analyze_path import add_path_to_architecture, analyze_path
 from find_valid_duration import find_valid_duration
-
 
 
 def parse_arg():
@@ -111,28 +110,29 @@ def main():
     trace_data = args.trace_data if args.sub_trace_data == '' else [args.trace_data, args.sub_trace_data]
     start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
     lttng = read_trace_data(trace_data, start_strip, end_strip, False)
-    arch = Architecture('lttng', trace_data)
 
     # Create architecture for path analysis
-    arch_path = add_path_to_architecture.add_path_to_architecture(args, arch)
-    app = Application(arch_path, lttng)
+    # 　Run add_path_to_architecture in a subprocess to avoid memory leak from search_paths
+    create_architecture_from_lttng(add_path_to_architecture.add_path_to_architecture, args, trace_data)
+    arch = Architecture('yaml', args.architecture_file_path)
+    app = Application(arch, lttng)
 
     # Find duration to be analyzed
     #  Run path analysis and find start point(sec) where the topic runs in the paths
     if args.find_valid_duration:
-        valid_start, valid_end = find_valid_duration.analyze(args, lttng, arch_path, app)
+        valid_start, valid_end = find_valid_duration.analyze(args, lttng, arch, app)
         args.start_strip = valid_start + args.start_strip
         args.end_strip = valid_end + args.end_strip
         logger.info(f'Find valid duration. start_strip: {args.start_strip}, end_strip: {args.end_strip}')
         logger.info(f'Reload trace data')
         lttng = read_trace_data(trace_data, args.start_strip, args.end_strip, False)
-        app = Application(arch_path, lttng)
+        app = Application(arch, lttng)
 
     # Analyze and validate
     if os.path.exists(args.dest_dir + '/analyze_path/index.html'):
         logger.info(f'Skip creating path report to save time')
     else:
-        analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
+        analyze_path.analyze(args, lttng, arch, app, args.dest_dir + '/analyze_path')
 
     if not args.is_path_analysis_only:
         xaxis_type = 'sim_time' if args.sim_time else 'system_time'
