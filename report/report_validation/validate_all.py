@@ -23,12 +23,11 @@ from distutils.util import strtobool
 import logging
 from caret_analyze import Architecture, Application, Lttng
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, read_trace_data
+from common.utils import create_architecture_from_lttng, create_logger, read_trace_data
 from validate_topic import generate_expectation_list, validate_topic
 from validate_callback import validate_callback
 from analyze_path import add_path_to_architecture, analyze_path
 from find_valid_duration import find_valid_duration
-
 
 
 def parse_arg():
@@ -113,12 +112,9 @@ def main():
     lttng = read_trace_data(trace_data, start_strip, end_strip, False)
 
     # Create architecture for path analysis
-    # Avoid using LTTng-generated arch due to high memory overhead;
-    # using YAML-generated arch instead.
-    arch_by_lttng = Architecture('lttng', trace_data)
-    _ = add_path_to_architecture.add_path_to_architecture(args, arch_by_lttng)
+    # 　Run add_path_to_architecture in a subprocess to avoid memory leak from search_paths
+    create_architecture_from_lttng(add_path_to_architecture.add_path_to_architecture, args, trace_data)
     arch = Architecture('yaml', args.architecture_file_path)
-
     app = Application(arch, lttng)
 
     # Find duration to be analyzed

@@ -21,24 +21,13 @@ from pathlib import Path
 import argparse
 from distutils.util import strtobool
 import logging
-import multiprocessing
-from caret_analyze import Architecture, Application, Lttng
+from caret_analyze import Architecture, Application
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
-from common.utils import create_logger, read_trace_data
+from common.utils import create_architecture_from_lttng, create_logger, read_trace_data
 from analyze_node import analyze_node
 from analyze_path import add_path_to_architecture, analyze_path
 from analyze_topic import analyze_topic
 from find_valid_duration import find_valid_duration
-
-
-def create_architecture_from_lttng(args, trace_data):
-    def _create_architecture_from_lttng(args, trace_data):
-        arch = Architecture('lttng', trace_data)
-        add_path_to_architecture.add_path_to_architecture(args, arch)
-
-    proc = multiprocessing.Process(target=_create_architecture_from_lttng, args=(args, trace_data))
-    proc.start()
-    proc.join()
 
 
 def parse_arg():
@@ -110,7 +99,9 @@ def main():
     start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
     lttng = read_trace_data(trace_data, start_strip, end_strip, False)
 
-    create_architecture_from_lttng(args, trace_data)
+    # Create architecture for path analysis
+    # 　Run add_path_to_architecture in a subprocess to avoid memory leak from search_paths
+    create_architecture_from_lttng(add_path_to_architecture.add_path_to_architecture, args, trace_data)
     arch = Architecture('yaml', args.architecture_file_path)
     app = Application(arch, lttng)
 

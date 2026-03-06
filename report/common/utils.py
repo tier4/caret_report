@@ -23,10 +23,11 @@ import logging
 import re
 import json
 import itertools
+import multiprocessing
 import pandas as pd
 import subprocess
 import yaml
-from caret_analyze import Application, Lttng, LttngEventFilter
+from caret_analyze import Architecture, Application, Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.runtime.node import Node
 from bokeh.plotting import figure, save
@@ -91,6 +92,17 @@ def read_trace_data_duration(trace_data: str, start_point: float, duration: floa
         return Lttng(trace_data, force_conversion=force_conversion)
 
 
+def create_architecture_from_lttng(func_add_path_to_architecture, args, trace_data):
+    def _create_architecture_from_lttng(func_add_path_to_architecture, args, trace_data):
+        # Note: Unable to use add_path_to_architecture() directly here to avoid circular import
+        arch = Architecture('lttng', trace_data)
+        func_add_path_to_architecture(args, arch)
+
+    proc = multiprocessing.Process(target=_create_architecture_from_lttng, args=(func_add_path_to_architecture, args, trace_data))
+    proc.start()
+    proc.join()
+
+
 def get_callback_legend(node: Node, callback_name: str, with_trigger: bool=True) -> str:
     callback_legend_dict = {}
     cnt_timer = 0
@@ -130,6 +142,7 @@ def export_graph(figure: figure, dest_dir: str, filename: str, title='graph',
             logger.warning('Unable to export png')
     finally:
         curdoc().clear()
+
 
 def trail_df(df: pd.DataFrame, trail_val=0, start_strip_num=0, end_strip_num=0) -> pd.DataFrame:
     df = df.dropna()
