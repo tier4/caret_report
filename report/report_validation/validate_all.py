@@ -111,28 +111,32 @@ def main():
     trace_data = args.trace_data if args.sub_trace_data == '' else [args.trace_data, args.sub_trace_data]
     start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
     lttng = read_trace_data(trace_data, start_strip, end_strip, False)
-    arch = Architecture('lttng', trace_data)
 
     # Create architecture for path analysis
-    arch_path = add_path_to_architecture.add_path_to_architecture(args, arch)
-    app = Application(arch_path, lttng)
+    # Avoid using LTTng-generated arch due to high memory overhead;
+    # using YAML-generated arch instead.
+    arch_by_lttng = Architecture('lttng', trace_data)
+    _ = add_path_to_architecture.add_path_to_architecture(args, arch_by_lttng)
+    arch = Architecture('yaml', args.architecture_file_path)
+
+    app = Application(arch, lttng)
 
     # Find duration to be analyzed
     #  Run path analysis and find start point(sec) where the topic runs in the paths
     if args.find_valid_duration:
-        valid_start, valid_end = find_valid_duration.analyze(args, lttng, arch_path, app)
+        valid_start, valid_end = find_valid_duration.analyze(args, lttng, arch, app)
         args.start_strip = valid_start + args.start_strip
         args.end_strip = valid_end + args.end_strip
         logger.info(f'Find valid duration. start_strip: {args.start_strip}, end_strip: {args.end_strip}')
         logger.info(f'Reload trace data')
         lttng = read_trace_data(trace_data, args.start_strip, args.end_strip, False)
-        app = Application(arch_path, lttng)
+        app = Application(arch, lttng)
 
     # Analyze and validate
     if os.path.exists(args.dest_dir + '/analyze_path/index.html'):
         logger.info(f'Skip creating path report to save time')
     else:
-        analyze_path.analyze(args, lttng, arch_path, app, args.dest_dir + '/analyze_path')
+        analyze_path.analyze(args, lttng, arch, app, args.dest_dir + '/analyze_path')
 
     if not args.is_path_analysis_only:
         xaxis_type = 'sim_time' if args.sim_time else 'system_time'
