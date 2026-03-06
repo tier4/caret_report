@@ -104,8 +104,8 @@ def main():
     # Create architecture for path analysis
     # Avoid using LTTng-generated arch due to high memory overhead; using YAML-generated arch instead and
     # Run create_architecture_file in a separate process so memory is freed after completion.
-    subprocess.run(['ros2', 'caret', 'create_architecture_file', '-f', 'architecture_temp.yaml'], check=True)
-    arch = Architecture('yaml', 'architecture_temp.yaml')
+    subprocess.run(['ros2', 'caret', 'create_architecture_file', '-f', args.dest_dir + 'architecture.yaml'], check=True)
+    arch = Architecture('yaml', args.dest_dir + 'architecture.yaml')
     _ = add_path_to_architecture.add_path_to_architecture(args, arch)
     arch = Architecture('yaml', args.architecture_file_path)
 
