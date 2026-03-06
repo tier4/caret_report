@@ -23,10 +23,11 @@ import logging
 import re
 import json
 import itertools
+import multiprocessing
 import pandas as pd
 import subprocess
 import yaml
-from caret_analyze import Application, Lttng, LttngEventFilter
+from caret_analyze import Architecture, Application, Lttng, LttngEventFilter
 from caret_analyze.runtime.callback import CallbackBase, CallbackType
 from caret_analyze.runtime.node import Node
 from bokeh.plotting import figure, save
@@ -89,6 +90,17 @@ def read_trace_data_duration(trace_data: str, start_point: float, duration: floa
         ])
     else:
         return Lttng(trace_data, force_conversion=force_conversion)
+
+
+def create_architecture_from_lttng(func_add_path_to_architecture, args, trace_data):
+    def _create_architecture_from_lttng(func_add_path_to_architecture, args, trace_data):
+        # Note: Unable to use add_path_to_architecture() directly here to avoid circular import
+        arch = Architecture('lttng', trace_data)
+        func_add_path_to_architecture(args, arch)
+
+    proc = multiprocessing.Process(target=_create_architecture_from_lttng, args=(func_add_path_to_architecture, args, trace_data))
+    proc.start()
+    proc.join()
 
 
 def get_callback_legend(node: Node, callback_name: str, with_trigger: bool=True) -> str:
