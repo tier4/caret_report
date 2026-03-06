@@ -21,6 +21,7 @@ from pathlib import Path
 import argparse
 from distutils.util import strtobool
 import logging
+import subprocess
 from caret_analyze import Architecture, Application, Lttng
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_logger, read_trace_data
@@ -101,10 +102,11 @@ def main():
     lttng = read_trace_data(trace_data, start_strip, end_strip, False)
 
     # Create architecture for path analysis
-    # Avoid using LTTng-generated arch due to high memory overhead;
-    # using YAML-generated arch instead.
-    arch_by_lttng = Architecture('lttng', trace_data)
-    _ = add_path_to_architecture.add_path_to_architecture(args, arch_by_lttng)
+    # Avoid using LTTng-generated arch due to high memory overhead; using YAML-generated arch instead and
+    # Run create_architecture_file in a separate process so memory is freed after completion.
+    subprocess.run(['ros2', 'caret', 'create_architecture_file', '-f', 'architecture_temp.yaml'], check=True)
+    arch = Architecture('yaml', 'architecture_temp.yaml')
+    _ = add_path_to_architecture.add_path_to_architecture(args, arch)
     arch = Architecture('yaml', args.architecture_file_path)
 
     app = Application(arch, lttng)
