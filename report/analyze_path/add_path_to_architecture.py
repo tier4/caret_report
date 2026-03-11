@@ -15,6 +15,7 @@
 Script to add path information to architecture file
 """
 from __future__ import annotations
+from pathlib import Path
 from typing import Callable
 import sys
 import os
@@ -206,6 +207,9 @@ def add_path_to_architecture(args, arch: Architecture):
     if _logger is None:
         _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Add Path: Start >>>')
+
+    Path(args.architecture_file_path).unlink(missing_ok=True)
+
     # Read target path information from JSON
     try:
         with open(args.target_path_json, encoding='UTF-8') as f_json:

@@ -106,15 +106,17 @@ def main():
     logger.debug(f'expectation_topic_csv_filename: {args.expectation_topic_csv_filename}')
     logger.debug(f'expectation_callback_csv_filename: {args.expectation_callback_csv_filename}')
 
-    # Read trace data
     trace_data = args.trace_data if args.sub_trace_data == '' else [args.trace_data, args.sub_trace_data]
-    start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
-    lttng = read_trace_data(trace_data, start_strip, end_strip, False)
 
     # Create architecture for path analysis
     # 　Run add_path_to_architecture in a subprocess to avoid memory leak from search_paths
     create_architecture_from_lttng(add_path_to_architecture.add_path_to_architecture, args, trace_data)
     arch = Architecture('yaml', args.architecture_file_path)
+
+    # Read trace data
+    start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
+    lttng = read_trace_data(trace_data, start_strip, end_strip, False)
+
     app = Application(arch, lttng)
 
     # Find duration to be analyzed
