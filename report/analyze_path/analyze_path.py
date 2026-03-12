@@ -271,7 +271,6 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     _logger.info('<<< Analyze Paths: Start >>>')
     xaxis_type =  'sim_time' if args.sim_time else 'system_time'
     make_destination_dir(dest_dir, args.force, _logger)
-    shutil.copy(args.architecture_file_path, dest_dir)
 
     include_first_last_callback = get_include_first_last_callback(args, arch)
 
