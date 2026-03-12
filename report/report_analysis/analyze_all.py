@@ -84,6 +84,8 @@ def main():
     logger.debug(f'sim_time: {args.sim_time}')
     logger.debug(f'is_path_analysis_only: {args.is_path_analysis_only}')
     logger.debug(f'target_path_json: {args.target_path_json}')
+    if not os.path.isabs(args.architecture_file_path):
+        args.architecture_file_path = os.path.join(args.dest_dir, args.architecture_file_path)
     logger.debug(f'architecture_file_path: {args.architecture_file_path}')
     logger.debug(f'use_latest_message: {args.use_latest_message}')
     logger.debug(f'max_node_depth: {args.max_node_depth}')

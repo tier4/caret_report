@@ -41,7 +41,6 @@ if ${use_python}; then
             --end_strip "${end_strip}" \
             --sim_time "${sim_time}" \
             --target_path_json="${target_path_json}" \
-            --architecture_file_path=architecture_path.yaml \
             --max_node_depth="${max_node_depth}" \
             --timeout="${timeout}" \
             --find_valid_duration="${find_valid_duration}" \
