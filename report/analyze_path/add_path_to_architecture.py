@@ -147,6 +147,105 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
 #         yaml.dump(yml, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
+def remove_duplicate_subscriptions(architecture_file_path: str):
+    """Remove short-lived duplicate subscriptions from architecture YAML.
+
+    When a derived class replaces a base class subscription (e.g. with Agnocast),
+    both subscriptions are recorded in the trace. The base class subscription
+    (construction_order=0) is short-lived and should be removed.
+    """
+    with open(architecture_file_path, encoding='UTF-8') as f:
+        yml = yaml.safe_load(f)
+
+    # Find nodes with duplicate subscriptions to the same topic
+    dup_node_topics = {}  # {node_name: set(topic_name)}
+    for node in yml.get('nodes', []):
+        topic_counts = {}
+        for sub in node.get('subscribes', []):
+            topic = sub['topic_name']
+            topic_counts[topic] = topic_counts.get(topic, 0) + 1
+        dups = {t for t, c in topic_counts.items() if c > 1}
+        if dups:
+            dup_node_topics[node['node_name']] = dups
+
+    if not dup_node_topics:
+        return
+
+    # Clean up nodes
+    for node in yml.get('nodes', []):
+        node_name = node['node_name']
+        if node_name not in dup_node_topics:
+            continue
+        dup_topics = dup_node_topics[node_name]
+
+        # Remove construction_order=0 subscriptions, keep the replacement
+        new_subs = []
+        for sub in node.get('subscribes', []):
+            if sub['topic_name'] in dup_topics and 'construction_order' not in sub:
+                continue  # remove the default (order 0) entry
+            new_subs.append(sub)
+        # Remove construction_order from remaining entries (now unique)
+        for sub in new_subs:
+            if sub['topic_name'] in dup_topics:
+                sub.pop('construction_order', None)
+        node['subscribes'] = new_subs
+
+        # Clean up message_contexts:
+        # - Remove entries for order 0 (no subscription_construction_order)
+        #   when order 1 entry exists for the same sub/pub topic pair
+        # - Remove subscription_construction_order from remaining entries
+        if 'message_contexts' in node:
+            # Group by (sub_topic, pub_topic)
+            keyed = {}
+            for mc in node['message_contexts']:
+                sub_t = mc.get('subscription_topic_name', '')
+                pub_t = mc.get('publisher_topic_name', '')
+                key = (sub_t, pub_t)
+                keyed.setdefault(key, []).append(mc)
+
+            new_mcs = []
+            for (sub_t, pub_t), entries in keyed.items():
+                if sub_t not in dup_topics:
+                    new_mcs.extend(entries)
+                    continue
+                has_order1 = any('subscription_construction_order' in e for e in entries)
+                for mc in entries:
+                    has_order = 'subscription_construction_order' in mc
+                    if has_order1 and not has_order:
+                        continue  # drop order 0 entry
+                    mc.pop('subscription_construction_order', None)
+                    # Avoid adding exact duplicates
+                    if mc not in new_mcs:
+                        new_mcs.append(mc)
+            node['message_contexts'] = new_mcs
+
+    # Clean up named_paths:
+    # - Remove subscription_construction_order from node_chain entries
+    # - Deduplicate paths that become identical
+    seen_paths = {}
+    new_paths = []
+    for path in yml.get('named_paths', []):
+        for chain_node in path.get('node_chain', []):
+            if chain_node.get('node_name', '') in dup_node_topics:
+                chain_node.pop('subscription_construction_order', None)
+
+        # Deduplicate: use node_chain as key
+        chain_key = yaml.dump(path['node_chain'], sort_keys=True)
+        base_name = re.sub(r'_\d+$', '', path['path_name'])
+        if base_name not in seen_paths:
+            seen_paths[base_name] = (chain_key, path)
+            new_paths.append(path)
+        elif seen_paths[base_name][0] != chain_key:
+            # Different chain, keep it
+            new_paths.append(path)
+        # else: same chain after cleanup, skip duplicate
+
+    yml['named_paths'] = new_paths
+
+    with open(architecture_file_path, 'w', encoding='UTF-8') as f:
+        yaml.dump(yml, f, encoding='utf-8', allow_unicode=True, sort_keys=False)
+
+
 def convert_context_type_to_use_latest_message(arch: Architecture):
     """Convert context_type from UNDEFINED to use_latest_message"""
     for target_path_name in arch.path_names:
@@ -282,6 +381,8 @@ def add_path_to_architecture(args, arch: Architecture):
         convert_context_type_to_use_latest_message(arch)
 
     arch.export(args.architecture_file_path, force=True)
+
+    remove_duplicate_subscriptions(args.architecture_file_path)
 
     _logger.info('<<< Add Path: Finish >>>')
     return arch
