@@ -150,52 +150,88 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
 def remove_duplicate_subscriptions(architecture_file_path: str):
     """Remove short-lived duplicate subscriptions from architecture YAML.
 
-    When a derived class replaces a base class subscription (e.g. with Agnocast),
-    both subscriptions are recorded in the trace. The base class subscription
-    (construction_order=0) is short-lived and should be removed.
+    When multiple subscriptions to the same topic exist within a single node
+    (e.g. VehicleStopChecker hardcodes /localization/kinematic_state while the
+    node itself also subscribes, or Agnocast replaces a base class subscription),
+    both are recorded in the trace with different construction_order values.
+    The first one (construction_order=0) is short-lived and should be removed.
+
+    The related PR: https://github.com/autowarefoundation/autoware_universe/pull/12350
+
+    Example — before cleanup:
+      subscribes:
+        - topic_name: /localization/kinematic_state        # construction_order=0 (remove this)
+          callback_name: .../callback_2
+        - topic_name: /localization/kinematic_state        # construction_order=1 (keep this)
+          callback_name: .../callback_5
+          construction_order: 1
+
+    Example — after cleanup:
+      subscribes:
+        - topic_name: /localization/kinematic_state
+          callback_name: .../callback_5
     """
     with open(architecture_file_path, encoding='UTF-8') as f:
         yml = yaml.safe_load(f)
 
-    # Find nodes with duplicate subscriptions to the same topic
-    dup_node_topics = {}  # {node_name: set(topic_name)}
+    # --- Step 1: Find nodes that have multiple subscriptions to the same topic ---
+    duplicated_topics_by_node = {}  # {node_name: set(topic_name)}
     for node in yml.get('nodes', []):
         topic_counts = {}
         for sub in node.get('subscribes', []):
             topic = sub['topic_name']
             topic_counts[topic] = topic_counts.get(topic, 0) + 1
-        dups = {t for t, c in topic_counts.items() if c > 1}
-        if dups:
-            dup_node_topics[node['node_name']] = dups
+        duplicated_topics = {t for t, c in topic_counts.items() if c > 1}
+        if duplicated_topics:
+            duplicated_topics_by_node[node['node_name']] = duplicated_topics
 
-    if not dup_node_topics:
+    if not duplicated_topics_by_node:
         return
 
-    # Clean up nodes
+    # --- Step 2: Clean up subscribes and message_contexts per node ---
     for node in yml.get('nodes', []):
         node_name = node['node_name']
-        if node_name not in dup_node_topics:
+        if node_name not in duplicated_topics_by_node:
             continue
-        dup_topics = dup_node_topics[node_name]
+        duplicated_topics = duplicated_topics_by_node[node_name]
 
-        # Remove construction_order=0 subscriptions, keep the replacement
+        # Step 2a: Remove the first-created (construction_order=0) subscription entries.
+        #   construction_order=0 entries have no 'construction_order' field in the YAML.
+        #   construction_order=1 entries have 'construction_order: 1' explicitly.
+        #
+        #   Before:
+        #     - topic_name: /localization/kinematic_state       <- removed (no construction_order)
+        #       callback_name: .../callback_2
+        #     - topic_name: /localization/kinematic_state       <- kept, field stripped
+        #       callback_name: .../callback_5
+        #       construction_order: 1
+        #   After:
+        #     - topic_name: /localization/kinematic_state
+        #       callback_name: .../callback_5
         new_subs = []
         for sub in node.get('subscribes', []):
-            if sub['topic_name'] in dup_topics and 'construction_order' not in sub:
-                continue  # remove the default (order 0) entry
+            if sub['topic_name'] in duplicated_topics and 'construction_order' not in sub:
+                continue
             new_subs.append(sub)
-        # Remove construction_order from remaining entries (now unique)
         for sub in new_subs:
-            if sub['topic_name'] in dup_topics:
+            if sub['topic_name'] in duplicated_topics:
                 sub.pop('construction_order', None)
         node['subscribes'] = new_subs
 
-        # Clean up message_contexts:
-        # - Remove entries for order 0 (no subscription_construction_order)
-        #   when order 1 entry exists for the same sub/pub topic pair
-        # - Remove subscription_construction_order from remaining entries
+        # Step 2b: Remove duplicate message_context entries (same sub/pub topic pair).
+        #   Same logic: if both order-0 and order-1 entries exist for the same
+        #   (subscription_topic, publisher_topic) pair, drop the order-0 entry.
+        #
+        #   Before:
+        #     - subscription_topic_name: /localization/kinematic_state   <- removed (no order field)
+        #       publisher_topic_name: .../debug_markers
+        #     - subscription_topic_name: /localization/kinematic_state   <- kept, field stripped
+        #       publisher_topic_name: .../debug_markers
+        #       subscription_construction_order: 1
+        #   After:
+        #     - subscription_topic_name: /localization/kinematic_state
+        #       publisher_topic_name: .../debug_markers
         if 'message_contexts' in node:
-            # Group by (sub_topic, pub_topic)
             keyed = {}
             for mc in node['message_contexts']:
                 sub_t = mc.get('subscription_topic_name', '')
@@ -205,40 +241,40 @@ def remove_duplicate_subscriptions(architecture_file_path: str):
 
             new_mcs = []
             for (sub_t, pub_t), entries in keyed.items():
-                if sub_t not in dup_topics:
+                if sub_t not in duplicated_topics:
                     new_mcs.extend(entries)
                     continue
                 has_order1 = any('subscription_construction_order' in e for e in entries)
                 for mc in entries:
                     has_order = 'subscription_construction_order' in mc
                     if has_order1 and not has_order:
-                        continue  # drop order 0 entry
+                        continue
                     mc.pop('subscription_construction_order', None)
-                    # Avoid adding exact duplicates
                     if mc not in new_mcs:
                         new_mcs.append(mc)
             node['message_contexts'] = new_mcs
 
-    # Clean up named_paths:
-    # - Remove subscription_construction_order from node_chain entries
-    # - Deduplicate paths that become identical
+    # --- Step 3: Clean up named_paths ---
+    #   Remove subscription_construction_order from node_chain entries, then
+    #   deduplicate paths that become identical after the field removal.
+    #
+    #   Example: component_perception(detection_pointcloud)_0 and _1 differ only
+    #   in subscription_construction_order. After removal they are identical,
+    #   so _1 is dropped.
     seen_paths = {}
     new_paths = []
     for path in yml.get('named_paths', []):
         for chain_node in path.get('node_chain', []):
-            if chain_node.get('node_name', '') in dup_node_topics:
+            if chain_node.get('node_name', '') in duplicated_topics_by_node:
                 chain_node.pop('subscription_construction_order', None)
 
-        # Deduplicate: use node_chain as key
         chain_key = yaml.dump(path['node_chain'], sort_keys=True)
         base_name = re.sub(r'_\d+$', '', path['path_name'])
         if base_name not in seen_paths:
             seen_paths[base_name] = (chain_key, path)
             new_paths.append(path)
         elif seen_paths[base_name][0] != chain_key:
-            # Different chain, keep it
             new_paths.append(path)
-        # else: same chain after cleanup, skip duplicate
 
     yml['named_paths'] = new_paths
 
