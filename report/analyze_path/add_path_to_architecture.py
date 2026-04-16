@@ -147,6 +147,142 @@ def find_path(arch: Architecture, comm_filter: Callable[[str], bool], node_filte
 #         yaml.dump(yml, f_yaml, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
 
+def remove_duplicate_subscriptions(architecture_file_path: str):
+    """Remove short-lived duplicate subscriptions from architecture YAML.
+
+    When multiple subscriptions to the same topic exist within a single node
+    (e.g. VehicleStopChecker hardcodes /localization/kinematic_state while the
+    node itself also subscribes, or Agnocast replaces a base class subscription),
+    both are recorded in the trace with different construction_order values.
+    The first one (construction_order=0) is short-lived and should be removed.
+
+    The related PR: https://github.com/autowarefoundation/autoware_universe/pull/12350
+
+    Example — before cleanup:
+      subscribes:
+        - topic_name: /localization/kinematic_state        # construction_order=0 (remove this)
+          callback_name: .../callback_2
+        - topic_name: /localization/kinematic_state        # construction_order=1 (keep this)
+          callback_name: .../callback_5
+          construction_order: 1
+
+    Example — after cleanup:
+      subscribes:
+        - topic_name: /localization/kinematic_state
+          callback_name: .../callback_5
+    """
+    with open(architecture_file_path, encoding='UTF-8') as f:
+        yml = yaml.safe_load(f)
+
+    # --- Step 1: Find nodes that have multiple subscriptions to the same topic ---
+    duplicated_topics_by_node = {}  # {node_name: set(topic_name)}
+    for node in yml.get('nodes', []):
+        topic_counts = {}
+        for sub in node.get('subscribes', []):
+            topic = sub['topic_name']
+            topic_counts[topic] = topic_counts.get(topic, 0) + 1
+        duplicated_topics = {t for t, c in topic_counts.items() if c > 1}
+        if duplicated_topics:
+            duplicated_topics_by_node[node['node_name']] = duplicated_topics
+
+    if not duplicated_topics_by_node:
+        return
+
+    # --- Step 2: Clean up subscribes and message_contexts per node ---
+    for node in yml.get('nodes', []):
+        node_name = node['node_name']
+        if node_name not in duplicated_topics_by_node:
+            continue
+        duplicated_topics = duplicated_topics_by_node[node_name]
+
+        # Step 2a: Remove the first-created (construction_order=0) subscription entries.
+        #   construction_order=0 entries have no 'construction_order' field in the YAML.
+        #   construction_order=1 entries have 'construction_order: 1' explicitly.
+        #
+        #   Before:
+        #     - topic_name: /localization/kinematic_state       <- removed (no construction_order)
+        #       callback_name: .../callback_2
+        #     - topic_name: /localization/kinematic_state       <- kept, field stripped
+        #       callback_name: .../callback_5
+        #       construction_order: 1
+        #   After:
+        #     - topic_name: /localization/kinematic_state
+        #       callback_name: .../callback_5
+        new_subs = []
+        for sub in node.get('subscribes', []):
+            if sub['topic_name'] in duplicated_topics and 'construction_order' not in sub:
+                continue
+            new_subs.append(sub)
+        for sub in new_subs:
+            if sub['topic_name'] in duplicated_topics:
+                sub.pop('construction_order', None)
+        node['subscribes'] = new_subs
+
+        # Step 2b: Remove duplicate message_context entries (same sub/pub topic pair).
+        #   Same logic: if both order-0 and order-1 entries exist for the same
+        #   (subscription_topic, publisher_topic) pair, drop the order-0 entry.
+        #
+        #   Before:
+        #     - subscription_topic_name: /localization/kinematic_state   <- removed (no order field)
+        #       publisher_topic_name: .../debug_markers
+        #     - subscription_topic_name: /localization/kinematic_state   <- kept, field stripped
+        #       publisher_topic_name: .../debug_markers
+        #       subscription_construction_order: 1
+        #   After:
+        #     - subscription_topic_name: /localization/kinematic_state
+        #       publisher_topic_name: .../debug_markers
+        if 'message_contexts' in node:
+            keyed = {}
+            for mc in node['message_contexts']:
+                sub_t = mc.get('subscription_topic_name', '')
+                pub_t = mc.get('publisher_topic_name', '')
+                key = (sub_t, pub_t)
+                keyed.setdefault(key, []).append(mc)
+
+            new_mcs = []
+            for (sub_t, pub_t), entries in keyed.items():
+                if sub_t not in duplicated_topics:
+                    new_mcs.extend(entries)
+                    continue
+                has_order1 = any('subscription_construction_order' in e for e in entries)
+                for mc in entries:
+                    has_order = 'subscription_construction_order' in mc
+                    if has_order1 and not has_order:
+                        continue
+                    mc.pop('subscription_construction_order', None)
+                    if mc not in new_mcs:
+                        new_mcs.append(mc)
+            node['message_contexts'] = new_mcs
+
+    # --- Step 3: Clean up named_paths ---
+    #   Remove subscription_construction_order from node_chain entries, then
+    #   deduplicate paths that become identical after the field removal.
+    #
+    #   Example: component_perception(detection_pointcloud)_0 and _1 differ only
+    #   in subscription_construction_order. After removal they are identical,
+    #   so _1 is dropped.
+    seen_paths = {}
+    new_paths = []
+    for path in yml.get('named_paths', []):
+        for chain_node in path.get('node_chain', []):
+            if chain_node.get('node_name', '') in duplicated_topics_by_node:
+                chain_node.pop('subscription_construction_order', None)
+
+        chain_key = yaml.dump(path['node_chain'], sort_keys=True)
+        base_name = re.sub(r'_\d+$', '', path['path_name'])
+        if base_name not in seen_paths:
+            seen_paths[base_name] = (chain_key, path)
+            new_paths.append(path)
+        elif seen_paths[base_name][0] != chain_key:
+            new_paths.append(path)
+
+    yml['named_paths'] = new_paths
+
+    with open(architecture_file_path, 'w', encoding='UTF-8') as f:
+        yaml.dump(yml, f, encoding='utf-8', allow_unicode=True, sort_keys=False)
+
+_logger.info('remove_duplicate_subscriptions: cleaned up %s', duplicated_topics_by_node.keys())
+
 def convert_context_type_to_use_latest_message(arch: Architecture):
     """Convert context_type from UNDEFINED to use_latest_message"""
     for target_path_name in arch.path_names:
@@ -282,6 +418,8 @@ def add_path_to_architecture(args, arch: Architecture):
         convert_context_type_to_use_latest_message(arch)
 
     arch.export(args.architecture_file_path, force=True)
+
+    remove_duplicate_subscriptions(args.architecture_file_path)
 
     _logger.info('<<< Add Path: Finish >>>')
     return arch
