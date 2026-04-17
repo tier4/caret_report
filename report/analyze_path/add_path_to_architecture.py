@@ -281,7 +281,7 @@ def remove_duplicate_subscriptions(architecture_file_path: str):
     with open(architecture_file_path, 'w', encoding='UTF-8') as f:
         yaml.dump(yml, f, encoding='utf-8', allow_unicode=True, sort_keys=False)
 
-_logger.info('remove_duplicate_subscriptions: cleaned up %s', duplicated_topics_by_node.keys())
+    _logger.info('remove_duplicate_subscriptions: cleaned up %s', duplicated_topics_by_node.keys())
 
 def convert_context_type_to_use_latest_message(arch: Architecture):
     """Convert context_type from UNDEFINED to use_latest_message"""
