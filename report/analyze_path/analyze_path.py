@@ -159,11 +159,11 @@ def check_the_first_last_callback_is_valid(records: RecordsInterface):
     df_records = records.to_dataframe()
     is_first_valid = True
     is_last_valid = True
-    if len(df_records[df_records.columns[0]]) == 0:
+    if len(df_records.columns) == 0 or len(df_records[df_records.columns[0]]) == 0:
         # velodyne_convert_node doesn't have the first callback_start
         _logger.warning(f'  The first callback is invalid')
         is_first_valid = False
-    if len(df_records[df_records.columns[-1]]) == 0:
+    if len(df_records.columns) == 0 or len(df_records[df_records.columns[-1]]) == 0:
         _logger.warning(f'  The last callback is invalid')
         is_last_valid = False
     return is_first_valid, is_last_valid
