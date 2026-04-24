@@ -430,7 +430,6 @@ def validate(verbose, arch: Architecture, app: Application, dest_dir: str, force
     _logger.info('<<< Validate callback start >>>')
 
     make_destination_dir(dest_dir + '/validate_callback', force, _logger)
-    arch.export(dest_dir + '/architecture.yaml', force=True)
     ComponentManager().initialize(component_list_json, _logger)
 
     for component_name, _ in ComponentManager().component_dict.items():

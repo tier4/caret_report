@@ -159,11 +159,11 @@ def check_the_first_last_callback_is_valid(records: RecordsInterface):
     df_records = records.to_dataframe()
     is_first_valid = True
     is_last_valid = True
-    if len(df_records[df_records.columns[0]]) == 0:
+    if len(df_records.columns) == 0 or len(df_records[df_records.columns[0]]) == 0:
         # velodyne_convert_node doesn't have the first callback_start
         _logger.warning(f'  The first callback is invalid')
         is_first_valid = False
-    if len(df_records[df_records.columns[-1]]) == 0:
+    if len(df_records.columns) == 0 or len(df_records[df_records.columns[-1]]) == 0:
         _logger.warning(f'  The last callback is invalid')
         is_last_valid = False
     return is_first_valid, is_last_valid
@@ -277,13 +277,18 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     stats_list = []
 
     # Verify each path
+    invalid_path_names = []
     for target_path in arch.paths:
         target_path_name = target_path.path_name
         path = arch.get_path(target_path_name)
         ret_verify = path.verify()
         _logger.info(f'path.verify {target_path_name}: {ret_verify}')
         if not ret_verify:
-            sys.exit(-1)
+            invalid_path_names.append(target_path_name)
+
+    for path_name in invalid_path_names:
+        _logger.warning(f'path has been removed {path_name}')
+        arch.remove_path(path_name)
 
     # Analyze each path
     for target_path in arch.paths:

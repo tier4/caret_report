@@ -17,11 +17,10 @@ Script to make validation reports
 from __future__ import annotations
 import sys
 import os
-from pathlib import Path
 import argparse
 from distutils.util import strtobool
 import logging
-from caret_analyze import Architecture, Application, Lttng
+from caret_analyze import Architecture, Application
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 from common.utils import create_architecture_from_lttng, create_logger, read_trace_data
 from validate_topic import generate_expectation_list, validate_topic
@@ -50,6 +49,7 @@ def parse_arg():
 
     # options for add_path
     parser.add_argument('--target_path_json', type=str, default='target_path.json')
+    parser.add_argument('--architecture_file', type=str, default='architecture.yaml')
     parser.add_argument('--architecture_file_path', type=str, default='architecture_path.yaml')
     parser.add_argument('--use_latest_message', action='store_true', default=True)
     parser.add_argument('--max_node_depth', type=int, default=15)
@@ -91,6 +91,9 @@ def main():
     logger.debug(f'sim_time: {args.sim_time}')
     logger.debug(f'is_path_analysis_only: {args.is_path_analysis_only}')
     logger.debug(f'target_path_json: {args.target_path_json}')
+    if not os.path.isabs(args.architecture_file):
+        args.architecture_file = os.path.join(args.dest_dir, args.architecture_file)
+    logger.debug(f'architecture_file: {args.architecture_file}')
     if not os.path.isabs(args.architecture_file_path):
         args.architecture_file_path = os.path.join(args.dest_dir, args.architecture_file_path)
     logger.debug(f'architecture_file_path: {args.architecture_file_path}')
@@ -113,32 +116,34 @@ def main():
     # Create architecture for path analysis
     # 　Run add_path_to_architecture in a subprocess to avoid memory leak from search_paths
     create_architecture_from_lttng(add_path_to_architecture.add_path_to_architecture, args, trace_data)
-    arch = Architecture('yaml', args.architecture_file_path)
+    arch = Architecture('yaml', args.architecture_file)
+    arch_path = Architecture('yaml', args.architecture_file_path)
 
     # Read trace data
     start_strip, end_strip = (0, 0) if args.find_valid_duration else (args.start_strip, args.end_strip )
     lttng = read_trace_data(trace_data, start_strip, end_strip, False)
 
-    app = Application(arch, lttng)
-
     # Find duration to be analyzed
     #  Run path analysis and find start point(sec) where the topic runs in the paths
     if args.find_valid_duration:
-        valid_start, valid_end = find_valid_duration.analyze(args, lttng, arch, app)
+        app_path = Application(arch_path, lttng)
+        valid_start, valid_end = find_valid_duration.analyze(args, lttng, arch_path, app_path)
         args.start_strip = valid_start + args.start_strip
         args.end_strip = valid_end + args.end_strip
         logger.info(f'Find valid duration. start_strip: {args.start_strip}, end_strip: {args.end_strip}')
         logger.info(f'Reload trace data')
         lttng = read_trace_data(trace_data, args.start_strip, args.end_strip, False)
-        app = Application(arch, lttng)
 
     # Analyze and validate
     if os.path.exists(args.dest_dir + '/analyze_path/index.html'):
         logger.info(f'Skip creating path report to save time')
     else:
-        analyze_path.analyze(args, lttng, arch, app, args.dest_dir + '/analyze_path')
+        app_path = Application(arch_path, lttng)
+        analyze_path.analyze(args, lttng, arch_path, app_path, args.dest_dir + '/analyze_path')
+        del app_path
 
     if not args.is_path_analysis_only:
+        app = Application(arch, lttng)
         xaxis_type = 'sim_time' if args.sim_time else 'system_time'
         generate_expectation_list.create_topic_from_callback(args.callback_list_filename, args.report_directory, args.topic_list_filename)
         generate_expectation_list.generate_list(args.verbose, arch, args.report_directory, args.component_list_json, args.topic_list_filename, args.expectation_topic_csv_filename)
