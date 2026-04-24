@@ -206,7 +206,6 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
         _logger = create_logger(__name__, logging.DEBUG if args.verbose else logging.INFO)
     _logger.info('<<< Analyze Nodes: Start >>>')
     make_destination_dir(dest_dir, args.force, _logger)
-    arch.export(dest_dir + '/architecture.yaml', force=True)
     ComponentManager().initialize(args.component_list_json, _logger)
 
     for component_name, _ in ComponentManager().component_dict.items():
