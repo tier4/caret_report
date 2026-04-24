@@ -96,6 +96,7 @@ def create_architecture_from_lttng(func_add_path_to_architecture, args, trace_da
     def _create_architecture_from_lttng(func_add_path_to_architecture, args, trace_data):
         # Note: Unable to use add_path_to_architecture() directly here to avoid circular import
         arch = Architecture('lttng', trace_data)
+        arch.export(args.architecture_file, force=True)
         func_add_path_to_architecture(args, arch)
 
     proc = multiprocessing.Process(target=_create_architecture_from_lttng, args=(func_add_path_to_architecture, args, trace_data))
