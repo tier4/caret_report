@@ -277,13 +277,18 @@ def analyze(args, lttng: Lttng, arch: Architecture, app: Application, dest_dir: 
     stats_list = []
 
     # Verify each path
+    invalid_path_names = []
     for target_path in arch.paths:
         target_path_name = target_path.path_name
         path = arch.get_path(target_path_name)
         ret_verify = path.verify()
         _logger.info(f'path.verify {target_path_name}: {ret_verify}')
         if not ret_verify:
-            sys.exit(-1)
+            invalid_path_names.append(target_path_name)
+
+    for path_name in invalid_path_names:
+        _logger.warning(f'path has been removed {path_name}')
+        arch.remove_path(path_name)
 
     # Analyze each path
     for target_path in arch.paths:
