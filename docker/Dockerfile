@@ -53,6 +53,9 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
 RUN cd ros2_caret_ws/src/CARET/caret_analyze && \
     git show --format='%H' --no-patch
 
+# hadolint ignore=DL3013
+RUN pip3 install --no-cache-dir 'matplotlib>=3.7'
+
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
