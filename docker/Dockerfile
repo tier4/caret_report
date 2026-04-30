@@ -53,6 +53,9 @@ RUN git clone https://github.com/tier4/caret.git ros2_caret_ws && \
 RUN cd ros2_caret_ws/src/CARET/caret_analyze && \
     git show --format='%H' --no-patch
 
+# Workaround for ROS Humble: osrf/ros:humble-desktop installs matplotlib 3.5.1 via apt,
+# which is compiled against numpy 1.x and incompatible with numpy 2.x (pulled in by caret_analyze).
+# Override with a pip version that supports numpy 2.x.
 # hadolint ignore=DL3013
 RUN pip3 install --no-cache-dir 'matplotlib>=3.7'
 
